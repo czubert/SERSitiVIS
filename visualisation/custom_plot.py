@@ -13,7 +13,7 @@ DEG = 'Polynominal degree'
 DFS = {'ML model grouped spectra': 'Dark Subtracted #1', 'ML model mean spectra': 'Average'}
 
 
-def show_plot(df, display_options_radio, key):
+def show_plot(template, df, display_options_radio, key):
     """
     Based on uploaded files and denominator it shows either single plot of each spectra (file),
     all spectra on one plot or spectra of mean values
@@ -23,9 +23,6 @@ def show_plot(df, display_options_radio, key):
     :param key: String
     :return:
     """
-
-    template = None
-
     if display_options_radio == SINGLE:
         for col in range(len(df.columns)):
             df3 = df.copy()
@@ -67,20 +64,6 @@ def show_plot(df, display_options_radio, key):
         st.write(draw.draw_plot(template, df, y_value=GS))
         utils.show_dataframe(df, key)
 
-
-    chart_template = st.radio(
-        "Choose from which spectrometer did you upload spectra",
-        ('ggplot2', 'seaborn', 'simple_white', 'plotly',
-         'plotly_white', 'plotly_dark', 'presentation', 'xgridoff',
-         'ygridoff', 'gridon', 'none'), index=0)
-
-    templates = ['ggplot2', 'seaborn', 'simple_white', 'plotly',
-         'plotly_white', 'plotly_dark', 'presentation', 'xgridoff',
-         'ygridoff', 'gridon', 'none']
-
-    for templ in templates:
-        if chart_template == templ:
-            template = templ
 
 def show_data_metadata(meta, data, no):
     """
