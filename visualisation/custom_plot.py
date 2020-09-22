@@ -2,7 +2,6 @@ import streamlit as st
 import numpy as np
 import pandas as pd
 import peakutils
-import plotly.express as px
 import plotly.graph_objects as go
 
 from . import draw
@@ -23,15 +22,14 @@ def show_plot(df, display_options_radio, key):
     """
     Based on uploaded files and denominator it shows either single plot of each spectra (file),
     all spectra on one plot or spectra of mean values
-    :param uploaded_files: File
-    :param denominator: Int
+    :param df: DataFrame
     :param display_options_radio: String
     :param key: String
     :return:
     """
     st.write('<style>div.Widget.row-widget.stRadio > div{flex-direction:row;}</style>', unsafe_allow_html=True)
-    plot_color = utils.plot_color()
-    template = utils.choose_template()
+    plots_color = draw.plot_color()
+    template = draw.choose_template()
 
     if display_options_radio == SINGLE:
 
@@ -41,16 +39,16 @@ def show_plot(df, display_options_radio, key):
             deg = st.slider(f'{DEG} plot nr: {col}', min_value=1, max_value=20, value=5)
             df2[BS] = peakutils.baseline(df2.iloc[:, col], deg)
 
-            fig2 = utils.draw_plot(utils.correct_baseline(df2.iloc[:,[col]], deg), x=None, y=DS, plot_color=plot_color, color=None)
-            fig2 = utils.fig_layout(template, fig2, 'Spectra after baseline correction')
+            fig2 = draw.draw_plot(utils.correct_baseline(df2.iloc[:, [col]], deg), x=None, y=DS, plot_color=plots_color,
+                                  color=None)
+            fig2 = draw.fig_layout(template, fig2, 'Spectra after baseline correction')
             st.write(fig2)
 
-            fig = utils.draw_plot(df2.iloc[:,[col]], x=None, y=DS, plot_color=plot_color, color=None)
-            fig.add_traces([go.Scatter(y=df2.iloc[:,[col]][DS], name=MS)])
-            fig.add_traces([go.Scatter(y=df2.iloc[:,[-1]][BS], name=BS)])
-            fig = utils.fig_layout(template, fig, 'Original spectra + baseline')
+            fig = draw.draw_plot(df2.iloc[:, [col]], x=None, y=DS, plot_color=plots_color, color=None)
+            fig.add_traces([go.Scatter(y=df2.iloc[:, [col]][DS], name=MS)])
+            fig.add_traces([go.Scatter(y=df2.iloc[:, [-1]][BS], name=BS)])
+            fig = draw.fig_layout(template, fig, 'Original spectra + baseline')
             st.write(fig)
-
 
     elif display_options_radio == MS:
         # getting mean values for each raman shift
@@ -64,17 +62,15 @@ def show_plot(df, display_options_radio, key):
 
         df2['base_line'] = peakutils.baseline(df2.loc[:, AV], deg)
 
-        fig2 = utils.draw_plot(utils.correct_baseline(df2, deg), x=None, y=AV, plot_color=plot_color, color=None)
-        fig2 = utils.fig_layout(template, fig2, 'Spectra after baseline correction')
+        fig2 = draw.draw_plot(utils.correct_baseline(df2, deg), x=None, y=AV, plot_color=plots_color, color=None)
+        fig2 = draw.fig_layout(template, fig2, 'Spectra after baseline correction')
         st.write(fig2)
 
-        fig = utils.draw_plot(df2,  x=None, y=AV, plot_color=plot_color, color=None)
+        fig = draw.draw_plot(df2,  x=None, y=AV, plot_color=plots_color, color=None)
         fig.add_traces([go.Scatter(y=df2[AV], name=MS)])
         fig.add_traces([go.Scatter(y=df2['base_line'], name=BS)])
-        fig = utils.fig_layout(template, fig, 'Original spectra + baseline')
+        draw.fig_layout(template, fig, 'Original spectra + baseline')
         st.write(fig)
-
-
 
     elif display_options_radio == GS:
         # changing columns names, so they are separated on the plot,
@@ -91,9 +87,9 @@ def show_plot(df, display_options_radio, key):
 
         corrected_df = pd.melt(df2, id_vars=df2.columns[0], value_vars=df2.columns[1:])
 
-        fig = utils.draw_plot(corrected_df, x=RS, y='value', plot_color=plot_color, color='variable')
+        fig = draw.draw_plot(corrected_df, x=RS, y='value', plot_color=plots_color, color='variable')
 
-        fig = utils.fig_layout(template, fig, GS)
+        fig = draw.fig_layout(template, fig, GS)
 
         st.write(fig)
 
