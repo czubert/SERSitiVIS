@@ -44,7 +44,6 @@ def vis_options(df):
     print("Streamlit finish it's work")
 
 
-
 if files is not None:
     if spectrometer == BWTEK:
         temp_data_df, temp_meta_df = utils.read_data_metadata(files)

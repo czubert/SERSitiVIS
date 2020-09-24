@@ -39,13 +39,24 @@ def show_plot(df, display_options_radio, key):
             deg = st.slider(f'{DEG} plot nr: {col}', min_value=1, max_value=20, value=5)
             df2[BS] = peakutils.baseline(df2.iloc[:, col], deg)
 
+            # # WHAT co do kurwy jebanej???? czemu to kurwa nie dziala?
+            # # Peakutils data preparation
+            # df3 = df2.reset_index()
+            # indexes = peakutils.indexes(df3[DS], thres=0.1, min_dist=35)
+            # st.write(peakutils.interpolate(df3[RS], df3[DS], ind=indexes))
+
+
+            # Showing spectra after baseline correction
+            # df2 = df2.reset_index()
             fig2 = draw.draw_plot(utils.correct_baseline(df2.iloc[:, [col]], deg), x=None, y=DS, plot_color=plots_color,
                                   color=None)
             fig2 = draw.fig_layout(template, fig2, 'Spectra after baseline correction')
+
             st.write(fig2)
 
+            # Showing spectra before baseline correction + baseline function
             fig = draw.draw_plot(df2.iloc[:, [col]], x=None, y=DS, plot_color=plots_color, color=None)
-            fig.add_traces([go.Scatter(y=df2.iloc[:, [col]][DS], name=MS)])
+            fig.add_traces([go.Scatter(y=df2.iloc[:, [col]][DS], name=SINGLE)])
             fig.add_traces([go.Scatter(y=df2.iloc[:, [-1]][BS], name=BS)])
             fig = draw.fig_layout(template, fig, 'Original spectra + baseline')
             st.write(fig)
@@ -66,7 +77,7 @@ def show_plot(df, display_options_radio, key):
         fig2 = draw.fig_layout(template, fig2, 'Spectra after baseline correction')
         st.write(fig2)
 
-        fig = draw.draw_plot(df2,  x=None, y=AV, plot_color=plots_color, color=None)
+        fig = draw.draw_plot(df2, x=None, y=AV, plot_color=plots_color, color=None)
         fig.add_traces([go.Scatter(y=df2[AV], name=MS)])
         fig.add_traces([go.Scatter(y=df2['base_line'], name=BS)])
         draw.fig_layout(template, fig, 'Original spectra + baseline')
@@ -85,12 +96,10 @@ def show_plot(df, display_options_radio, key):
         df2 = utils.correct_baseline(df2, deg)
         df2 = df2.reset_index()
 
+        # Showing spectra after baseline correction
         corrected_df = pd.melt(df2, id_vars=df2.columns[0], value_vars=df2.columns[1:])
-
         fig = draw.draw_plot(corrected_df, x=RS, y='value', plot_color=plots_color, color='variable')
-
         fig = draw.fig_layout(template, fig, GS)
-
         st.write(fig)
 
         utils.show_dataframe(df, key)
