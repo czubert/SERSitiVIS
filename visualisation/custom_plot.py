@@ -35,6 +35,7 @@ def show_plot(df, display_options_radio, key):
 
         for col in range(len(df.columns)):
             df2 = df.copy()
+            st.write(df2)
 
             deg = st.slider(f'{DEG} plot nr: {col}', min_value=1, max_value=20, value=5)
             df2[BS] = peakutils.baseline(df2.iloc[:, col], deg)
@@ -47,7 +48,6 @@ def show_plot(df, display_options_radio, key):
 
 
             # Showing spectra after baseline correction
-            # df2 = df2.reset_index()
             fig2 = draw.draw_plot(utils.correct_baseline(df2.iloc[:, [col]], deg), x=None, y=DS, plot_color=plots_color,
                                   color=None)
             fig2 = draw.fig_layout(template, fig2, 'Spectra after baseline correction')
