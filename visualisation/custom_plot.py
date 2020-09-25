@@ -15,6 +15,7 @@ GS = 'Grouped spectra'
 RS = 'Raman Shift'
 DS = 'Dark Subtracted #1'
 DEG = 'Polynominal degree'
+WINDOW = 'Set window for spectra flattening'
 DFS = {'ML model grouped spectra': 'Dark Subtracted #1', 'ML model mean spectra': 'Average'}
 
 
@@ -35,29 +36,35 @@ def show_plot(df, display_options_radio, key):
 
         for col in range(len(df.columns)):
             df2 = df.copy()
-            st.write(df2)
 
             deg = st.slider(f'{DEG} plot nr: {col}', min_value=1, max_value=20, value=5)
+            window = st.slider(f'{WINDOW} plot nr: {col}', min_value=1, max_value=20, value=3)
             df2[BS] = peakutils.baseline(df2.iloc[:, col], deg)
 
             # # WHAT co do kurwy jebanej???? czemu to kurwa nie dziala?
             # # Peakutils data preparation
             # df3 = df2.reset_index()
             # indexes = peakutils.indexes(df3[DS], thres=0.1, min_dist=35)
-            # st.write(peakutils.interpolate(df3[RS], df3[DS], ind=indexes))
+            # interpolate = peakutils.interpolate(df3[RS].values, df3[DS].values, ind=indexes)
+            # st.write('interpolate')
+            # st.write(interpolate)
 
+            corrected_df = utils.correct_baseline(df2.iloc[:, [col]], deg)
+            df3 = pd.DataFrame()
+            df3['MA'] = corrected_df[DS].rolling(window=window).mean()
+            df3.dropna(inplace=True)
 
             # Showing spectra after baseline correction
-            fig2 = draw.draw_plot(utils.correct_baseline(df2.iloc[:, [col]], deg), x=None, y=DS, plot_color=plots_color,
+            fig2 = draw.draw_plot(df3, x=RS, y='MA', plot_color=plots_color,
                                   color=None)
             fig2 = draw.fig_layout(template, fig2, 'Spectra after baseline correction')
-
             st.write(fig2)
 
+
             # Showing spectra before baseline correction + baseline function
-            fig = draw.draw_plot(df2.iloc[:, [col]], x=None, y=DS, plot_color=plots_color, color=None)
-            fig.add_traces([go.Scatter(y=df2.iloc[:, [col]][DS], name=SINGLE)])
-            fig.add_traces([go.Scatter(y=df2.iloc[:, [-1]][BS], name=BS)])
+            fig = draw.draw_plot(df2.iloc[:, [col]], x=RS, y=DS, plot_color=plots_color, color=None)
+            fig = draw.add_traces(df2, fig, x=RS, y=DS, name=SINGLE, col=col)
+            fig = draw.add_traces(df2, fig, x=RS, y=BS, name=BS, col=col)
             fig = draw.fig_layout(template, fig, 'Original spectra + baseline')
             st.write(fig)
 
@@ -85,14 +92,13 @@ def show_plot(df, display_options_radio, key):
 
     elif display_options_radio == GS:
         # changing columns names, so they are separated on the plot,
-        # before all columns had the same name
         df.columns = np.arange(len(df.columns))
 
+        # Adding possibility to change degree of polynominal regression
         deg = st.slider(f'{DEG}', min_value=1, max_value=20, value=5)
 
-        # drawing the plot
+        # Baseline correction
         df2 = df.copy()
-
         df2 = utils.correct_baseline(df2, deg)
         df2 = df2.reset_index()
 

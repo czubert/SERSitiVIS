@@ -5,7 +5,7 @@ import streamlit as st
 
 RS = 'Raman Shift'
 DS = 'Dark Subtracted #1'
-
+BS = 'Baseline'
 
 def fig_layout(template, fig, descr='Chosen spectra'):
     """
@@ -61,7 +61,7 @@ def draw_plot(df, x, y, plot_color, color='variable'):
     :return: plotly.graph_objs._figure.Figure
     """
 
-    fig = px.line(df, x=x, y=y, color=color,
+    fig = px.line(df.reset_index(), x=x, y=y, color=color,
                   color_discrete_sequence=plot_color)
 
     # fig = px.line(df, x=x, y=y, color=color,
@@ -69,6 +69,14 @@ def draw_plot(df, x, y, plot_color, color='variable'):
 
     return fig
 
+def add_traces(df, fig, x, y, name, col=None):
+    if y == DS:
+        fig.add_traces([go.Scatter(y=df.iloc[:, [col]].reset_index()[y], x=df.iloc[:, [col]].reset_index()[x], name=name)])
+        return fig
+    elif y == BS:
+        fig.add_traces([go.Scatter(y=df.iloc[:, -1].reset_index()[y], x=df.iloc[:, [col]].reset_index()[x], name=name)])
+
+        return fig
 
 def choose_template():
     """
