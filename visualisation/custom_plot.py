@@ -146,12 +146,28 @@ def show_plot(df, display_options_radio, key):
 
         # Baseline correction + flattening
         df2 = utils.correct_baseline(df=df2,deg=deg,window=window)
-
         # drawing a plot
         df2 = df2.reset_index()
         df2m = df2.melt('Raman Shift', df2.columns[1:])
         df2m_drop = df2m.dropna()
-        fig_3d = px.line_3d(df2m_drop, x=RS, y='value', z='variable', color='variable')
+
+
+
+        fig_3d = px.line_3d(df2m_drop, x='variable', y=RS, z='value', color='variable')
+
+        draw.fig_layout(template, fig_3d, plots_colorscale=plots_color,
+                        descr=f'{P3D} with {COR} + {FLAT} spectra')
+
+        camera = dict(
+            eye=dict(x=1.9, y=0.15, z=0.2)
+        )
+
+        fig_3d.update_layout(scene_camera=camera,
+                             width=900,
+                             height=900,
+                             margin=dict(l=1, r=1, t=30, b=1),
+                             )
+
 
         st.write(fig_3d)
 
