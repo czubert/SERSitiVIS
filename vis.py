@@ -8,6 +8,7 @@ st.sidebar.title('Menu')
 SINGLE = 'Single spectra'
 MS = 'Mean spectrum'
 GS = 'Grouped spectra'
+P3D = 'Plot 3D'
 USpec = 'Upload "*.txt" spectra'
 BWTEK = 'BWTEK'
 RENI = 'Renishaw'
@@ -27,7 +28,7 @@ def vis_options(df):
     # showing sidebar
     display_options_radio = st.sidebar.radio(
         "What would you like to see?",
-        (SINGLE, MS, GS), index=0)
+        (SINGLE, MS, GS, P3D), index=0)
 
     if display_options_radio == SINGLE:
         st.title(SINGLE)
@@ -35,11 +36,16 @@ def vis_options(df):
 
     elif display_options_radio == MS:
         st.title(f'{MS} of multiple spectra')
+        st.subheader('Please do not take mean spectra of different compounds')
         custom_plot.show_plot(df, display_options_radio=MS, key=None)
 
     elif display_options_radio == GS:
         st.title(f'{GS} on one plot')
         custom_plot.show_plot(df, display_options_radio=GS, key=None)
+
+    elif display_options_radio == P3D:
+        st.title(f'{P3D} on one plot')
+        custom_plot.show_plot(df, display_options_radio=P3D, key=None)
 
     print("Streamlit finish it's work")
 

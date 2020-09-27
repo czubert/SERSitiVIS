@@ -1,5 +1,6 @@
 import plotly.express as px
 import plotly.graph_objects as go
+import plotly.io as pio
 
 import streamlit as st
 
@@ -8,7 +9,8 @@ DS = 'Dark Subtracted #1'
 BS = 'Baseline'
 FLAT = 'Flattened'
 
-def fig_layout(template, fig, descr='Chosen spectra'):
+
+def fig_layout(template, fig, plots_colorscale, descr='Chosen spectra'):
     """
     Changing layout and styles
     :param template: Str, Plotly template
@@ -21,7 +23,8 @@ def fig_layout(template, fig, descr='Chosen spectra'):
                       showlegend=True,
                       template=template,
                       title_font_size=20,
-                      width=950,
+                      coloraxis=dict(colorscale=plots_colorscale),
+                      width=1050,
                       height=590,
                       xaxis=dict(
                           title=f"{RS} [cm^-1]",
@@ -29,7 +32,7 @@ def fig_layout(template, fig, descr='Chosen spectra'):
                           showgrid=False  # Removes X-axis grid lines
                       ),
                       yaxis=dict(
-                          title="Intensity",
+                          title="Intensity [au]",
                           linecolor="#BCCCDC",  # Sets color of Y-axis line
                           showgrid=True,  # Removes Y-axis grid lines
                       ),
@@ -51,37 +54,10 @@ def fig_layout(template, fig, descr='Chosen spectra'):
     return fig
 
 
-def draw_plot(df, x, y, plot_color, color='variable'):
-    """
-    Draws figure from DataFrame with selected x and y, and chosen color
-    :param df: DataFrame
-    :param x: Str
-    :param y: Str
-    :param plot_color: List of colors
-    :param color: Str
-    :return: plotly.graph_objs._figure.Figure
-    """
-
-    fig = px.line(df.reset_index(), x=x, y=y, color=color,
-                  color_discrete_sequence=plot_color)
-
-    # fig = px.line(df, x=x, y=y, color=color,
-    #               color_discrete_sequence=px.colors.cyclical.IceFire)
-
-    return fig
-
 def add_traces(df, fig, x, y, name, col=None):
     fig.add_traces([go.Scatter(y=df.reset_index()[y], x=df.reset_index()[x], name=name)])
     return fig
-    # if y == DS:
-    #     fig.add_traces([go.Scatter(y=df.loc[:, DS].reset_index()[y], x=df.iloc[:, [col]].reset_index()[x], name=name)])
-    #     return fig
-    # elif y == BS:
-    #     fig.add_traces([go.Scatter(y=df.loc[:, BS].reset_index()[y], x=df.iloc[:, [col]].reset_index()[x], name=name)])
-    #     return fig
-    # elif y == FLAT:
-    #     fig.add_traces([go.Scatter(y=df.loc[:, FLAT].reset_index()[y], x=df.iloc[:, [col]].reset_index()[x], name=name)])
-    #     return fig
+
 
 def choose_template():
     """
@@ -90,42 +66,35 @@ def choose_template():
     """
     template = st.radio(
         "Choose chart template",
-        ('ggplot2', 'seaborn', 'simple_white', 'plotly',
-         'plotly_white', 'plotly_dark', 'presentation', 'xgridoff',
-         'ygridoff', 'gridon', 'none'), index=1, key='new')
+        list(pio.templates), index=1, key='new')
     return template
 
 
-def plot_color():
+def plot_colorscale():
     """
     Choose color set for plots
-    :return:
+    :return: String
     """
-    colors = {
-        'Plotly': px.colors.qualitative.Plotly,
-        'Vivid': px.colors.qualitative.Vivid,
-        'Safe': px.colors.qualitative.Safe,
-        'Prism': px.colors.qualitative.Prism,
-        'Pastel': px.colors.qualitative.Pastel,
-        'Bold': px.colors.qualitative.Bold,
-        'Antique': px.colors.qualitative.Antique,
-        'Set1': px.colors.qualitative.Set1,
-        'Set2': px.colors.qualitative.Set2,
-        'Set3': px.colors.qualitative.Set3,
-        'Pastel2': px.colors.qualitative.Pastel2,
-        'Dark2': px.colors.qualitative.Dark2,
-        'Pastel1': px.colors.qualitative.Pastel1,
-        'Light24': px.colors.qualitative.Light24,
-        'Dark24': px.colors.qualitative.Dark24,
-        'Alphabet': px.colors.qualitative.Alphabet,
-        'T10': px.colors.qualitative.T10,
-        'G10': px.colors.qualitative.G10,
-        'D3': px.colors.qualitative.D3
-    }
+    color_list = ['aggrnyl', 'agsunset', 'algae', 'amp', 'armyrose', 'balance', 'blackbody',
+                  'bluered', 'blues', 'blugrn', 'bluyl', 'brbg', 'brwnyl', 'bugn', 'bupu',
+                  'burg', 'burgyl', 'cividis', 'curl', 'darkmint', 'deep', 'delta', 'dense',
+                  'earth', 'edge', 'electric', 'emrld', 'fall', 'geyser', 'gnbu', 'gray',
+                  'greens', 'greys', 'haline', 'hot', 'hsv', 'ice', 'icefire', 'inferno',
+                  'jet', 'magenta', 'magma', 'matter', 'mint', 'mrybm', 'mygbm', 'oranges',
+                  'orrd', 'oryel', 'peach', 'phase', 'picnic', 'pinkyl', 'piyg', 'plasma',
+                  'plotly3', 'portland', 'prgn', 'pubu', 'pubugn', 'puor', 'purd', 'purp',
+                  'purples', 'purpor', 'rainbow', 'rdbu', 'rdgy', 'rdpu', 'rdylbu', 'rdylgn',
+                  'redor', 'reds', 'solar', 'spectral', 'speed', 'sunset', 'sunsetdark', 'teal',
+                  'tealgrn', 'tealrose', 'tempo', 'temps', 'thermal', 'tropic', 'turbid', 'twilight',
+                  'viridis', 'ylgn', 'ylgnbu', 'ylorbr', 'ylorrd']
+
+    colors = {}
+
+    for el in color_list:
+        colors[el] = el
 
     plots_color = st.radio(
         "Choose set of colors for spectra",
-        ('Plotly', 'Vivid', 'Safe', 'Prism', 'Pastel', 'Bold', 'Antique', 'Set3', 'Pastel2', 'Set2', 'Dark2', 'Pastel1',
-         'Set1', 'Light24', 'Dark24', 'Alphabet', 'T10', 'G10', 'D3'), index=1)
+        color_list, index=15)
 
     return colors[plots_color]

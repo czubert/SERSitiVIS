@@ -10,7 +10,8 @@ from . import separate
 RS = 'Raman Shift'
 DS = 'Dark Subtracted #1'
 BS = 'Baseline'
-
+MS = 'Mean spectrum'
+AV = 'Average'
 
 def get_names(url):
     """
@@ -121,16 +122,20 @@ def read_data_metadata(uploaded_files):
     return temp_data_df, temp_meta_df
 
 
-def correct_baseline(df, deg):
+def correct_baseline(df, deg, window):
     df2 = df.copy()
     for col in range(len(df.columns)):
         df2.iloc[:, col] = df.iloc[:, col] - peakutils.baseline(df.iloc[:, col], deg)
+        df2.iloc[:, col] = df2.iloc[:, col].rolling(window=window).mean()
 
     return df2
 
 
-def correct_baseline_single(df, deg):
+def correct_baseline_single(df, deg, model=DS):
     df2 = df.copy()
-    df2['Corrected'] = df2[DS] - peakutils.baseline(df2[BS], deg)
+    if model == DS:
+        df2['Corrected'] = df2[DS] - peakutils.baseline(df2[BS], deg)
+    if model == MS:
+        df2['Corrected'] = df2[AV] - peakutils.baseline(df2[BS], deg)
 
     return df2
