@@ -6,6 +6,7 @@ import streamlit as st
 RS = 'Raman Shift'
 DS = 'Dark Subtracted #1'
 BS = 'Baseline'
+FLAT = 'Flattened'
 
 def fig_layout(template, fig, descr='Chosen spectra'):
     """
@@ -70,13 +71,17 @@ def draw_plot(df, x, y, plot_color, color='variable'):
     return fig
 
 def add_traces(df, fig, x, y, name, col=None):
-    if y == DS:
-        fig.add_traces([go.Scatter(y=df.iloc[:, [col]].reset_index()[y], x=df.iloc[:, [col]].reset_index()[x], name=name)])
-        return fig
-    elif y == BS:
-        fig.add_traces([go.Scatter(y=df.iloc[:, -1].reset_index()[y], x=df.iloc[:, [col]].reset_index()[x], name=name)])
-
-        return fig
+    fig.add_traces([go.Scatter(y=df.reset_index()[y], x=df.reset_index()[x], name=name)])
+    return fig
+    # if y == DS:
+    #     fig.add_traces([go.Scatter(y=df.loc[:, DS].reset_index()[y], x=df.iloc[:, [col]].reset_index()[x], name=name)])
+    #     return fig
+    # elif y == BS:
+    #     fig.add_traces([go.Scatter(y=df.loc[:, BS].reset_index()[y], x=df.iloc[:, [col]].reset_index()[x], name=name)])
+    #     return fig
+    # elif y == FLAT:
+    #     fig.add_traces([go.Scatter(y=df.loc[:, FLAT].reset_index()[y], x=df.iloc[:, [col]].reset_index()[x], name=name)])
+    #     return fig
 
 def choose_template():
     """

@@ -9,6 +9,7 @@ from . import separate
 
 RS = 'Raman Shift'
 DS = 'Dark Subtracted #1'
+BS = 'Baseline'
 
 
 def get_names(url):
@@ -68,6 +69,7 @@ def check_for_differences(list1, list2):
     return counter
 
 
+@st.cache
 def group_dfs(data_dfs):
     """
     Returns dict consists of one DataFrame per data type, other consists of mean values per data type.
@@ -81,9 +83,7 @@ def group_dfs(data_dfs):
     elif isinstance(data_dfs, list):
         df = pd.concat([data_df for data_df in data_dfs], axis=1)
 
-    # df.reset_index(inplace=True)
     df.dropna(axis=1, inplace=True, how='all')  # drops columns filled with NaN values
-    df.dropna(axis=0, inplace=True)  # drops indices with any NaN values
 
     return df
 
@@ -123,8 +123,14 @@ def read_data_metadata(uploaded_files):
 
 def correct_baseline(df, deg):
     df2 = df.copy()
-
     for col in range(len(df.columns)):
         df2.iloc[:, col] = df.iloc[:, col] - peakutils.baseline(df.iloc[:, col], deg)
+
+    return df2
+
+
+def correct_baseline_single(df, deg):
+    df2 = df.copy()
+    df2['Corrected'] = df2[DS] - peakutils.baseline(df2[BS], deg)
 
     return df2

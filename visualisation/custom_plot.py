@@ -17,7 +17,8 @@ DS = 'Dark Subtracted #1'
 DEG = 'Polynominal degree'
 WINDOW = 'Set window for spectra flattening'
 DFS = {'ML model grouped spectra': 'Dark Subtracted #1', 'ML model mean spectra': 'Average'}
-
+FLAT = 'Flattened'
+COR = 'Corrected'
 
 def show_plot(df, display_options_radio, key):
     """
@@ -39,55 +40,70 @@ def show_plot(df, display_options_radio, key):
 
             deg = st.slider(f'{DEG} plot nr: {col}', min_value=1, max_value=20, value=5)
             window = st.slider(f'{WINDOW} plot nr: {col}', min_value=1, max_value=20, value=3)
-            df2[BS] = peakutils.baseline(df2.iloc[:, col], deg)
 
-            # # WHAT co do kurwy jebanej???? czemu to kurwa nie dziala?
+
             # # Peakutils data preparation
-            # df3 = df2.reset_index()
-            # indexes = peakutils.indexes(df3[DS], thres=0.1, min_dist=35)
-            # interpolate = peakutils.interpolate(df3[RS].values, df3[DS].values, ind=indexes)
+            # corrected_df = df2.reset_index()
+            # indexes = peakutils.indexes(corrected_df[DS], thres=0.1, min_dist=35)
+            # interpolate = peakutils.interpolate(corrected_df[RS].values, corrected_df[DS].values, ind=indexes)
             # st.write('interpolate')
             # st.write(interpolate)
 
-            corrected_df = utils.correct_baseline(df2.iloc[:, [col]], deg)
-            df3 = pd.DataFrame()
-            df3['MA'] = corrected_df[DS].rolling(window=window).mean()
-            df3.dropna(inplace=True)
+            # Creating DataFrame that will be shown on plot
+            df_to_show = pd.DataFrame(df2.iloc[:, col]).dropna()
+
+            # Adding column with baseline that will be show on plot
+            df_to_show[BS] = peakutils.baseline(df_to_show, deg)
+
+            # Creating DataFrame with applied Baseline correction
+            corrected_df = utils.correct_baseline_single(df_to_show, deg)
+
+            # Refining DataFrame to make spectra flattened
+            corrected_df[FLAT] = corrected_df['Corrected'].rolling(window=window).mean()
+            corrected_df.dropna(inplace=True)
 
             # Showing spectra after baseline correction
-            fig2 = draw.draw_plot(df3, x=RS, y='MA', plot_color=plots_color,
-                                  color=None)
+            fig2 = draw.draw_plot(corrected_df, x=RS, y=FLAT, plot_color=plots_color, color=None)
             fig2 = draw.fig_layout(template, fig2, 'Spectra after baseline correction')
             st.write(fig2)
 
 
             # Showing spectra before baseline correction + baseline function
-            fig = draw.draw_plot(df2.iloc[:, [col]], x=RS, y=DS, plot_color=plots_color, color=None)
-            fig = draw.add_traces(df2, fig, x=RS, y=DS, name=SINGLE, col=col)
-            fig = draw.add_traces(df2, fig, x=RS, y=BS, name=BS, col=col)
+            fig = draw.draw_plot(corrected_df, x=RS, y=DS, plot_color=plots_color, color=None)
+            fig = draw.add_traces(corrected_df, fig, x=RS, y=DS, name='Original spectra', col=col)
+            fig = draw.add_traces(corrected_df, fig, x=RS, y=BS, name=BS, col=col)
+            fig = draw.add_traces(corrected_df, fig, x=RS, y=FLAT, name=f'{FLAT} + {BS} correction', col=col)
             fig = draw.fig_layout(template, fig, 'Original spectra + baseline')
             st.write(fig)
 
     elif display_options_radio == MS:
         # getting mean values for each raman shift
         df2 = df.copy()
-        df2[AV] = df2.mean(axis=1)
-        # df2.reset_index(inplace=True)
-        df2 = df2.loc[:, [AV]]
+        df2[DS] = df2.mean(axis=1)
+        df2 = df2.loc[:, [DS]]
 
         # getting baseline for mean spectra
         deg = st.slider(f'{DEG}', min_value=1, max_value=20, value=5)
+        window = st.slider(f'{WINDOW}', min_value=1, max_value=20, value=3)
 
-        df2['base_line'] = peakutils.baseline(df2.loc[:, AV], deg)
+        # Preparing data to plot
+        df2[BS] = peakutils.baseline(df2.loc[:, DS], deg)
+        df2 = utils.correct_baseline_single(df2, deg)
+        df2[FLAT] = df2['Corrected'].rolling(window=window).mean()
+        df2.dropna(inplace=True)
 
-        fig2 = draw.draw_plot(utils.correct_baseline(df2, deg), x=None, y=AV, plot_color=plots_color, color=None)
-        fig2 = draw.fig_layout(template, fig2, 'Spectra after baseline correction')
+        # Drowing figure of mean spectra after baseline correction and flattening
+        fig2 = draw.draw_plot(utils.correct_baseline(df2, deg), x=df2.reset_index()[RS], y=FLAT, plot_color=plots_color, color=None)
+        fig2 = draw.fig_layout(template, fig2, 'Mean spectra after baseline correction')
         st.write(fig2)
 
-        fig = draw.draw_plot(df2, x=None, y=AV, plot_color=plots_color, color=None)
-        fig.add_traces([go.Scatter(y=df2[AV], name=MS)])
-        fig.add_traces([go.Scatter(y=df2['base_line'], name=BS)])
-        draw.fig_layout(template, fig, 'Original spectra + baseline')
+        # Drowing figure of mean spectra  + baseline
+        fig = draw.draw_plot(df2, x=df2.reset_index()[RS], y=DS, plot_color=plots_color, color=None)
+        fig.add_traces([go.Scatter(x=df2.reset_index()[RS], y=df2[DS], name=MS)])
+        fig.add_traces([go.Scatter(x=df2.reset_index()[RS], y=df2[COR], name=COR)])
+        fig.add_traces([go.Scatter(x=df2.reset_index()[RS], y=df2[FLAT], name=FLAT)])
+        fig.add_traces([go.Scatter(x=df2.reset_index()[RS], y=df2[BS], name=BS)])
+        draw.fig_layout(template, fig, 'Original spectra, baseline, corrected, and corrected + flattened')
         st.write(fig)
 
     elif display_options_radio == GS:
@@ -99,6 +115,7 @@ def show_plot(df, display_options_radio, key):
 
         # Baseline correction
         df2 = df.copy()
+        st.write(df2)
         df2 = utils.correct_baseline(df2, deg)
         df2 = df2.reset_index()
 
@@ -111,7 +128,7 @@ def show_plot(df, display_options_radio, key):
         utils.show_dataframe(df, key)
 
 
-def show_data_metadata(meta, data, no):
+def corrected_dfw_data_metadata(meta, data, no):
     """
     :param meta:
     :param data:
