@@ -136,30 +136,22 @@ def show_plot(df, display_options_radio, key):
 
         utils.show_dataframe(df2, key)
 
-# TODO 3d plot zrobic ;(
     elif display_options_radio == P3D:
         df2 = df.copy()
-        df2.columns = np.arange(len(df2.columns))
+        df2.columns = ['widmo nr ' + str(i) for i in range(len(df2.columns))]
         import plotly.express as px
         # Adding possibility to change degree of polynominal regression
         deg = st.slider(f'{DEG}', min_value=1, max_value=20, value=5)
         window = st.slider(f'{WINDOW}', min_value=1, max_value=20, value=3)
 
-        # Baseline correction + drawing plot
-        fig_3d = go.Figure()
-        draw.fig_layout(template, fig_3d, plots_colorscale=plots_color,
-                        descr=f'Homogenity or repeatability shown on 3d plot')
+        # Baseline correction + flattening
+        df2 = utils.correct_baseline(df=df2,deg=deg,window=window)
 
-        for col in range(len(df2.columns)):
-            corrected = pd.DataFrame(df2.iloc[:, col]).dropna()
-            corrected = utils.correct_baseline(corrected, deg, window).dropna()
-            corrected['num'] = col
-            x = corrected.reset_index()[RS]
-            y = corrected[col]
-            z = corrected['num']
-
-            fig_3d.add_traces(data=[go.Surface(z=z, x=x, y=y)])
-
+        # drawing a plot
+        df2 = df2.reset_index()
+        df2m = df2.melt('Raman Shift', df2.columns[1:])
+        df2m_drop = df2m.dropna()
+        fig_3d = px.line_3d(df2m_drop, x=RS, y='value', z='variable', color='variable')
 
         st.write(fig_3d)
 
