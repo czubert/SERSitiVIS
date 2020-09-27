@@ -136,6 +136,7 @@ def show_plot(df, display_options_radio, key):
 
         utils.show_dataframe(df2, key)
 
+# TODO 3d plot zrobic ;(
     elif display_options_radio == P3D:
         df2 = df.copy()
         df2.columns = np.arange(len(df2.columns))
