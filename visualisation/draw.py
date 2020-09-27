@@ -23,7 +23,7 @@ def fig_layout(template, fig, plots_colorscale, descr='Chosen spectra'):
                       showlegend=True,
                       template=template,
                       title_font_size=20,
-                      coloraxis=dict(colorscale=plots_colorscale),
+                      coloraxis=dict(colorscale=plots_colorscale), # TODO tutaj powinien sie kolor zmieniac w zal od radio
                       width=1050,
                       height=590,
                       xaxis=dict(
