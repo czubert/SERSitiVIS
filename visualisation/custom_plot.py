@@ -33,7 +33,8 @@ def show_plot(df, display_options_radio, key):
     :return:
     """
     st.write('<style>div.Widget.row-widget.stRadio > div{flex-direction:row;}</style>', unsafe_allow_html=True)
-    plots_color = draw.plot_colorscale()
+    plots_color = draw.choosing_colorway()
+    st.write(plots_color)
     template = draw.choose_template()
 
     if display_options_radio == SINGLE:
@@ -66,7 +67,7 @@ def show_plot(df, display_options_radio, key):
             # Showing spectra after baseline correction
             fig_single_corr = go.Figure()
             fig_single_corr = draw.add_traces(corrected_df, fig_single_corr, x=RS, y=FLAT, name=COR, col=col)
-            fig_single_corr = draw.fig_layout(template, fig_single_corr, plots_colorscale=plots_color,
+            draw.fig_layout(template, fig_single_corr, plots_colorscale=plots_color,
                                               descr='Spectra after baseline correction')
             st.write(fig_single_corr)
 
@@ -76,7 +77,7 @@ def show_plot(df, display_options_radio, key):
             fig_single_all = draw.add_traces(corrected_df, fig_single_all, x=RS, y=BS, name=BS, col=col)
             fig_single_all = draw.add_traces(corrected_df, fig_single_all, x=RS, y=FLAT,
                                              name=f'{FLAT} + {BS} correction', col=col)
-            fig_single_all = draw.fig_layout(template, fig_single_all, plots_colorscale=plots_color,
+            draw.fig_layout(template, fig_single_all, plots_colorscale=plots_color,
                                              descr=f'{ORG}, {BS}, and {FLAT} + {BS}')
             st.write(fig_single_all)
 

@@ -1,6 +1,7 @@
 import plotly.express as px
 import plotly.graph_objects as go
 import plotly.io as pio
+import inspect
 
 import streamlit as st
 
@@ -23,7 +24,7 @@ def fig_layout(template, fig, plots_colorscale, descr='Chosen spectra'):
                       showlegend=True,
                       template=template,
                       title_font_size=20,
-                      coloraxis=dict(colorscale=plots_colorscale), # TODO tutaj powinien sie kolor zmieniac w zal od radio
+                      colorway=px.colors.qualitative.Pastel2,
                       width=1050,
                       height=590,
                       xaxis=dict(
@@ -50,7 +51,6 @@ def fig_layout(template, fig, plots_colorscale, descr='Chosen spectra'):
                                               itemclick='toggle',
 
                                               )),
-
     return fig
 
 
@@ -70,31 +70,31 @@ def choose_template():
     return template
 
 
-def plot_colorscale():
-    """
-    Choose color set for plots
-    :return: String
-    """
-    color_list = ['aggrnyl', 'agsunset', 'algae', 'amp', 'armyrose', 'balance', 'blackbody',
-                  'bluered', 'blues', 'blugrn', 'bluyl', 'brbg', 'brwnyl', 'bugn', 'bupu',
-                  'burg', 'burgyl', 'cividis', 'curl', 'darkmint', 'deep', 'delta', 'dense',
-                  'earth', 'edge', 'electric', 'emrld', 'fall', 'geyser', 'gnbu', 'gray',
-                  'greens', 'greys', 'haline', 'hot', 'hsv', 'ice', 'icefire', 'inferno',
-                  'jet', 'magenta', 'magma', 'matter', 'mint', 'mrybm', 'mygbm', 'oranges',
-                  'orrd', 'oryel', 'peach', 'phase', 'picnic', 'pinkyl', 'piyg', 'plasma',
-                  'plotly3', 'portland', 'prgn', 'pubu', 'pubugn', 'puor', 'purd', 'purp',
-                  'purples', 'purpor', 'rainbow', 'rdbu', 'rdgy', 'rdpu', 'rdylbu', 'rdylgn',
-                  'redor', 'reds', 'solar', 'spectral', 'speed', 'sunset', 'sunsetdark', 'teal',
-                  'tealgrn', 'tealrose', 'tempo', 'temps', 'thermal', 'tropic', 'turbid', 'twilight',
-                  'viridis', 'ylgn', 'ylgnbu', 'ylorbr', 'ylorrd']
+def choosing_colorway():
+    all_colors = dict()
+    colorscale_names = get_colors_names()
 
-    colors = {}
-
-    for el in color_list:
-        colors[el] = el
+    for el in colorscale_names:
+        all_colors[el] = el  # TODO color name as key and color object as a value
 
     plots_color = st.radio(
         "Choose set of colors for spectra",
-        color_list, index=15)
+        colorscale_names, index=15)
 
-    return colors[plots_color]
+    return all_colors[plots_color]
+
+
+@st.cache
+def get_colors_names():
+    colorscale_names = []
+
+    # Plotly express color modules that you can try colors from
+    colors_modules = ['diverging', 'qualitative', 'sequential']
+
+    # Getting all colors from modules
+    for color_module in colors_modules:
+        colorscale_names.extend([f'{color_module}.{name}' for name, body
+                                 in inspect.getmembers(getattr(px.colors, color_module))
+                                 if isinstance(body, list)])
+
+    return colorscale_names

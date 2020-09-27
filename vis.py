@@ -23,7 +23,6 @@ temp_data_df = None
 temp_meta_df = None
 df = None
 
-
 def vis_options(df):
     # showing sidebar
     display_options_radio = st.sidebar.radio(
