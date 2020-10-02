@@ -33,9 +33,12 @@ def show_plot(df, display_options_radio, key):
     :return:
     """
     st.write('<style>div.Widget.row-widget.stRadio > div{flex-direction:row;}</style>', unsafe_allow_html=True)
+    st.write('========================================================================')
+    st.subheader('Color sets for plots')
     plots_color = draw.choosing_colorway()
-    st.write(plots_color)
+    st.write('========================================================================')
     template = draw.choose_template()
+    st.write('========================================================================')
 
     if display_options_radio == SINGLE:
         df2 = df.copy()
@@ -66,17 +69,21 @@ def show_plot(df, display_options_radio, key):
 
             # Showing spectra after baseline correction
             fig_single_corr = go.Figure()
-            fig_single_corr = draw.add_traces(corrected_df, fig_single_corr, x=RS, y=FLAT, name=COR, col=col)
+            st.write('========================================================================')
+            user_input_name = st.text_input("Type name of compound below", f'Spectra nr: {col}')
+
+            fig_single_corr = draw.add_traces_single_spectra(corrected_df, fig_single_corr, x=RS, y=FLAT, name=user_input_name)
             draw.fig_layout(template, fig_single_corr, plots_colorscale=plots_color,
-                                              descr='Spectra after baseline correction')
+                                              descr=None)
             st.write(fig_single_corr)
+
 
             # Showing spectra before baseline correction + baseline function
             fig_single_all = go.Figure()
-            fig_single_all = draw.add_traces(corrected_df, fig_single_all, x=RS, y=DS, name='Original spectra', col=col)
-            fig_single_all = draw.add_traces(corrected_df, fig_single_all, x=RS, y=BS, name=BS, col=col)
+            fig_single_all = draw.add_traces(corrected_df, fig_single_all, x=RS, y=DS, name='Original spectra')
+            fig_single_all = draw.add_traces(corrected_df, fig_single_all, x=RS, y=BS, name=BS)
             fig_single_all = draw.add_traces(corrected_df, fig_single_all, x=RS, y=FLAT,
-                                             name=f'{FLAT} + {BS} correction', col=col)
+                                             name=f'{FLAT} + {BS} correction')
             draw.fig_layout(template, fig_single_all, plots_colorscale=plots_color,
                                              descr=f'{ORG}, {BS}, and {FLAT} + {BS}')
             st.write(fig_single_all)
@@ -99,7 +106,7 @@ def show_plot(df, display_options_radio, key):
 
         # Drowing figure of mean spectra after baseline correction and flattening
         fig_mean_corr = go.Figure()
-        fig_mean_corr = draw.add_traces(df2, fig_mean_corr, x=RS, y=FLAT, name=f'{FLAT} + {BS} correction')
+        fig_mean_corr = draw.add_traces_single_spectra(df2, fig_mean_corr, x=RS, y=FLAT, name=f'{FLAT} + {BS} correction')
         fig_mean_corr = draw.fig_layout(template, fig_mean_corr, plots_colorscale=plots_color,
                                         descr='Mean spectra after baseline correction')
         st.write(fig_mean_corr)
@@ -115,6 +122,9 @@ def show_plot(df, display_options_radio, key):
         st.write(fig_mean_all)
 
     elif display_options_radio == GS:
+        st.write('========================================================================')
+        user_input_name = st.text_input("Type name of compound below")
+
         # changing columns names, so they are separated on the plot,
         df2 = df.copy()
         df2.columns = np.arange(len(df2.columns))
@@ -125,13 +135,15 @@ def show_plot(df, display_options_radio, key):
 
         # Baseline correction + drawing plot
         fig_grouped_corr = go.Figure()
+        # draw.fig_layout(template, fig_grouped_corr, plots_colorscale=plots_color,
+        #                 descr=f'{ORG}, {BS}, {COR}, and {COR}+ {FLAT}')
         draw.fig_layout(template, fig_grouped_corr, plots_colorscale=plots_color,
-                        descr=f'{ORG}, {BS}, {COR}, and {COR}+ {FLAT}')
+                        descr=None)
         for col in range(len(df2.columns)):
             corrected = pd.DataFrame(df2.iloc[:, col]).dropna()
             corrected = utils.correct_baseline(corrected, deg, window).dropna()
             fig_grouped_corr = draw.add_traces(corrected.reset_index(), fig_grouped_corr, x=RS, y=col,
-                                               name=f'Spectra nr: {col}')
+                                               name=f'{user_input_name} spectra nr: {col+1}')
 
         st.write(fig_grouped_corr)
 
