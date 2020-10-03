@@ -52,8 +52,6 @@ def show_plot(df, display_options_radio, key):
             # indexes = peakutils.indexes(corrected_df[DS], thres=0.1, min_dist=35)
             # interpolate = peakutils.interpolate(corrected_df[RS].values, corrected_df[DS].values, ind=indexes)
             # st.write('interpolate')
-            # st.write(interpolate)
-
             # Creating DataFrame that will be shown on plot
             df_to_show = pd.DataFrame(df2.iloc[:, col]).dropna()
 
