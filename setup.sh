@@ -5,4 +5,4 @@ port = $PORT
 enableCORS = false
 " > ~/.streamlit/config.toml
 
-sed -i '2125s/False/True/' $(python -c 'import streamlit; print(streamlit.DeltaGenerator.__file__)')
+sed -i '57s/False/True/' $(python -c 'import streamlit; print(streamlit.file_uploader.__file__)')
