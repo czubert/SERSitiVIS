@@ -94,14 +94,20 @@ def choose_template():
     Choose default template from the list
     :return: Str, chosen template
     """
-    template = st.radio(
-        "Choose chart template",
-        list(pio.templates), index=1, key='new')
+
+    template = 'presentation'
+    if st.button('Show template options'):
+        template = st.radio(
+            "Choose chart template",
+            list(pio.templates), index=5, key='new')
+
     return template
 
 
 def choosing_colorway():
+    chosen_color = px.colors.qualitative.D3
     all_colors = dict()
+
 
     # Plotly express color modules that you can try colors from
     modules_colors_l = ['diverging', 'qualitative', 'sequential']
@@ -118,11 +124,13 @@ def choosing_colorway():
     for el in colorscale_names:
         all_colors[el] = el  # TODO color name as key and color object as a value
 
-    plots_color = st.radio(
-        "Choose set of colors from colorsets for spectra",
-        colorscale_names, index=15)
 
-    chosen_color = getattr(modules_colors_d[chosen_module_color], f'{all_colors[plots_color]}')
+    if st.button('Show colorsets'):
+        plots_color = st.radio(
+            "Choose set of colors from colorsets for spectra",
+            colorscale_names, index=15)
+
+        chosen_color = getattr(modules_colors_d[chosen_module_color], f'{all_colors[plots_color]}')
 
     return chosen_color
 

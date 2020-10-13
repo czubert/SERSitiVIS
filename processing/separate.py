@@ -133,7 +133,6 @@ def read_spectrum(filepath):
     read_params = {'sep': ';', 'skiprows': lambda x: x < 79 or x > 1500, 'decimal': ',',
                    'usecols': ['Pixel', 'Raman Shift', 'Dark Subtracted #1'],
                    'skipinitialspace': True, 'encoding': "utf-8"}
-
     df = pd.read_csv(filepath, **read_params)
 
     df = df[df.loc[:, 'Pixel'] >310]
@@ -144,6 +143,37 @@ def read_spectrum(filepath):
 
     df.set_index('Raman Shift', inplace=True)
     return df
+
+
+def read_spectrum_renishaw(file_name, separator):
+    """
+    Reads numeric data from file and creates DataFrame
+    :param file_name: String
+    :return: DataFrame
+    """
+    df = pd.read_csv(file_name, sep=f'{separator}', decimal='.', skipinitialspace=True, encoding='utf-8', header=None)
+    df.dropna(inplace=True, how='any', axis=0)
+    df.columns = ['Raman Shift', 'Dark Subtracted #1']
+    df['Raman Shift'] = df['Raman Shift'].round(decimals=0)
+    df.set_index('Raman Shift', inplace=True)
+    return df
+
+def read_spectrum_xy(file_name, separator=','):
+    """
+    Reads numeric data from file and creates DataFrame
+    :param file_name: String
+    :return: DataFrame
+    """
+    import re
+    df = pd.read_csv(file_name, sep=f'{separator}', decimal='.', skipinitialspace=True, encoding='utf-8')
+    df = df.rename(columns=lambda x: re.sub('.*[Unn].*', 'Raman Shift', x))
+
+    df.dropna(inplace=True, how='any', axis=0)
+    df.dropna(inplace=True, axis=1)
+    df = df.loc[:, ~df.columns.duplicated()]
+    df.set_index('Raman Shift', inplace=True)
+    return df
+
 
 
 def read_metadata(filepath):
