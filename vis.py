@@ -95,8 +95,20 @@ if files is not None:
 
 else:
     st.subheader('Upload data for visualisation.')
-    st.write('* For BWTEK: upload raw data in *.txt or *.csv format')
-    st.write('* For WITec Alpha300 R+ spectra upload raw *.txt or *.csv file')
-    st.write('* For Raman spectra upload raw data in *.txt or *.csv format as shown below:')
-    df = pd.DataFrame(np.arange(10).reshape(5, 2), columns=['x', 'y'])
-    st.write(df)
+    st.write('* For BWTEK: upload raw data in *.txt format')
+
+    st.write('* For WITec Alpha300 R+ spectra upload *.txt or *.csv file as follows:')
+    if st.button('WITec example'):
+        st.write(pd.read_csv('data_tests/witec/WITec(7).csv'))
+        st.write('"Unnamed" (this column in data should not be named) is column of Raman Shift,')
+        st.write('uM/nM/pM are Intenities')
+
+    if st.button('WITec second example'):
+        st.write(pd.read_csv('data_tests/witec/WITec(5).csv'))
+        st.write('"Unnamed" (this column in data should not be named) are columns of Raman Shift,')
+        st.write('mM/uM are Intenities - name it according to the data provided')
+
+    st.write('* For Renishaw spectra upload raw data in *.txt or *.csv format as shown below:')
+    if st.button('Renishaw example'):
+        st.write(pd.read_csv('data_tests/renishaw/renishaw(6).txt'))
+        st.write('Data should be x + y where x is Raman Shift and y is intensity. Do not provide column names')
