@@ -41,7 +41,7 @@ def vis_options(df):
 
     elif display_options_radio == MS:
         st.title(f'{MS} of multiple spectra')
-        st.subheader('Please do not take mean spectra of different compounds')
+        st.subheader('Do not take mean spectra of different compounds')
         custom_plot.show_plot(df, display_options_radio=MS, key=None)
 
     elif display_options_radio == GS:
@@ -95,8 +95,8 @@ if files is not None:
 
 else:
     st.subheader('Upload data for visualisation.')
-    st.write('* For BWTEK please upload raw data in *.txt format')
-    st.write('* For WITec Alpha300 R+ spectra please upload raw *.txt file')
-    st.write('* For Raman spectra please upload raw data in *.txt format as shown below:')
+    st.write('* For BWTEK: upload raw data in *.txt or *.csv format')
+    st.write('* For WITec Alpha300 R+ spectra upload raw *.txt or *.csv file')
+    st.write('* For Raman spectra upload raw data in *.txt or *.csv format as shown below:')
     df = pd.DataFrame(np.arange(10).reshape(5, 2), columns=['x', 'y'])
     st.write(df)
