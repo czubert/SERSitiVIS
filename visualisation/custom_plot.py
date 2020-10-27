@@ -130,7 +130,7 @@ def show_plot(df, plots_color, template, display_opt, key):
 
         with st.beta_expander("Adjust your plots"):
 
-            shift = st.slider('Shift spectra from each other', 0, 50000, 0, 500)
+            shift = st.slider('Shift spectra from each other', 0, 30000, 0, 250)
 
             for col in range(len(df.columns)):
                 col1, col2 = st.beta_columns(2)

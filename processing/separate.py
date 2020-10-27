@@ -10,7 +10,7 @@ path_name = 'data_output/tmp_separated_data'
 file_name = 'separated_data'
 
 
-def read_spectrum(file, idx):
+def read_spectrum(file):
     """
     Reads numeric data from file and creates DataFrame
     :param file: String

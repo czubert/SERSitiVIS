@@ -106,7 +106,7 @@ def read_data_metadata(uploaded_files):
     for idx, uploaded_file in enumerate(uploaded_files):
         uploaded_file.seek(0)
         # read data and adds it to temp Dict
-        data = separate.read_spectrum(uploaded_file, idx)
+        data = separate.read_spectrum(uploaded_file)
         temp_data_df[uploaded_file.name] = data
 
         # Resets file buffer so you can read and use it again
