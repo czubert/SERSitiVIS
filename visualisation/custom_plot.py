@@ -1,11 +1,10 @@
-import streamlit as st
-import numpy as np
 import pandas as pd
 import peakutils
 import plotly.graph_objects as go
+import streamlit as st
 
-from . import draw
 from processing import utils
+from . import draw
 
 SINGLE = 'Single spectra'
 AV = 'Average'
@@ -16,44 +15,41 @@ RS = 'Raman Shift'
 DS = 'Dark Subtracted #1'
 DEG = 'Polynominal degree'
 WINDOW = 'Set window for spectra flattening'
-DFS = {'ML model grouped spectra': 'Dark Subtracted #1', 'ML model mean spectra': 'Average'}
+DFS = {'ML model grouped spectra': f'{DS}', 'ML model mean spectra': f'{AV}'}
 FLAT = 'Flattened'
 COR = 'Corrected'
 P3D = 'Plot 3D'
 ORG = 'Original spectrum'
 
 
-def show_plot(df, display_options_radio, key):
+def show_plot(df, plots_color, template, display_opt, key):
     """
     Based on uploaded files and denominator it shows either single plot of each spectra (file),
     all spectra on one plot or spectra of mean values
     :param df: DataFrame
-    :param display_options_radio: String
+    :param display_opt: String
     :param key: String
     :return:
     """
-    st.write('<style>div.Widget.row-widget.stRadio > div{flex-direction:row;}</style>', unsafe_allow_html=True)
-
-    plots_color = draw.choosing_colorway()
-
-    template = draw.choose_template()
-
-    if display_options_radio == SINGLE:
+    if display_opt == SINGLE:
         df2 = df.copy()
 
         for col in range(len(df.columns)):
             st.write('========================================================================')
-            deg = st.slider(f'{DEG} plot nr: {col}', min_value=1, max_value=20, value=5)
-            window = st.slider(f'{WINDOW} plot nr: {col}', min_value=1, max_value=20, value=3)
+            col1, col2 = st.beta_columns(2)
+            with col1:
+                deg = st.slider(f'{DEG} plot nr: {col}', min_value=1, max_value=20, value=5, key=f'{col}')
+            with col2:
+                window = st.slider(f'{WINDOW} plot nr: {col}', min_value=1, max_value=20, value=3, key=f'{col}')
 
             # Creating DataFrame that will be shown on plot
             df_to_show = pd.DataFrame(df2.iloc[:, col]).dropna()
+
             # Adding column with baseline that will be show on plot
             df_to_show[BS] = peakutils.baseline(df_to_show, deg)
 
             # Creating DataFrame with applied Baseline correction
             corrected_df = utils.correct_baseline_single(df_to_show, deg, df_to_show.columns[0])
-
 
             # Refining DataFrame to make spectra flattened
             corrected_df[FLAT] = corrected_df[COR].rolling(window=window).mean()
@@ -62,36 +58,34 @@ def show_plot(df, display_options_radio, key):
             # Showing spectra after baseline correction
             fig_single_corr = go.Figure()
 
-
-            user_input_name = st.text_input("Type name of compound below", f'Spectra nr: {col}')
-
             fig_single_corr = draw.add_traces_single_spectra(corrected_df, fig_single_corr, x=RS, y=FLAT,
-                                                             name=user_input_name)
+                                                             name=corrected_df.columns[0])
 
             draw.fig_layout(template, fig_single_corr, plots_colorscale=plots_color,
                             descr=None)
 
             st.write(fig_single_corr)
 
-
-
             # Showing spectra before baseline correction + baseline function
             fig_single_all = go.Figure()
-            if key == 'xy':
-                DS = corrected_df.columns[0]
-            else:
-                DS = 'Dark Subtracted #1'
-            fig_single_all = draw.add_traces(corrected_df, fig_single_all, x=RS, y=DS, name='Original spectra')
-            fig_single_all = draw.add_traces(corrected_df, fig_single_all, x=RS, y=BS, name=BS)
-            fig_single_all = draw.add_traces(corrected_df, fig_single_all, x=RS, y=COR, name=COR)
-            fig_single_all = draw.add_traces(corrected_df, fig_single_all, x=RS, y=FLAT,
-                                             name=f'{FLAT} + {BS} correction')
+
+            specs = {'org': corrected_df.columns[0], BS: BS, COR: COR, FLAT: FLAT}
+
+            for spec in specs.keys():
+                if spec == FLAT:
+                    name = f'{FLAT} + {BS} correction'
+                else:
+                    name = specs[spec]
+
+                fig_single_all = draw.add_traces(corrected_df, fig_single_all,
+                                                 x=RS, y=specs[spec], name=name)
+
             draw.fig_layout(template, fig_single_all, plots_colorscale=plots_color,
                             descr=f'{ORG}, {BS}, and {FLAT} + {BS}')
             st.write(fig_single_all)
 
 
-    elif display_options_radio == MS:
+    elif display_opt == MS:
         # getting mean values for each raman shift
         df2 = df.copy()
         df2[AV] = df2.mean(axis=1)
@@ -125,46 +119,44 @@ def show_plot(df, display_options_radio, key):
                         descr=f'{ORG}, {BS}, {COR}, and {COR}+ {FLAT}')
         st.write(fig_mean_all)
 
-    elif display_options_radio == GS:
+    elif display_opt == GS:
         st.write('========================================================================')
-        user_input_name = st.text_input("Type name of compound below")
-
-        # changing columns names, so they are separated on the plot,
-        df2 = df.copy()
-        df2.columns = np.arange(len(df2.columns))
-
         # Adding possibility to change degree of polynominal regression
-        deg = st.slider(f'{DEG}', min_value=1, max_value=20, value=5)
-        window = st.slider(f'{WINDOW}', min_value=1, max_value=20, value=3)
 
-        # Baseline correction + drawing plot
         fig_grouped_corr = go.Figure()
 
         draw.fig_layout(template, fig_grouped_corr, plots_colorscale=plots_color,
                         descr=None)
 
-        if key is None:
-            for col in range(len(df2.columns)):
-                corrected = pd.DataFrame(df2.iloc[:, col]).dropna()
-                corrected = utils.correct_baseline(corrected, deg, window).dropna()
-                fig_grouped_corr = draw.add_traces(corrected.reset_index(), fig_grouped_corr, x=RS, y=col,
-                                                   name=f'{user_input_name} spectra nr: {col + 1}')
+        with st.beta_expander("Adjust your plots"):
 
-            st.write(fig_grouped_corr)
+            shift = st.slider('Shift spectra from each other', 0, 50000, 0, 500)
 
-        elif key == 'xy':
-            for col in range(len(df2.columns)):
+            for col in range(len(df.columns)):
+                col1, col2 = st.beta_columns(2)
+                with col1:
+                    deg = st.slider(f'{DEG} for: {df.columns[col]}', min_value=1, max_value=20, value=5, key=f'{col}')
+                with col2:
+                    window = st.slider(f'{WINDOW} for: {df.columns[col]}', min_value=1, max_value=20, value=3,
+                                       key=f'{col}')
+
                 col_name = df.columns[col]
+
                 corrected = pd.DataFrame(df.loc[:, col_name]).dropna()
+
                 corrected = utils.correct_baseline(corrected, deg, window).dropna()
+
+                if col != 0:
+                    corrected.iloc[:, 0] += shift * col
+
                 fig_grouped_corr = draw.add_traces(corrected.reset_index(), fig_grouped_corr, x=RS, y=col_name,
-                                                   name=f'{col_name} {user_input_name}')
+                                                   name=f'{df.columns[col]}')
 
-            st.write(fig_grouped_corr)
+        st.write(fig_grouped_corr)
 
-        utils.show_dataframe(df2, key)
+        utils.show_dataframe(df, key)
 
-    elif display_options_radio == P3D:
+    elif display_opt == P3D:
         df2 = df.copy()
         df2.columns = ['widmo nr ' + str(i) for i in range(len(df2.columns))]
         import plotly.express as px
@@ -197,19 +189,36 @@ def show_plot(df, display_options_radio, key):
         st.write(fig_3d)
 
 
-def corrected_dfw_data_metadata(meta, data, no):
-    """
-    :param meta:
-    :param data:
-    :param no:
-    :return:
-    """
-    important_idx = ['intigration times(ms)', 'laser_powerlevel', 'average number', 'time_multiply', 'yaxis_min',
-                     'yaxis_max',
-                     'xaxis_min', 'xaxis_max', 'interval_time', 'laser_wavelength', 'name']
+def bwtek_vis_options(df, plots_color, template):
+    # showing sidebar
+    display_options_radio = st.sidebar.radio(
+        "What would you like to see?",
+        (SINGLE, MS, GS, P3D), index=0)
+    if display_options_radio == SINGLE:
+        st.title(SINGLE)
+        show_plot(df, plots_color, template, display_opt=SINGLE, key=None)
 
-    if st.button(f'Show data number: {no}'):
-        st.dataframe(data[no])
+    elif display_options_radio == MS:
+        st.title(f'{MS} of multiple spectra')
+        st.subheader('Do not take mean spectra of different compounds')
+        show_plot(df, plots_color, template, display_opt=MS, key=None)
 
-    if st.button(f'Show metadata number: {no}'):
-        st.dataframe(meta[no].loc[important_idx, :])
+    elif display_options_radio == GS:
+        st.title(f'{GS} on one plot')
+        show_plot(df, plots_color, template, display_opt=GS, key=None)
+
+    elif display_options_radio == P3D:
+        st.title(f'{P3D} on one plot')
+        show_plot(df, plots_color, template, display_opt=P3D, key=None)
+
+
+def vis_options():
+    display_opt = SINGLE
+    chart_type = st.sidebar.radio('Choose type of chart', (SINGLE, GS), 0)
+
+    if chart_type == SINGLE:
+        display_opt = SINGLE
+    elif chart_type == GS:
+        display_opt = GS
+
+    return display_opt

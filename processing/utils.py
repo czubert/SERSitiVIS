@@ -1,13 +1,15 @@
 import glob
 import re
-import peakutils
-import pandas as pd
-import streamlit as st
 from collections import Counter
+
+import pandas as pd
+import peakutils
+import streamlit as st
 
 from . import separate
 
 RS = 'Raman Shift'
+COR = 'Corrected'
 DS = 'Dark Subtracted #1'
 BS = 'Baseline'
 MS = 'Mean spectrum'
@@ -70,7 +72,6 @@ def check_for_differences(list1, list2):
     return counter
 
 
-@st.cache
 def group_dfs(data_dfs):
     """
     Returned dict consists of one DataFrame per data type, other consists of mean values per data type.
@@ -78,10 +79,7 @@ def group_dfs(data_dfs):
     :return: DataFrame
     """
     # groups Dark Subtracted column from all dfs to one and overwrites data df in dictionary
-    if isinstance(data_dfs, dict):
-        df = pd.concat([data_df for data_df in data_dfs.values()], axis=1)
-    elif isinstance(data_dfs, list):
-        df = pd.concat([data_df for data_df in data_dfs], axis=1)
+    df = pd.concat([data_df for data_df in data_dfs.values()], axis=1)
     df.dropna(axis=1, inplace=True, how='all')  # drops columns filled with NaN values
 
     return df
@@ -101,42 +99,46 @@ def upload_file():
 
 
 def read_data_metadata(uploaded_files):
-    temp_data_df = []
-    temp_meta_df = []
+    temp_data_df = {}
+    temp_meta_df = {}
 
     # Iterates through each file, converts it to DataFrame and adds to temporary dictionary
-    for uploaded_file in uploaded_files:
+    for idx, uploaded_file in enumerate(uploaded_files):
+        uploaded_file.seek(0)
         # read data and adds it to temp Dict
-        data = separate.read_spectrum(uploaded_file)
-        temp_data_df.append(data)
+        data = separate.read_spectrum(uploaded_file, idx)
+        temp_data_df[uploaded_file.name] = data
 
         # Resets file buffer so you can read and use it again
         uploaded_file.seek(0)
 
         # read metadata and adds it to temp Dict
         meta = separate.read_metadata(uploaded_file)
-        temp_meta_df.append(meta)
+        temp_meta_df[uploaded_file.name] = meta
+
 
     return temp_data_df, temp_meta_df
 
 
 def read_data_metadata_renishaw(uploaded_files, separator):
-    temp_data_df = []
+    temp_data_df = {}
     # Iterates through each file, converts it to DataFrame and adds to temporary dictionary
     for uploaded_file in uploaded_files:
+        uploaded_file.seek(0)
         # read data and adds it to temp Dict
         data = separate.read_spectrum_renishaw(uploaded_file, separator)
-        temp_data_df.append(data)
+        temp_data_df[uploaded_file.name[:-4]] = data
 
     return temp_data_df
 
 def read_data_metadata_xy(uploaded_files, separator):
-    temp_data_df = []
+    temp_data_df = {}
     # Iterates through each file, converts it to DataFrame and adds to temporary dictionary
     for uploaded_file in uploaded_files:
+        uploaded_file.seek(0)
         # read data and adds it to temp Dict
         data = separate.read_spectrum_xy(uploaded_file, separator)
-        temp_data_df.append(data)
+        temp_data_df[uploaded_file.name[:-4]] = data
     return temp_data_df
 
 
@@ -152,10 +154,10 @@ def correct_baseline(df, deg, window):
 def correct_baseline_single(df, deg, model=DS):
     df2 = df.copy()
     if model == DS:
-        df2['Corrected'] = df2[DS] - peakutils.baseline(df2[BS], deg)
+        df2[COR] = df2[DS] - peakutils.baseline(df2[BS], deg)
     elif model == MS:
-        df2['Corrected'] = df2[AV] - peakutils.baseline(df2[BS], deg)
+        df2[COR] = df2[AV] - peakutils.baseline(df2[BS], deg)
     else:
-        df2['Corrected'] = df2[model] - peakutils.baseline(df2[BS], deg)
+        df2[COR] = df2[model] - peakutils.baseline(df2[BS], deg)
 
     return df2

@@ -1,9 +1,9 @@
-import streamlit as st
 import pandas as pd
-import numpy as np
+import streamlit as st
 
-from visualisation import custom_plot
 from processing import utils
+from visualisation import custom_plot
+from visualisation import draw
 
 st.set_option('deprecation.showfileUploaderEncoding', False)
 
@@ -13,102 +13,85 @@ SINGLE = 'Single spectra'
 MS = 'Mean spectrum'
 GS = 'Grouped spectra'
 P3D = 'Plot 3D'
-USpec = 'Upload "*.txt" spectra'
+UplSpec = 'Upload "*.txt" spectra'
 BWTEK = 'BWTEK'
 RENI = 'Renishaw'
-xy = 'WITec Alpha300 R+'
+witec = 'WITec Alpha300 R+'
 
 spectrometer = st.sidebar.radio(
     "First choose type of uploaded spectra",
-    (BWTEK, RENI, xy), index=0)
+    (BWTEK, RENI, witec), index=0)
 
-files = st.sidebar.file_uploader(USpec, type=['txt', 'csv'])
+files = st.sidebar.file_uploader(label='', accept_multiple_files=True, type=['txt', 'csv'])
 
 temp_data_df = None
 temp_meta_df = None
 df = None
 
+if files:
+    st.write('<style>div.Widget.row-widget.stRadio > div{flex-direction:row;}</style>', unsafe_allow_html=True)
+    with st.beta_expander("Customize your chart"):
+        plots_color = draw.choosing_colorway()
+        template = draw.choose_template()
 
-def vis_options(df):
-    # showing sidebar
-    display_options_radio = st.sidebar.radio(
-        "What would you like to see?",
-        (SINGLE, MS, GS, P3D), index=0)
-
-    if display_options_radio == SINGLE:
-        st.title(SINGLE)
-        custom_plot.show_plot(df, display_options_radio=SINGLE, key=None)
-
-    elif display_options_radio == MS:
-        st.title(f'{MS} of multiple spectra')
-        st.subheader('Do not take mean spectra of different compounds')
-        custom_plot.show_plot(df, display_options_radio=MS, key=None)
-
-    elif display_options_radio == GS:
-        st.title(f'{GS} on one plot')
-        custom_plot.show_plot(df, display_options_radio=GS, key=None)
-
-    elif display_options_radio == P3D:
-        st.title(f'{P3D} on one plot')
-        custom_plot.show_plot(df, display_options_radio=P3D, key=None)
-
-    print("Streamlit finish it's work")
-
-
-if files is not None:
+    # BWTEK raw spectra
     if spectrometer == BWTEK:
         temp_data_df, temp_meta_df = utils.read_data_metadata(files)
         df = utils.group_dfs(temp_data_df)
-        vis_options(df)
+        custom_plot.bwtek_vis_options(df, plots_color, template)
 
+    # Renishaw raw spectra
     elif spectrometer == RENI:
         separators = {'comma': ',', 'dot': '.', 'tab': '\t'}
         separator = st.sidebar.radio('Specify the separator', ('comma', 'dot', 'tab'), 2)
-        chart_type = st.sidebar.radio('Choose type of chart', (SINGLE, GS))
 
-        xy_data = utils.read_data_metadata_renishaw(files, separators[separator])
+        reni_data = utils.read_data_metadata_renishaw(files, separators[separator])
 
-        df = pd.concat([data_df for data_df in xy_data], axis=1)
+        df = pd.concat([reni_data[data_df] for data_df in reni_data], axis=1)
+
         df.dropna(inplace=True, how='any', axis=0)
 
-        if chart_type == SINGLE:
-            custom_plot.show_plot(df, display_options_radio=SINGLE, key=None)
-        elif chart_type == GS:
-            custom_plot.show_plot(df, display_options_radio=GS, key=None)
+        display_opt = custom_plot.vis_options()
+        custom_plot.show_plot(df, plots_color, template, display_opt=display_opt, key=None)
 
-    elif spectrometer == xy:
-        separators = {'comma':',', 'dot':'.','tab':'\t'}
+    # WITec raw spectra
+    elif spectrometer == witec:
+        separators = {'comma': ',', 'dot': '.', 'tab': '\t'}
 
         separator = st.sidebar.radio('Specify the separator', ('comma', 'dot', 'tab'))
-        chart_type = st.sidebar.radio('Choose type of chart', (SINGLE, GS))
 
-        xy_data = utils.read_data_metadata_xy(files, separators[separator])
+        witec_data = utils.read_data_metadata_xy(files, separators[separator])
 
-        if chart_type == SINGLE:
-            for df in xy_data:
-                custom_plot.show_plot(df, display_options_radio=SINGLE, key='xy')
-        elif chart_type == GS:
-            for df in xy_data:
-                custom_plot.show_plot(df, display_options_radio=GS, key='xy')
+        df = pd.concat([witec_data[data_df] for data_df in witec_data], axis=1)
 
-
+        display_opt = custom_plot.vis_options()
+        custom_plot.show_plot(df, plots_color, template, display_opt=display_opt, key=None)
 
 else:
-    st.subheader('Upload data for visualisation.')
-    st.write('* For BWTEK: upload raw data in *.txt format')
+    st.warning('Upload file or files for visualisation - left sidebar')
+    st.header('Short manual on how to implement data')
+    st.write('')
+    with st.beta_expander('For BWTEK - upload raw data in *.txt format'):
+        pass
 
-    st.write('* For WITec Alpha300 R+ spectra upload *.txt or *.csv file as follows:')
-    if st.button('WITec example'):
+    with st.beta_expander('For WITec Alpha300 R+, upload spectra in *.txt or *.csv format as follows:'):
         st.write(pd.read_csv('data_tests/witec/WITec(7).csv'))
-        st.write('"Unnamed" (this column in data should not be named) is column of Raman Shift,')
-        st.write('uM/nM/pM are Intenities')
+        st.image('examples/witec.png', use_column_width=True)
+        st.write('First column is X axis i.e Raman Shift (name of column is not important here)')
+        st.write('Other columns should be the data itself')
+        st.markdown(f'<b>Name of column</b> will be displayed as a <b>name of a plot in the legend</b>',
+                    unsafe_allow_html=True)
+        st.markdown(f"<p style='color:red'><b>Important:</b> Do not duplicate names of the columns",
+                    unsafe_allow_html=True)
 
-    if st.button('WITec second example'):
-        st.write(pd.read_csv('data_tests/witec/WITec(5).csv'))
-        st.write('"Unnamed" (this column in data should not be named) are columns of Raman Shift,')
-        st.write('mM/uM are Intenities - name it according to the data provided')
+    with st.beta_expander('For Renishaw spectra upload raw data in *.txt or *.csv format as shown below:'):
+        st.write(pd.read_csv('data_tests/renishaw/renishaw(6).txt', header=None, sep='\t'))
+        st.image('examples/reni.png', use_column_width=True)
+        st.write('First column is X axis i.e Raman Shift (name of column is not important here)')
+        st.write('Second column is Y axis, and should be the data itself')
+        st.markdown(f'<b>Name of a file</b> will be displayed as a <b>name of a plot in the legend</b>',
+                    unsafe_allow_html=True)
 
-    st.write('* For Renishaw spectra upload raw data in *.txt or *.csv format as shown below:')
-    if st.button('Renishaw example'):
-        st.write(pd.read_csv('data_tests/renishaw/renishaw(6).txt'))
-        st.write('Data should be x + y where x is Raman Shift and y is intensity. Do not provide column names')
+    st.stop()
+
+print("Streamlit finish it's work")

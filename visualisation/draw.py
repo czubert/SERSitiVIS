@@ -1,8 +1,8 @@
+import inspect
+
 import plotly.express as px
 import plotly.graph_objects as go
 import plotly.io as pio
-import inspect
-
 import streamlit as st
 
 RS = 'Raman Shift'
@@ -94,12 +94,9 @@ def choose_template():
     Choose default template from the list
     :return: Str, chosen template
     """
-
-    template = 'presentation'
-    if st.button('Show template options'):
-        template = st.radio(
-            "Choose chart template",
-            list(pio.templates), index=5, key='new')
+    template = st.radio(
+        "Choose chart template",
+        list(pio.templates), index=5, key='new')
 
     return template
 
@@ -124,13 +121,11 @@ def choosing_colorway():
     for el in colorscale_names:
         all_colors[el] = el  # TODO color name as key and color object as a value
 
+    plots_color = st.radio(
+        "Choose set of colors from colorsets for spectra",
+        colorscale_names, index=15)
 
-    if st.button('Show colorsets'):
-        plots_color = st.radio(
-            "Choose set of colors from colorsets for spectra",
-            colorscale_names, index=15)
-
-        chosen_color = getattr(modules_colors_d[chosen_module_color], f'{all_colors[plots_color]}')
+    chosen_color = getattr(modules_colors_d[chosen_module_color], f'{all_colors[plots_color]}')
 
     return chosen_color
 
