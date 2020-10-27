@@ -6,8 +6,7 @@ from visualisation import custom_plot
 from visualisation import draw
 
 st.set_option('deprecation.showfileUploaderEncoding', False)
-
-st.sidebar.title('Menu')
+st.sidebar.image('examples/logo.png', use_column_width=True)
 
 SINGLE = 'Single spectra'
 MS = 'Mean spectrum'
@@ -19,7 +18,7 @@ RENI = 'Renishaw'
 witec = 'WITec Alpha300 R+'
 
 spectrometer = st.sidebar.radio(
-    "First choose type of uploaded spectra",
+    "",
     (BWTEK, RENI, witec), index=0)
 
 files = st.sidebar.file_uploader(label='', accept_multiple_files=True, type=['txt', 'csv'])
@@ -68,6 +67,7 @@ if files:
         custom_plot.show_plot(df, plots_color, template, display_opt=display_opt, key=None)
 
 else:
+    st.image('examples/logo.png', use_column_width=True)
     st.warning('Upload file or files for visualisation - left sidebar')
     st.header('Short manual on how to implement data')
     st.write('')
