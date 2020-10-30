@@ -5,6 +5,7 @@ from processing import utils
 from visualisation import custom_plot
 from visualisation import draw
 
+st.write('lala ')
 st.set_option('deprecation.showfileUploaderEncoding', False)
 st.sidebar.image('examples/logo.png', use_column_width=True)
 
