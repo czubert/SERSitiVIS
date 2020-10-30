@@ -75,7 +75,7 @@ else:
         pass
 
     with st.beta_expander('For WITec Alpha300 R+, upload spectra in *.txt or *.csv format as follows:'):
-        st.write(pd.read_csv('data_tests/witec/WITec(7).csv'))
+        st.write(pd.read_csv('data_examples/witec/WITec(7).csv'))
         st.image('examples/witec.png', use_column_width=True)
         st.write('First column is X axis i.e Raman Shift (name of column is not important here)')
         st.write('Other columns should be the data itself')
@@ -85,7 +85,7 @@ else:
                     unsafe_allow_html=True)
 
     with st.beta_expander('For Renishaw spectra upload raw data in *.txt or *.csv format as shown below:'):
-        st.write(pd.read_csv('data_tests/renishaw/renishaw(6).txt', header=None, sep='\t'))
+        st.write(pd.read_csv('data_examples/renishaw/renishaw(6).txt', header=None, sep='\t'))
         st.image('examples/reni.png', use_column_width=True)
         st.write('First column is X axis i.e Raman Shift (name of column is not important here)')
         st.write('Second column is Y axis, and should be the data itself')
