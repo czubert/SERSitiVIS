@@ -16,10 +16,11 @@ UplSpec = 'Upload "*.txt" spectra'
 BWTEK = 'BWTEK'
 RENI = 'Renishaw'
 witec = 'WITec Alpha300 R+'
+new_spec = 'New Spectrometer'
 
 spectrometer = st.sidebar.radio(
     "",
-    (BWTEK, RENI, witec), index=0)
+    (BWTEK, RENI, witec, new_spec), index=0)
 
 files = st.sidebar.file_uploader(label='', accept_multiple_files=True, type=['txt', 'csv'])
 
@@ -65,6 +66,8 @@ if files:
 
         display_opt = custom_plot.vis_options()
         custom_plot.show_plot(df, plots_color, template, display_opt=display_opt, key=None)
+    elif spectrometer == new_spec:
+        st.write('Under construction')
 
 else:
     st.image('examples/logo.png', use_column_width=True)
