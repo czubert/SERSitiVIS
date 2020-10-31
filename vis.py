@@ -67,7 +67,7 @@ if files:
         display_opt = custom_plot.vis_options()
         custom_plot.show_plot(df, plots_color, template, display_opt=display_opt, key=None)
     elif spectrometer == new_spec:
-        st.write('Under construction, will be updated soon')
+        st.write('Under construction, will be updated soon!')
 
 else:
     st.image('examples/logo.png', use_column_width=True)
