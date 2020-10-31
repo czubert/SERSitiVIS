@@ -75,7 +75,7 @@ else:
     st.header('Short manual on how to implement data')
     st.write('')
     with st.beta_expander('For BWTEK - upload raw data in *.txt format'):
-        pass
+        st.write('Update raw data from BWTek without any changes')
 
     with st.beta_expander('For WITec Alpha300 R+, upload spectra in *.txt or *.csv format as follows:'):
         st.write(pd.read_csv('data_examples/witec/WITec(7).csv'))
