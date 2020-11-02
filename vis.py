@@ -4,6 +4,7 @@ import streamlit as st
 from processing import bwtek
 from processing import renishaw
 from processing import utils
+from processing import wasatch
 from processing import witec
 from visualisation import custom_plot
 from visualisation import draw
@@ -71,21 +72,20 @@ if files:
 
     elif spectrometer == WASATCH:
 
-        separator = utils.specify_separator(2)
+        separator = utils.specify_separator(0)
 
-        witec_data = utils.read_data_metadata_wasatch(files, separators[separator])
+        wasatch_data, wasatch_metadata = wasatch.read_wasatch(files, separators[separator])
 
-        df = pd.concat([witec_data[data_df] for data_df in witec_data], axis=1)
+        data = pd.concat([wasatch_data[data_df] for data_df in wasatch_data], axis=1)
 
         display_opt = custom_plot.vis_options()
-        custom_plot.show_plot(df, plots_color, template, display_opt=display_opt, key=None)
-        st.write('Under construction, will be updated soon!')
-
-
+        custom_plot.show_plot(data, plots_color, template, display_opt=display_opt, key=None)
 
 else:
     st.image('examples/logo.png', use_column_width=True)
-    st.warning('Upload file or files for visualisation - left sidebar')
+
+    st.warning('First choose data type from left sidebar')
+    st.warning('Then upload file or files for visualisation - left sidebar')
     st.header('Short manual on how to implement data')
     st.write('')
     with st.beta_expander('For BWTEK - upload raw data in *.txt format'):
