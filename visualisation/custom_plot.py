@@ -50,7 +50,6 @@ def show_plot(df, plots_color, template, display_opt, key):
 
             # Creating DataFrame with applied Baseline correction
             corrected_df = utils.correct_baseline_single(df_to_show, deg, df_to_show.columns[0])
-
             # Refining DataFrame to make spectra flattened
             corrected_df[FLAT] = corrected_df[COR].rolling(window=window).mean()
             corrected_df.dropna(inplace=True)
@@ -121,10 +120,8 @@ def show_plot(df, plots_color, template, display_opt, key):
 
     elif display_opt == GS:
         st.write('========================================================================')
-        # Adding possibility to change degree of polynominal regression
 
         fig_grouped_corr = go.Figure()
-
         draw.fig_layout(template, fig_grouped_corr, plots_colorscale=plots_color,
                         descr=None)
 

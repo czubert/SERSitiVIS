@@ -6,8 +6,6 @@ import pandas as pd
 import peakutils
 import streamlit as st
 
-from . import separate
-
 RS = 'Raman Shift'
 COR = 'Corrected'
 DS = 'Dark Subtracted #1'
@@ -98,48 +96,21 @@ def upload_file():
     return st.file_uploader('Upload txt spectra')
 
 
-def read_data_metadata(uploaded_files):
-    temp_data_df = {}
-    temp_meta_df = {}
+def specify_separator(idx):
+    return st.sidebar.radio('Specify the separator', ('comma', 'dot', 'tab', 'space'), idx)
 
-    # Iterates through each file, converts it to DataFrame and adds to temporary dictionary
-    for idx, uploaded_file in enumerate(uploaded_files):
+
+def read_spec(uploaded_file, spectra_params, meta_params=None):
+    st.write('<style>div.Widget.row-widget.stRadio > div{flex-direction:row;}</style>', unsafe_allow_html=True)
+    uploaded_file.seek(0)
+    data = pd.read_csv(uploaded_file, **spectra_params)
+
+    if meta_params is not None:
         uploaded_file.seek(0)
-        # read data and adds it to temp Dict
-        data = separate.read_spectrum(uploaded_file)
-        temp_data_df[uploaded_file.name] = data
+        metadata = pd.read_csv(uploaded_file, **meta_params)
+        return data, metadata
 
-        # Resets file buffer so you can read and use it again
-        uploaded_file.seek(0)
-
-        # read metadata and adds it to temp Dict
-        meta = separate.read_metadata(uploaded_file)
-        temp_meta_df[uploaded_file.name] = meta
-
-
-    return temp_data_df, temp_meta_df
-
-
-def read_data_metadata_renishaw(uploaded_files, separator):
-    temp_data_df = {}
-    # Iterates through each file, converts it to DataFrame and adds to temporary dictionary
-    for uploaded_file in uploaded_files:
-        uploaded_file.seek(0)
-        # read data and adds it to temp Dict
-        data = separate.read_spectrum_renishaw(uploaded_file, separator)
-        temp_data_df[uploaded_file.name[:-4]] = data
-
-    return temp_data_df
-
-def read_data_metadata_xy(uploaded_files, separator):
-    temp_data_df = {}
-    # Iterates through each file, converts it to DataFrame and adds to temporary dictionary
-    for uploaded_file in uploaded_files:
-        uploaded_file.seek(0)
-        # read data and adds it to temp Dict
-        data = separate.read_spectrum_xy(uploaded_file, separator)
-        temp_data_df[uploaded_file.name[:-4]] = data
-    return temp_data_df
+    return data
 
 
 def correct_baseline(df, deg, window):

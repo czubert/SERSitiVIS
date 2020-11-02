@@ -1,7 +1,10 @@
 import pandas as pd
 import streamlit as st
 
+from processing import bwtek
+from processing import renishaw
 from processing import utils
+from processing import witec
 from visualisation import custom_plot
 from visualisation import draw
 
@@ -15,37 +18,37 @@ P3D = 'Plot 3D'
 UplSpec = 'Upload "*.txt" spectra'
 BWTEK = 'BWTEK'
 RENI = 'Renishaw'
-witec = 'WITec Alpha300 R+'
-new_spec = 'New Spectrometer'
+WITEC = 'WITec Alpha300 R+'
+WASATCH = 'Wasatch System'
+TEST = 'Testing bwtek'
 
 spectrometer = st.sidebar.radio(
     "",
-    (BWTEK, RENI, witec, new_spec), index=0)
+    (BWTEK, RENI, WITEC, WASATCH), index=0)
 
 files = st.sidebar.file_uploader(label='', accept_multiple_files=True, type=['txt', 'csv'])
+
+separators = {'comma': ',', 'dot': '.', 'tab': '\t', 'space': ' '}
 
 temp_data_df = None
 temp_meta_df = None
 df = None
 
 if files:
-    st.write('<style>div.Widget.row-widget.stRadio > div{flex-direction:row;}</style>', unsafe_allow_html=True)
     with st.beta_expander("Customize your chart"):
         plots_color = draw.choosing_colorway()
         template = draw.choose_template()
 
-    # BWTEK raw spectra
     if spectrometer == BWTEK:
-        temp_data_df, temp_meta_df = utils.read_data_metadata(files)
+        temp_data_df, temp_meta_df = bwtek.read_bwtek(files)
         df = utils.group_dfs(temp_data_df)
         custom_plot.bwtek_vis_options(df, plots_color, template)
 
     # Renishaw raw spectra
     elif spectrometer == RENI:
-        separators = {'comma': ',', 'dot': '.', 'tab': '\t'}
-        separator = st.sidebar.radio('Specify the separator', ('comma', 'dot', 'tab'), 2)
 
-        reni_data = utils.read_data_metadata_renishaw(files, separators[separator])
+        separator = utils.specify_separator(3)
+        reni_data = renishaw.read_renishaw(files, separators[separator])
 
         df = pd.concat([reni_data[data_df] for data_df in reni_data], axis=1)
 
@@ -55,19 +58,30 @@ if files:
         custom_plot.show_plot(df, plots_color, template, display_opt=display_opt, key=None)
 
     # WITec raw spectra
-    elif spectrometer == witec:
-        separators = {'comma': ',', 'dot': '.', 'tab': '\t'}
+    elif spectrometer == WITEC:
 
-        separator = st.sidebar.radio('Specify the separator', ('comma', 'dot', 'tab'))
+        separator = utils.specify_separator(0)
 
-        witec_data = utils.read_data_metadata_xy(files, separators[separator])
+        witec_data = witec.read_witec(files, separators[separator])
 
         df = pd.concat([witec_data[data_df] for data_df in witec_data], axis=1)
 
         display_opt = custom_plot.vis_options()
         custom_plot.show_plot(df, plots_color, template, display_opt=display_opt, key=None)
-    elif spectrometer == new_spec:
+
+    elif spectrometer == WASATCH:
+
+        separator = utils.specify_separator(2)
+
+        witec_data = utils.read_data_metadata_wasatch(files, separators[separator])
+
+        df = pd.concat([witec_data[data_df] for data_df in witec_data], axis=1)
+
+        display_opt = custom_plot.vis_options()
+        custom_plot.show_plot(df, plots_color, template, display_opt=display_opt, key=None)
         st.write('Under construction, will be updated soon!')
+
+
 
 else:
     st.image('examples/logo.png', use_column_width=True)
