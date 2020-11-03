@@ -87,6 +87,11 @@ else:
     st.warning('Then upload file or files for visualisation - left sidebar')
     st.header('Short manual on how to implement data')
     st.write('')
+
+    with st.beta_expander('Download example date'):
+        st.markdown("[Download data from OneDrive](https://1drv.ms/u/s!AlbmGPIOL6ElhvdePlcXvYwtt5YzbA?e=zsdF5j)")
+        st.markdown("Password: sersitive")
+
     with st.beta_expander('For BWTEK - upload raw data in *.txt format'):
         st.write('Update raw data from BWTek without any changes')
 
