@@ -104,7 +104,6 @@ def choose_template():
 
 
 def choosing_colorway():
-    chosen_color = px.colors.qualitative.D3
     all_colors = dict()
 
     # Plotly express color modules that you can try colors from
@@ -115,7 +114,7 @@ def choosing_colorway():
     # Getting colors model
     chosen_module_color = st.radio(
         "Choose module of color sets, to see colorsets",
-        modules_colors_l)
+        modules_colors_l, 1)
 
     colorscale_names = get_colors_names(chosen_module_color)
 

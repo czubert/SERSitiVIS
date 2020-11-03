@@ -23,9 +23,13 @@ def read_wasatch(uploaded_files, separator):
     st.sidebar.markdown(f"<p style='color:red'>----------------------------------------------</p>",
                         unsafe_allow_html=True)
 
-    if st.sidebar.button('Raw data'):
+    modified_data = st.sidebar.radio(
+        "Choose type of data",
+        (RAW, PRCSD), index=0)
+
+    if modified_data == RAW:
         col_to_show = RAW
-    if st.sidebar.button('Processed data'):
+    elif modified_data == PRCSD:
         col_to_show = PRCSD
 
     spectra_params = {CSV: {'sep': separator, 'skiprows': lambda x: x < 34 or x > 1058, 'decimal': '.',
