@@ -20,14 +20,13 @@ def read_wasatch(uploaded_files, separator):
 
     # Column to show
     col_to_show = RAW
+    st.sidebar.markdown(f"<p style='color:red'>----------------------------------------------</p>",
+                        unsafe_allow_html=True)
 
-    col1, col2 = st.beta_columns(2)
-    with col1:
-        if st.button('Raw data'):
-            col_to_show = RAW
-    with col2:
-        if st.button('Processed data'):
-            col_to_show = PRCSD
+    if st.sidebar.button('Raw data'):
+        col_to_show = RAW
+    if st.sidebar.button('Processed data'):
+        col_to_show = PRCSD
 
     spectra_params = {CSV: {'sep': separator, 'skiprows': lambda x: x < 34 or x > 1058, 'decimal': '.',
                             'usecols': ['Pixel', 'Wavenumber', col_to_show],
@@ -82,11 +81,14 @@ def read_wasatch(uploaded_files, separator):
             data.columns = [f'{name} - {col_to_show} data']
             temp_data_df[name] = data
 
-    if file_type[0] == CSV and st.button('Add metadata to plot name'):
-        for key in temp_data_df:
-            name = temp_data_df[key].columns[0]
-            new_name = f'{name}_{temp_meta_df[key].loc[IT, 1]}ms_{temp_meta_df[key].loc[LP, 1]}%'
+    if file_type[0] == CSV:
+        if st.sidebar.button('Add metadata to plot name'):
+            for key in temp_data_df:
+                name = temp_data_df[key].columns[0]
+                new_name = f'{name}_{temp_meta_df[key].loc[IT, 1]}ms_{temp_meta_df[key].loc[LP, 1]}%'
 
-            temp_data_df[key].rename(columns={name: new_name}, inplace=True)
+                temp_data_df[key].rename(columns={name: new_name}, inplace=True)
 
-    return temp_data_df, temp_meta_df
+    data = pd.concat([temp_data_df[data_df] for data_df in temp_data_df], axis=1)
+
+    return data

@@ -96,10 +96,6 @@ def upload_file():
     return st.file_uploader('Upload txt spectra')
 
 
-def specify_separator(idx):
-    return st.sidebar.radio('Specify the separator', ('comma', 'dot', 'tab', 'space'), idx)
-
-
 def read_spec(uploaded_file, spectra_params, meta_params=None):
     st.write('<style>div.Widget.row-widget.stRadio > div{flex-direction:row;}</style>', unsafe_allow_html=True)
     uploaded_file.seek(0)

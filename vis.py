@@ -48,8 +48,7 @@ if files:
     # Renishaw raw spectra
     elif spectrometer == RENI:
 
-        separator = utils.specify_separator(3)
-        reni_data = renishaw.read_renishaw(files, separators[separator])
+        reni_data = renishaw.read_renishaw(files, separators['space'])
 
         df = pd.concat([reni_data[data_df] for data_df in reni_data], axis=1)
 
@@ -60,10 +59,7 @@ if files:
 
     # WITec raw spectra
     elif spectrometer == WITEC:
-
-        separator = utils.specify_separator(0)
-
-        witec_data = witec.read_witec(files, separators[separator])
+        witec_data = witec.read_witec(files, separators['comma'])
 
         df = pd.concat([witec_data[data_df] for data_df in witec_data], axis=1)
 
@@ -71,13 +67,13 @@ if files:
         custom_plot.show_plot(df, plots_color, template, display_opt=display_opt, key=None)
 
     elif spectrometer == WASATCH:
+        # Read data and prepare it for plot
+        data = wasatch.read_wasatch(files, separators['comma'])
 
-        separator = utils.specify_separator(0)
-
-        wasatch_data, wasatch_metadata = wasatch.read_wasatch(files, separators[separator])
-        data = pd.concat([wasatch_data[data_df] for data_df in wasatch_data], axis=1)
-
+        # Show possible options for visualisation - single/grouped spectra
         display_opt = custom_plot.vis_options()
+
+        # Plot spectra
         custom_plot.show_plot(data, plots_color, template, display_opt=display_opt, key=None)
 
 else:
