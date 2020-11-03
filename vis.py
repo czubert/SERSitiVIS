@@ -10,6 +10,7 @@ from visualisation import custom_plot
 from visualisation import draw
 
 st.set_option('deprecation.showfileUploaderEncoding', False)
+
 st.sidebar.image('examples/logo.png', use_column_width=True)
 
 SINGLE = 'Single spectra'

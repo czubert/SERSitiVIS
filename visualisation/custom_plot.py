@@ -151,8 +151,6 @@ def show_plot(df, plots_color, template, display_opt, key):
 
         st.write(fig_grouped_corr)
 
-        utils.show_dataframe(df, key)
-
     elif display_opt == P3D:
         df2 = df.copy()
         df2.columns = ['widmo nr ' + str(i) for i in range(len(df2.columns))]

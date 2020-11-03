@@ -13,6 +13,7 @@ BS = 'Baseline'
 MS = 'Mean spectrum'
 AV = 'Average'
 
+
 def get_names(url):
     """
     Creates list of strings of files paths
@@ -81,11 +82,6 @@ def group_dfs(data_dfs):
     df.dropna(axis=1, inplace=True, how='all')  # drops columns filled with NaN values
 
     return df
-
-
-def show_dataframe(df, key):
-    if st.button(f'Show data', key=key):
-        st.dataframe(df)
 
 
 def upload_file():
