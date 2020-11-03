@@ -41,10 +41,10 @@ def fig_layout(template, fig, plots_colorscale, descr='Chosen spectra'):
                           showgrid=True,  # Removes Y-axis grid lines
                           linewidth=2.5,
                       ),
-                      title = go.layout.Title(text=descr,
-                                              font=go.layout.title.Font(size=30)),
+                      title=go.layout.Title(text=descr,
+                                            font=go.layout.title.Font(size=30)),
 
-                      legend=go.layout.Legend(x=0.5, y=0-.3, traceorder="normal",
+                      legend=go.layout.Legend(x=0.5, y=0 - .3, traceorder="normal",
                                               font=dict(
                                                   family="sans-serif",
                                                   size=16,
@@ -63,6 +63,7 @@ def fig_layout(template, fig, plots_colorscale, descr='Chosen spectra'):
 
     return fig
 
+
 # Adding traces, spectrum line design
 def add_traces_single_spectra(df, fig, x, y, name):
     fig.add_traces(
@@ -70,12 +71,13 @@ def add_traces_single_spectra(df, fig, x, y, name):
                     x=df.reset_index()[x],
                     name=name,
                     line=dict(
-                    width=3.5,  # Width of the spectrum line
-                    color='#1c336d'  # color of the spectrum line
-                    # color='#6C9BC0'  # color of the spectrum line
+                        width=3.5,  # Width of the spectrum line
+                        color='#1c336d'  # color of the spectrum line
+                        # color='#6C9BC0'  # color of the spectrum line
                     ),
                     )])
     return fig
+
 
 def add_traces(df, fig, x, y, name, col=None):
     fig.add_traces(
@@ -83,7 +85,7 @@ def add_traces(df, fig, x, y, name, col=None):
                     x=df.reset_index()[x],
                     name=name,
                     line=dict(
-                    width=3.5,
+                        width=3.5,
                     ),
                     )])
     return fig
@@ -104,7 +106,6 @@ def choose_template():
 def choosing_colorway():
     chosen_color = px.colors.qualitative.D3
     all_colors = dict()
-
 
     # Plotly express color modules that you can try colors from
     modules_colors_l = ['diverging', 'qualitative', 'sequential']
