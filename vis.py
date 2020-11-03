@@ -75,7 +75,6 @@ if files:
         separator = utils.specify_separator(0)
 
         wasatch_data, wasatch_metadata = wasatch.read_wasatch(files, separators[separator])
-
         data = pd.concat([wasatch_data[data_df] for data_df in wasatch_data], axis=1)
 
         display_opt = custom_plot.vis_options()

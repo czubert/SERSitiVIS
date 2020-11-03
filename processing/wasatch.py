@@ -9,6 +9,9 @@ RAW = 'Raw'
 PRCSD = "Processed"
 TXT = 'txt'
 CSV = 'csv'
+IT = 'Integration Time'
+LP = 'Laser Power'
+PAT = '-20201009-093705-137238-WP-00702.txt'
 
 
 def read_wasatch(uploaded_files, separator):
@@ -16,7 +19,7 @@ def read_wasatch(uploaded_files, separator):
     temp_meta_df = {}
 
     # Column to show
-    col_to_show = PRCSD
+    col_to_show = RAW
 
     col1, col2 = st.beta_columns(2)
     with col1:
@@ -46,6 +49,7 @@ def read_wasatch(uploaded_files, separator):
         st.stop()
 
     for uploaded_file in uploaded_files:
+        name = uploaded_file.name[:-(len(PAT))]
 
         if uploaded_file.name[-3:] == CSV:
             data, metadata = utils.read_spec(uploaded_file, spectra_params[CSV], meta_params)
@@ -54,7 +58,9 @@ def read_wasatch(uploaded_files, separator):
 
             data.dropna(inplace=True, how='any', axis=0)
 
-            data.rename(columns={col_to_show: uploaded_file.name[:-4]}, inplace=True)
+            metadata = metadata.iloc[[18, 28, 30], :]
+
+            data.rename(columns={col_to_show: f'{col_to_show} data: {name}'}, inplace=True)
 
             data.set_index('Raman Shift', inplace=True)
 
@@ -63,8 +69,6 @@ def read_wasatch(uploaded_files, separator):
 
         elif uploaded_file.name[-3:] == TXT:
             data = utils.read_spec(uploaded_file, spectra_params[TXT])
-
-            name = uploaded_file.name[:-4]
 
             data.dropna(inplace=True, how='any', axis=0)
 
@@ -75,7 +79,14 @@ def read_wasatch(uploaded_files, separator):
             data.set_index(RS, inplace=True)
             data = pd.DataFrame(data[col_to_show])
 
-            data.columns = [f'{col_to_show}: {name}']
-            temp_data_df[uploaded_file.name[:-4]] = data
+            data.columns = [f'{name} - {col_to_show} data']
+            temp_data_df[name] = data
+
+    if file_type[0] == CSV and st.button('Add metadata to plot name'):
+        for key in temp_data_df:
+            name = temp_data_df[key].columns[0]
+            new_name = f'{name}_{temp_meta_df[key].loc[IT, 1]}ms_{temp_meta_df[key].loc[LP, 1]}%'
+
+            temp_data_df[key].rename(columns={name: new_name}, inplace=True)
 
     return temp_data_df, temp_meta_df
