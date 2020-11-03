@@ -108,6 +108,11 @@ else:
         st.markdown(f'<b>Name of a file</b> will be displayed as a <b>name of a plot in the legend</b>',
                     unsafe_allow_html=True)
 
+    with st.beta_expander('For Wasatch spectra upload raw data in *.txt or *.csv:'):
+        st.write('*.csv data obtains metadata, therefore one can add important matadata to the plot name')
+        st.image('examples/wasatch_wo_name.png', use_column_width=True)
+        st.image('examples/wasatch_with_name.png', use_column_width=True)
+
     st.stop()
 
 print("Streamlit finish it's work")
