@@ -22,11 +22,13 @@ BWTEK = 'BWTEK'
 RENI = 'Renishaw'
 WITEC = 'WITec Alpha300 R+'
 WASATCH = 'Wasatch System'
+TELEDYNE = 'Teledyne Princeton Instruments'
+
 TEST = 'Testing bwtek'
 
 spectrometer = st.sidebar.radio(
     "",
-    (BWTEK, RENI, WITEC, WASATCH), index=0)
+    (BWTEK, RENI, WITEC, WASATCH, TELEDYNE), index=0)
 
 files = st.sidebar.file_uploader(label='', accept_multiple_files=True, type=['txt', 'csv'])
 
@@ -76,6 +78,18 @@ if files:
 
         # Plot spectra
         custom_plot.show_plot(data, plots_color, template, display_opt=display_opt, key=None)
+
+    # Renishaw raw spectra
+    elif spectrometer == TELEDYNE:
+
+        reni_data = renishaw.read_renishaw(files, separators['comma'])
+
+        df = pd.concat([reni_data[data_df] for data_df in reni_data], axis=1)
+
+        df.dropna(inplace=True, how='any', axis=0)
+
+        display_opt = custom_plot.vis_options()
+        custom_plot.show_plot(df, plots_color, template, display_opt=display_opt, key=None)
 
 else:
     st.image('examples/logo.png', use_column_width=True)

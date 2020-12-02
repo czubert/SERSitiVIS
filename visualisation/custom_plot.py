@@ -45,6 +45,8 @@ def show_plot(df, plots_color, template, display_opt, key):
             # Creating DataFrame that will be shown on plot
             df_to_show = pd.DataFrame(df2.iloc[:, col]).dropna()
 
+            # TODO What might be useful - would be a function to choose which part of the spectrum should be
+            # TODO used for the baseline fitting.
             # Adding column with baseline that will be show on plot
             df_to_show[BS] = peakutils.baseline(df_to_show, deg)
 
