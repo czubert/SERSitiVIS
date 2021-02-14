@@ -98,7 +98,7 @@ def choose_template():
     """
     template = st.radio(
         "Choose chart template",
-        list(pio.templates), index=5, key='new')
+        list(pio.templates), index=6, key='new')
 
     return template
 
@@ -117,13 +117,13 @@ def choosing_colorway():
         modules_colors_l, 1)
 
     colorscale_names = get_colors_names(chosen_module_color)
-
     for el in colorscale_names:
         all_colors[el] = el  # TODO color name as key and color object as a value
 
+
     plots_color = st.radio(
         "Choose set of colors from colorsets for spectra",
-        colorscale_names, index=15)
+        colorscale_names, index=31)
 
     chosen_color = getattr(modules_colors_d[chosen_module_color], f'{all_colors[plots_color]}')
 
