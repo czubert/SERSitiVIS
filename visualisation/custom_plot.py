@@ -144,33 +144,54 @@ def show_plot(df, plots_color, template, display_opt, key):
     elif display_opt == GS:
         st.write('========================================================================')
 
+        raw_spectra = st.radio(
+            "What you would like to see?",
+            (RAW, OPT), key=f'raw'
+        )
+
         fig_grouped_corr = go.Figure()
-        draw.fig_layout(template, fig_grouped_corr, plots_colorscale=plots_color,
-                        descr=None)
 
-        with st.beta_expander("Adjust your plots"):
-
+        if raw_spectra == RAW:
             shift = st.slider('Shift spectra from each other', 0, 30000, 0, 250)
 
             for col in range(len(df.columns)):
-                col1, col2 = st.beta_columns(2)
-                with col1:
-                    deg = st.slider(f'{DEG} for: {df.columns[col]}', min_value=1, max_value=20, value=5, key=f'{col}')
-                with col2:
-                    window = st.slider(f'{WINDOW} for: {df.columns[col]}', min_value=1, max_value=20, value=3,
-                                       key=f'{col}')
-
                 col_name = df.columns[col]
 
                 corrected = pd.DataFrame(df.loc[:, col_name]).dropna()
-
-                corrected = utils.correct_baseline(corrected, deg, window).dropna()
 
                 if col != 0:
                     corrected.iloc[:, 0] += shift * col
 
                 fig_grouped_corr = draw.add_traces(corrected.reset_index(), fig_grouped_corr, x=RS, y=col_name,
                                                    name=f'{df.columns[col]}')
+            draw.fig_layout(template, fig_grouped_corr, plots_colorscale=plots_color, descr=ORG)
+
+        else:
+            with st.beta_expander("Adjust your plots"):
+
+                shift = st.slider('Shift spectra from each other', 0, 30000, 0, 250)
+
+                for col in range(len(df.columns)):
+                    col1, col2 = st.beta_columns(2)
+                    with col1:
+                        deg = st.slider(f'{DEG} for: {df.columns[col]}', min_value=1, max_value=20, value=5,
+                                        key=f'{col}')
+                    with col2:
+                        window = st.slider(f'{WINDOW} for: {df.columns[col]}', min_value=1, max_value=20, value=3,
+                                           key=f'{col}')
+
+                    col_name = df.columns[col]
+
+                    corrected = pd.DataFrame(df.loc[:, col_name]).dropna()
+
+                    corrected = utils.correct_baseline(corrected, deg, window).dropna()
+
+                    if col != 0:
+                        corrected.iloc[:, 0] += shift * col
+
+                    fig_grouped_corr = draw.add_traces(corrected.reset_index(), fig_grouped_corr, x=RS, y=col_name,
+                                                       name=f'{df.columns[col]}')
+                    draw.fig_layout(template, fig_grouped_corr, plots_colorscale=plots_color, descr=OPT_S)
 
         st.write(fig_grouped_corr)
 
