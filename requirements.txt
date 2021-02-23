@@ -1,6 +1,6 @@
 aiohttp==3.6.2
 alabaster==0.7.12
-altair @ file:///tmp/build/80754af9/altair_1599835197802/work
+# altair @ file:///tmp/build/80754af9/altair_1599835197802/work
 anaconda-client==1.7.2
 anaconda-navigator==1.9.7
 anaconda-project==0.8.3
@@ -31,7 +31,7 @@ boto3==1.11.0
 botocore==1.14.0
 Bottleneck==1.2.1
 brotlipy==0.7.0
-cachetools @ file:///tmp/build/80754af9/cachetools_1596822027882/work
+# cachetools @ file:///tmp/build/80754af9/cachetools_1596822027882/work
 certifi==2020.12.5
 cffi==1.12.3
 chardet==3.0.4
@@ -83,14 +83,14 @@ greenlet==0.4.15
 HeapDict==1.0.1
 html5lib==1.0.1
 htmlmin==0.1.12
-hypothesis @ file:///tmp/build/80754af9/hypothesis_1600701404364/work
-idna @ file:///tmp/build/80754af9/idna_1593446292537/work
+# hypothesis @ file:///tmp/build/80754af9/hypothesis_1600701404364/work
+# idna @ file:///tmp/build/80754af9/idna_1593446292537/work
 imageio==2.6.0
 imagesize==1.1.0
 imbalanced-learn==0.6.1
 imblearn==0.0
-importlib-metadata @ file:///C:/ci/importlib-metadata_1593446525189/work
-iniconfig @ file:///tmp/build/80754af9/iniconfig_1596827328212/work
+# importlib-metadata @ file:///C:/ci/importlib-metadata_1593446525189/work
+# iniconfig @ file:///tmp/build/80754af9/iniconfig_1596827328212/work
 ipykernel==5.1.2
 ipython==7.8.0
 ipython-genutils==0.2.0
@@ -100,7 +100,7 @@ itsdangerous==1.1.0
 jdcal==1.4.1
 jedi==0.15.1
 Jinja2==2.10.3
-jmespath @ file:///tmp/build/80754af9/jmespath_1594304593830/work
+# jmespath @ file:///tmp/build/80754af9/jmespath_1594304593830/work
 joblib==0.13.2
 json5==0.8.5
 jsonschema==3.1.1
@@ -146,7 +146,7 @@ nbconvert==5.6.0
 nbformat==4.4.0
 networkx==2.3
 nltk==3.4.5
-nose @ file:///C:/ci/nose_1594377973236/work
+# nose @ file:///C:/ci/nose_1594377973236/work
 notebook==6.0.2
 numba==0.46.0
 numexpr==2.7.0
@@ -162,7 +162,7 @@ pandocfilters==1.4.2
 parso==0.5.1
 partd==1.0.0
 path.py==12.0.1
-pathlib2 @ file:///C:/ci/pathlib2_1594381094851/work
+# pathlib2 @ file:///C:/ci/pathlib2_1594381094851/work
 pathtools==0.1.2
 patsy==0.5.1
 PeakUtils==0.1.0
@@ -173,7 +173,7 @@ pickleshare==0.7.5
 Pillow==6.2.0
 pipenv==2020.8.13
 pkginfo==1.5.0.1
-plotly @ file:///tmp/build/80754af9/plotly_1610565580232/work
+# plotly @ file:///tmp/build/80754af9/plotly_1610565580232/work
 plotly-express==0.4.0
 pluggy==0.13.0
 ply==3.11
@@ -200,7 +200,7 @@ pyparsing==2.4.5
 pyreadline==2.1
 pyreadstat==0.2.9
 pyrsistent==0.15.6
-PySocks @ file:///C:/ci/pysocks_1594394709107/work
+# PySocks @ file:///C:/ci/pysocks_1594394709107/work
 pytest==5.3.2
 pytest-arraydiff==0.3
 pytest-astropy==0.5.0
@@ -218,14 +218,14 @@ pywinpty==0.5.5
 PyYAML==5.1.2
 pyzmq==18.1.0
 QtAwesome==0.6.0
-qtconsole @ file:///tmp/build/80754af9/qtconsole_1598374667791/work
+# qtconsole @ file:///tmp/build/80754af9/qtconsole_1598374667791/work
 QtPy==1.9.0
 rampy==0.4.5
-requests @ file:///tmp/build/80754af9/requests_1592841827918/work
+# requests @ file:///tmp/build/80754af9/requests_1592841827918/work
 retrying==1.3.3
 rope==0.14.0
 ruamel-yaml==0.15.87
-s3transfer @ file:///C:/ci/s3transfer_1594411925509/work
+# s3transfer @ file:///C:/ci/s3transfer_1594411925509/work
 sas7bdat==2.2.3
 scikit-image==0.15.0
 scikit-learn==0.22
@@ -261,20 +261,20 @@ tblib==1.4.0
 terminado==0.8.3
 testpath==0.4.4
 text-unidecode==1.2
-toml @ file:///tmp/build/80754af9/toml_1592853716807/work
+# toml @ file:///tmp/build/80754af9/toml_1592853716807/work
 toolz==0.10.0
-tornado @ file:///C:/ci/tornado_1606935947090/work
+# tornado @ file:///C:/ci/tornado_1606935947090/work
 tqdm==4.36.1
 traitlets==4.3.3
 typed-ast==1.4.0
-tzlocal @ file:///C:/ci/tzlocal_1597435800236/work
+# tzlocal @ file:///C:/ci/tzlocal_1597435800236/work
 unicodecsv==0.14.1
 urllib3==1.25.7
 validators==0.14.2
 varName==0.0.1
 virtualenv==20.0.31
 virtualenv-clone==0.5.4
-watchdog @ file:///C:/ci/watchdog_1593446515400/work
+# watchdog @ file:///C:/ci/watchdog_1593446515400/work
 wcwidth==0.1.7
 webencodings==0.5.1
 Werkzeug==0.16.0
