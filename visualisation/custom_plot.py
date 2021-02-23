@@ -52,7 +52,7 @@ def show_plot(df, plots_color, template, display_opt, key):
 
             raw_spectra = st.radio(
                 "What you would like to see?",
-                (RAW, OPT), key='raw'
+                (RAW, OPT), key=f'raw{col}'
             )
 
             if raw_spectra == RAW:
