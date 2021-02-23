@@ -20,6 +20,9 @@ FLAT = 'Flattened'
 COR = 'Corrected'
 P3D = 'Plot 3D'
 ORG = 'Original spectrum'
+RAW = "Raw Data"
+OPT = "Optimised Data"
+OPT_S = "Optimised Spectrum"
 
 
 def show_plot(df, plots_color, template, display_opt, key):
@@ -36,53 +39,72 @@ def show_plot(df, plots_color, template, display_opt, key):
 
         for col in range(len(df.columns)):
             st.write('========================================================================')
-            col1, col2 = st.beta_columns(2)
-            with col1:
-                deg = st.slider(f'{DEG} plot nr: {col}', min_value=1, max_value=20, value=5, key=f'{col}')
-            with col2:
-                window = st.slider(f'{WINDOW} plot nr: {col}', min_value=1, max_value=20, value=3, key=f'{col}')
+
             # Creating DataFrame that will be shown on plot
             df_to_show = pd.DataFrame(df2.iloc[:, col]).dropna()
 
             # TODO What might be useful - would be a function to choose which part of the spectrum should be
             # TODO used for the baseline fitting.
             # Adding column with baseline that will be show on plot
-            df_to_show[BS] = peakutils.baseline(df_to_show[df_to_show.columns[0]], deg)
-
-            # Creating DataFrame with applied Baseline correction
-            corrected_df = utils.correct_baseline_single(df_to_show, deg, df_to_show.columns[0])
-            # Refining DataFrame to make spectra flattened
-            corrected_df[FLAT] = corrected_df[COR].rolling(window=window).mean()
-            corrected_df.dropna(inplace=True)
 
             # Showing spectra after baseline correction
             fig_single_corr = go.Figure()
 
-            fig_single_corr = draw.add_traces_single_spectra(corrected_df, fig_single_corr, x=RS, y=FLAT,
-                                                             name=corrected_df.columns[0])
+            raw_spectra = st.radio(
+                "What you would like to see?",
+                (RAW, OPT), key='raw'
+            )
 
-            draw.fig_layout(template, fig_single_corr, plots_colorscale=plots_color,
-                            descr=None)
+            if raw_spectra == RAW:
+                df_visual = df_to_show
+                plot_line = df_visual.columns[0]
+                description = ORG
+            else:
+                plot_line = FLAT
+                description = OPT_S
+                col1, col2 = st.beta_columns(2)
+                with col1:
+                    deg = st.slider(f'{DEG} plot nr: {col}', min_value=0, max_value=20, value=5, key=f'{col}')
+                with col2:
+                    window = st.slider(f'{WINDOW} plot nr: {col}', min_value=1, max_value=20, value=3, key=f'{col}')
 
-            st.write(fig_single_corr)
+                df_to_show[BS] = peakutils.baseline(df_to_show[df_to_show.columns[0]], deg)
 
-            # Showing spectra before baseline correction + baseline function
-            fig_single_all = go.Figure()
+                # Creating DataFrame with applied Baseline correction
+                corrected_df = utils.correct_baseline_single(df_to_show, deg, df_to_show.columns[0])
+                # Refining DataFrame to make spectra flattened
+                corrected_df[FLAT] = corrected_df[COR].rolling(window=window).mean()
+                corrected_df.dropna(inplace=True)
 
-            specs = {'org': corrected_df.columns[0], BS: BS, COR: COR, FLAT: FLAT}
+                df_visual = corrected_df
 
-            for spec in specs.keys():
-                if spec == FLAT:
-                    name = f'{FLAT} + {BS} correction'
-                else:
-                    name = specs[spec]
+                # Showing spectra before baseline correction + baseline function
+                fig_single_all = go.Figure()
+                draw.fig_layout(template, fig_single_all, plots_colorscale=plots_color,
+                                descr=f'{ORG}, {BS}, and {FLAT} + {BS}')
 
-                fig_single_all = draw.add_traces(corrected_df, fig_single_all,
-                                                 x=RS, y=specs[spec], name=name)
+                specs = {'org': df_visual.columns[0], BS: BS, COR: COR, FLAT: FLAT}
 
-            draw.fig_layout(template, fig_single_all, plots_colorscale=plots_color,
-                            descr=f'{ORG}, {BS}, and {FLAT} + {BS}')
-            st.write(fig_single_all)
+                for spec in specs.keys():
+                    if spec == FLAT:
+                        name = f'{FLAT} + {BS} correction'
+                    else:
+                        name = specs[spec]
+
+                    fig_single_all = draw.add_traces(df_visual, fig_single_all,
+                                                     x=RS, y=specs[spec], name=name)
+
+            fig_single_corr = draw.add_traces_single_spectra(df_visual, fig_single_corr, x=RS, y=plot_line,
+                                                             name=df_visual.columns[0])
+
+            draw.fig_layout(template, fig_single_corr, plots_colorscale=plots_color, descr=description)
+
+            if raw_spectra == RAW:
+                st.write(fig_single_corr)
+            else:
+                st.write(fig_single_corr)
+                st.write(fig_single_all)
+
 
 
     elif display_opt == MS:
