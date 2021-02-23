@@ -32,6 +32,12 @@ spectrometer = st.sidebar.radio(
 
 files = st.sidebar.file_uploader(label='', accept_multiple_files=True, type=['txt', 'csv'])
 
+st.sidebar.markdown(f"\n")
+st.sidebar.markdown(f"by")
+st.sidebar.markdown(f"[Paweł Abrycht](https://www.linkedin.com/in/paweł-albrycht-b791147a/)")
+st.sidebar.markdown(f"\n")
+st.sidebar.markdown("")
+
 separators = {'comma': ',', 'dot': '.', 'tab': '\t', 'space': ' '}
 
 temp_data_df = None
