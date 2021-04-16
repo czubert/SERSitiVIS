@@ -22,18 +22,18 @@ st.sidebar.image('examples/logo.png', use_column_width=True)
 
 import os
 
-if 'appuser' in os.getcwd():
-    os.makedirs('/home/appuser/.streamlit', exist_ok=True)
-    with open('/home/appuser/.streamlit/config.toml') as infile:
-        infile.write(
-            """[theme]
-    primaryColor='#FF7733'
-    backgroundColor="#999999"
-    secondaryBackgroundColor="#F0F2F6"
-    textColor="#262730"
-    font="sans serif"
-        """)
-    print("config file created")
+conf_dir = os.path.expanduser('~') + '/.streamlit'
+os.makedirs(conf_dir, exist_ok=True)
+with open(conf_dir) as infile:
+    infile.write(
+        """[theme]
+primaryColor='#FF7733'
+backgroundColor="#999999"
+secondaryBackgroundColor="#F0F2F6"
+textColor="#262730"
+font="sans serif"
+    """)
+print("config file created")
 
 SINGLE = 'Single spectra'
 MS = 'Mean spectrum'
