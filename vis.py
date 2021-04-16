@@ -16,6 +16,8 @@ st.set_page_config(
     initial_sidebar_state="auto"
 )
 
+st.write('<style>div.row-widget.stRadio > div{flex-direction:row;}</style>', unsafe_allow_html=True)
+
 st.set_option('deprecation.showfileUploaderEncoding', False)
 
 st.sidebar.image('examples/logo.png', use_column_width=True)

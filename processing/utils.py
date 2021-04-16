@@ -1,7 +1,14 @@
+import base64
 import glob
+import json
+import pickle
+import re
+import uuid
 from collections import Counter
 
+import pandas as pd
 import peakutils
+import streamlit as st
 
 RS = 'Raman Shift'
 COR = 'Corrected'
@@ -90,7 +97,6 @@ def upload_file():
 
 
 def read_spec(uploaded_file, spectra_params, meta_params=None):
-    st.write('<style>div.Widget.row-widget.stRadio > div{flex-direction:row;}</style>', unsafe_allow_html=True)
     uploaded_file.seek(0)
     data = pd.read_csv(uploaded_file, **spectra_params)
 
@@ -121,55 +127,6 @@ def correct_baseline_single(df, deg, model=DS):
         df2[COR] = df2[model] - peakutils.baseline(df2[BS], deg)
     
     return df2
-
-
-def download_link(object_to_download, download_filename, download_link_text):
-    """
-    Generates a link to download the given object_to_download.
-
-    object_to_download (str, pd.DataFrame):  The object to be downloaded.
-    download_filename (str): filename and extension of file. e.g. mydata.csv, some_txt_output.txt
-    download_link_text (str): Text to display for download link.
-
-    Examples:
-    download_link(YOUR_DF, 'YOUR_DF.csv', 'Click here to download data!')
-    download_link(YOUR_STRING, 'YOUR_STRING.txt', 'Click here to download your text!')
-
-    """
-    import base64
-    if isinstance(object_to_download, pd.DataFrame):
-        object_to_download = object_to_download.to_csv(index=False)
-    
-    # some strings <-> bytes conversions necessary here
-    b64 = base64.b64encode(object_to_download.encode()).decode()
-    
-    return f'<button class="row-widget stButton element-container css-z8kais e1tzin5v1 css-1hbw5rs edgvbvh1"' \
-           f'>' \
-           f'<a href="data:file/txt;base64,{b64}" ' \
-           f'download="{download_filename}">{download_link_text}' \
-           f'</a></button>'
-    
-    st.button
-    # return f'<a href="data:file/txt;base64,{b64}" download="{download_filename}">{download_link_text}</a>'
-    # return (
-    #     '<div data-stale="false" '
-    #     'class="element-container css-z8kais e1tzin5v1"'
-    #     ' style="width: 446px;"><div class="row-widget stButton" '
-    #     'style="width: 446px;"><input type="button" kind="primary" class="css-1hbw5rs edgvbvh1" '
-    #     f'href="data:file/txt;base64,{b64}" download="{download_filename}">'
-    #     'save dataframe</input>'
-    #     '</div></div>'
-    # )
-
-
-import base64
-import json
-import pickle
-import uuid
-import re
-
-import streamlit as st
-import pandas as pd
 
 
 def download_button(object_to_download, download_filename, button_text, pickle_it=False):
@@ -212,23 +169,23 @@ def download_button(object_to_download, download_filename, button_text, pickle_i
         # Try JSON encode for everything else
         else:
             object_to_download = json.dumps(object_to_download)
-    
+
     try:
         # some strings <-> bytes conversions necessary here
         b64 = base64.b64encode(object_to_download.encode()).decode()
-    
+
     except AttributeError as e:
         b64 = base64.b64encode(object_to_download).decode()
-    
+
     button_uuid = str(uuid.uuid4()).replace('-', '')
     button_id = re.sub('\d+', '', button_uuid)
-    
-    prim_color = st.config.get_option('theme.primaryColor')  # pomarańcz
-    bg_color = st.config.get_option('theme.backgroundColor')  # ciemny szary
-    sbg_color = st.config.get_option('theme.secondaryBackgroundColor')  # biały? bardzo jasno szary?
+
+    prim_color = st.config.get_option('theme.primaryColor')
+    bg_color = st.config.get_option('theme.backgroundColor')
+    sbg_color = st.config.get_option('theme.secondaryBackgroundColor')
     txt_color = st.config.get_option('theme.textColor')
     font = st.config.get_option('theme.font')
-    
+
     custom_css = f"""
         <style>
             #{button_id} {{
@@ -270,7 +227,8 @@ def download_button(object_to_download, download_filename, button_text, pickle_i
                 color: {sbg_color};
                 }}
         </style> """
-    
-    dl_link = custom_css + f'<a download="{download_filename}" class= "" id="{button_id}" href="data:file/txt;base64,{b64}">{button_text}</a><br></br>'
-    
+
+    dl_link = custom_css + f'<a download="{download_filename}" class= "" id="{button_id}" ' \
+                           f'href="data:file/txt;base64,{b64}">{button_text}</a><br></br>'
+
     return dl_link

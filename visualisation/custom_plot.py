@@ -250,16 +250,6 @@ def show_plot(df, plots_color, template, display_opt, key):
 
 
 
-
-
-
-
-
-
-
-
-
-
     elif display_opt == P3D:
         df2 = df.copy()
         df2.columns = ['widmo nr ' + str(i) for i in range(len(df2.columns))]
@@ -380,11 +370,5 @@ def save_adj_spectra_to_file(df_to_save, file_name, key='default'):
     
     tmp_download_link = download_button(df_to_save, f'{file_name}.csv',
                                         button_text='Click here to download your text!')
-    # tmp_download_link = download_link(df_to_save, f'{file_name}.csv', 'Click here to download your text!')
-    # st.markdown(tmp_download_link, unsafe_allow_html=True)
-    
-    # if st.button('save dataframe', key=key):
-    # open(f'{file_name}.csv', 'w').write(df_to_save.to_csv())
-    #     import webbrowser
-    #     webbrowser.open_new_tab(tmp_download_link)
+
     st.markdown(tmp_download_link, unsafe_allow_html=True)
