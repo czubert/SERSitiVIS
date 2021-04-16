@@ -115,7 +115,7 @@ def show_plot(df, plots_color, template, display_opt, key):
             else:
                 st.write(fig_single_corr)
                 st.write(fig_single_all)
-            st.write(df_visual)
+
             save_adj_spectra_to_file(df_visual, file_name, key=col)
 
     elif display_opt == MS:
