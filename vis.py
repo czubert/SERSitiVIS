@@ -9,6 +9,12 @@ from processing import witec
 from visualisation import custom_plot
 from visualisation import draw
 
+st.set_page_config(
+    page_title="SERSitive.eu",
+    page_icon="chart_with_upwards_trend",
+    layout="wide",
+)
+
 st.set_option('deprecation.showfileUploaderEncoding', False)
 
 st.sidebar.image('examples/logo.png', use_column_width=True)
@@ -32,11 +38,6 @@ spectrometer = st.sidebar.radio(
 
 files = st.sidebar.file_uploader(label='', accept_multiple_files=True, type=['txt', 'csv'])
 
-st.sidebar.markdown(f"\n")
-st.sidebar.markdown(f"by")
-st.sidebar.markdown(f"[Paweł Albrycht](https://www.linkedin.com/in/paweł-albrycht-b791147a/)")
-st.sidebar.markdown(f"\n")
-st.sidebar.markdown("")
 
 separators = {'comma': ',', 'dot': '.', 'tab': '\t', 'space': ' '}
 
@@ -136,5 +137,11 @@ else:
         st.image('examples/wasatch_with_name.png', use_column_width=True)
 
     st.stop()
+
+st.sidebar.markdown(f"\n\n\n")
+st.sidebar.markdown(f"by")
+st.sidebar.markdown(f"[Paweł Albrycht](https://www.linkedin.com/in/paweł-albrycht-b791147a/)")
+st.sidebar.markdown(f"\n")
+st.sidebar.markdown("")
 
 print("Streamlit finish it's work")

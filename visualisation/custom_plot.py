@@ -47,41 +47,42 @@ def show_plot(df, plots_color, template, display_opt, key):
     if display_opt == SINGLE:
         file_name += '_single'
         df2 = df.copy()
-        
-        for col in range(len(df.columns)):
-            st.write('========================================================================')
+
+        for col in range(len(df2.columns)):
+            st.write('=======================================================================================')
             # Creating DataFrame that will be shown on plot
-            df_to_show = pd.DataFrame(df2.iloc[:, col]).dropna()
-            
+            spectra_to_show = pd.DataFrame(df2.iloc[:, col]).dropna()
+    
             # TODO What might be useful - would be a function to choose which part of the spectrum should be
             # TODO used for the baseline fitting.
             # Adding column with baseline that will be show on plot
-
+    
             # Showing spectra after baseline correction
             fig_single_corr = go.Figure()
             
             if raw_spectra == RAW:
-                df_visual = df_to_show
+                df_visual = spectra_to_show
                 plot_line = df_visual.columns[0]
                 description = ORG
             
             elif raw_spectra == OPT or raw_spectra == NORM:
                 if raw_spectra == NORM:
                     normalized_df2 = (df2.iloc[:, col] + df2.iloc[:, col].min()) / df2.iloc[:, col].max()
-                    df_to_show = pd.DataFrame(normalized_df2).dropna()
-                
+                    spectra_to_show = pd.DataFrame(normalized_df2).dropna()
+
                 plot_line = FLAT
                 description = OPT_S
+
                 col1, col2 = st.beta_columns(2)
                 with col1:
                     deg = st.slider(f'{DEG} plot nr: {col}', min_value=0, max_value=20, value=5, key=f'{col}')
                 with col2:
                     window = st.slider(f'{WINDOW} plot nr: {col}', min_value=1, max_value=20, value=3, key=f'{col}')
-                
-                df_to_show[BS] = peakutils.baseline(df_to_show[df_to_show.columns[0]], deg)
+
+                spectra_to_show[BS] = peakutils.baseline(spectra_to_show[spectra_to_show.columns[0]], deg)
 
                 # Creating DataFrame with applied Baseline correction
-                corrected_df = utils.correct_baseline_single(df_to_show, deg, df_to_show.columns[0])
+                corrected_df = utils.correct_baseline_single(spectra_to_show, deg, spectra_to_show.columns[0])
                 # Refining DataFrame to make spectra flattened
                 corrected_df[FLAT] = corrected_df[COR].rolling(window=window).mean()
                 corrected_df.dropna(inplace=True)
@@ -103,18 +104,19 @@ def show_plot(df, plots_color, template, display_opt, key):
 
                     fig_single_all = draw.add_traces(df_visual, fig_single_all,
                                                      x=RS, y=specs[spec], name=name)
-
+    
             fig_single_corr = draw.add_traces_single_spectra(df_visual, fig_single_corr, x=RS, y=plot_line,
                                                              name=df_visual.columns[0])
-
+    
             draw.fig_layout(template, fig_single_corr, plots_colorscale=plots_color, descr=description)
-
+    
             if raw_spectra == RAW:
                 st.write(fig_single_corr)
             else:
                 st.write(fig_single_corr)
                 st.write(fig_single_all)
-
+            st.write(df_visual)
+            save_adj_spectra_to_file(df_visual, file_name, key=col)
 
     elif display_opt == MS:
         file_name += '_mean'
@@ -128,11 +130,11 @@ def show_plot(df, plots_color, template, display_opt, key):
     
         if raw_spectra == RAW:
             file_name += '_raw'
-        
+
             # Drawing plots of mean spectra of raw spectra
             fig_mean_corr = draw.add_traces_single_spectra(df2, fig_mean_corr, x=RS, y=AV,
                                                            name=f'{FLAT} + {AV} correction')
-        
+
             fig_mean_corr = draw.fig_layout(template, fig_mean_corr, plots_colorscale=plots_color,
                                             descr='Raw mean spectra')
     
@@ -145,8 +147,7 @@ def show_plot(df, plots_color, template, display_opt, key):
                 df2 = pd.DataFrame(normalized_df2).dropna()
         
             # getting baseline for mean spectra
-            deg = st.slider(f'{DEG}', min_value=1, max_value=20, value=5)
-            window = st.slider(f'{WINDOW}', min_value=1, max_value=20, value=3)
+            deg, window = adjust_all_spectra()
         
             # Preparing data to plot
             df2[BS] = peakutils.baseline(df2.loc[:, AV], deg)
@@ -173,7 +174,7 @@ def show_plot(df, plots_color, template, display_opt, key):
         st.write(fig_mean_corr)
         st.write(fig_mean_all)
     
-        df_to_save = df2
+        save_adj_spectra_to_file(df2, file_name)
     
     elif display_opt == GS:
         file_name += '_grouped'
@@ -199,46 +200,66 @@ def show_plot(df, plots_color, template, display_opt, key):
                 fig_grouped_corr = draw.add_traces(corrected.reset_index(), fig_grouped_corr, x=RS, y=col_name,
                                                    name=f'{df.columns[col]}')
             draw.fig_layout(template, fig_grouped_corr, plots_colorscale=plots_color, descr=ORG)
-        
+
+
+
         elif raw_spectra == OPT or raw_spectra == NORM:
             file_name += '_optimized'
             df2 = df.copy()
-            
-            with st.beta_expander("Adjust your plots"):
+    
+            if raw_spectra == OPT:
                 shift = st.slider('Shift spectra from each other', 0, 30000, 0, 250)
-                
-                for col in range(len(df2.columns)):
-                    col_name = df2.columns[col]
-                    corrected = pd.DataFrame(df2.loc[:, col_name]).dropna()
-                    
-                    if raw_spectra == NORM:
-                        file_name += '_normalized'
-                        normalized_df2 = (df2.iloc[:, col] + df2.iloc[:, col].min()) / df2.iloc[:, col].max()
-                        corrected = pd.DataFrame(normalized_df2).dropna()
-                    
-                    col1, col2 = st.beta_columns(2)
-                    
-                    with col1:
-                        deg = st.slider(f'{DEG} for: {df2.columns[col]}', min_value=1, max_value=20, value=5,
-                                        key=f'{col}')
-                    with col2:
-                        window = st.slider(f'{WINDOW} for: {df2.columns[col]}', min_value=1, max_value=20, value=3,
-                                           key=f'{col}')
-                    
-                    corrected = utils.correct_baseline(corrected, deg, window).dropna()
-                    
-                    df_to_save[col_name] = corrected[col_name]
-                    
-                    if col != 0:
-                        corrected.iloc[:, 0] += shift * col
-                    
-                    fig_grouped_corr = draw.add_traces(corrected.reset_index(), fig_grouped_corr, x=RS, y=col_name,
-                                                       name=f'{df2.columns[col]}')
-                    draw.fig_layout(template, fig_grouped_corr, plots_colorscale=plots_color, descr=OPT_S)
+            elif raw_spectra == NORM:
+                file_name += '_normalized'
+                shift = st.slider('Shift spectra from each other', 0.0, 1.0, 0.0, 0.1)
+    
+            adjust_plots_globally = st.radio(
+                "Adjust all spectra or each spectrum?",
+                ('all', 'each'), index=0)
+    
+            deg = 5
+            window = 3
+    
+            if adjust_plots_globally == 'all':
+                deg, window = adjust_all_spectra()
+                vals = {col: (deg, window) for col in df.columns}
+            elif adjust_plots_globally == 'each':
+                with st.beta_expander("Customize your chart"):
+                    vals = {col: adjust_all_spectra(col) for col in df.columns}
+    
+            for col_ind, col in enumerate(df2.columns):
+                corrected = process_grouped_opt_spec(df2=df2,
+                                                     raw_spectra=raw_spectra,
+                                                     col=col,
+                                                     deg=vals[col][0],
+                                                     window=vals[col][1])
         
+                df_to_save[col] = corrected[col]
+        
+                if col_ind != 0:
+                    corrected.iloc[:, 0] += shift * col_ind
+        
+                fig_grouped_corr = draw.add_traces(corrected.reset_index(), fig_grouped_corr, x=RS, y=col,
+                                                   name=col)
+                draw.fig_layout(template, fig_grouped_corr, plots_colorscale=plots_color, descr=OPT_S)
+
         st.write(fig_grouped_corr)
-    
-    
+
+        save_adj_spectra_to_file(df_to_save, file_name)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     elif display_opt == P3D:
         df2 = df.copy()
         df2.columns = ['widmo nr ' + str(i) for i in range(len(df2.columns))]
@@ -246,42 +267,30 @@ def show_plot(df, plots_color, template, display_opt, key):
         # Adding possibility to change degree of polynominal regression
         deg = st.slider(f'{DEG}', min_value=1, max_value=20, value=5)
         window = st.slider(f'{WINDOW}', min_value=1, max_value=20, value=3)
-
+    
         # Baseline correction + flattening
         df2 = utils.correct_baseline(df=df2, deg=deg, window=window)
         # drawing a plot
         df2 = df2.reset_index()
         df2m = df2.melt('Raman Shift', df2.columns[1:])
         df2m_drop = df2m.dropna()
-
+    
         fig_3d = px.line_3d(df2m_drop, x='variable', y=RS, z='value', color='variable')
-
+    
         draw.fig_layout(template, fig_3d, plots_colorscale=plots_color,
                         descr=f'{P3D} with {COR} + {FLAT} spectra')
-
+    
         camera = dict(
             eye=dict(x=1.9, y=0.15, z=0.2)
         )
-
+    
         fig_3d.update_layout(scene_camera=camera,
                              width=900,
                              height=900,
                              margin=dict(l=1, r=1, t=30, b=1),
                              )
-
+    
         st.write(fig_3d)
-    
-    # User can set custom name for a file to write
-    input_file_name = st.text_input('Enter the name of the file to save')
-    
-    # Checks if user have set a file name if not, it will be default
-    if input_file_name:
-        file_name = input_file_name
-    else:
-        file_name += 'spectra'
-    
-    if st.button('save dataframe'):
-        open(f'{file_name}.csv', 'w').write(df_to_save.to_csv())
 
 
 def bwtek_vis_options(df, plots_color, template):
@@ -311,10 +320,62 @@ def bwtek_vis_options(df, plots_color, template):
 def vis_options():
     display_opt = SINGLE
     chart_type = st.sidebar.radio('Choose type of chart', (SINGLE, GS), 0)
-
+    
     if chart_type == SINGLE:
         display_opt = SINGLE
     elif chart_type == GS:
         display_opt = GS
-
+    
     return display_opt
+
+
+def adjust_all_spectra(col='default'):
+    col1, col2 = st.beta_columns(2)
+    with col1:
+        deg = st.slider(f'{DEG} for all uploaded spectra', min_value=1, max_value=20, value=5,
+                        key=f'{col}_deg')
+    
+    with col2:
+        window = st.slider(f'{WINDOW} for all uploaded spectra', min_value=1, max_value=20, value=3,
+                           key=f'{col}_window')
+        
+        return deg, window
+
+
+def adjust_each_spectra(df):
+    with st.beta_expander("Adjust your plots"):
+        col1, col2 = st.beta_columns(2)
+    
+    for col in range(len(df.columns)):
+        with col1:
+            deg = st.slider(f'{DEG} for: {df.columns[col]}', min_value=1, max_value=20, value=5,
+                            key=f'{col}')
+        with col2:
+            window = st.slider(f'{WINDOW} for: {df.columns[col]}', min_value=1, max_value=20, value=3,
+                               key=f'{col}')
+        
+        return deg, window
+
+
+def process_grouped_opt_spec(df2, raw_spectra, col, deg, window):
+    corrected = pd.DataFrame(df2.loc[:, col]).dropna()
+    
+    if raw_spectra == NORM:
+        normalized_df2 = (df2.loc[:, col] + df2.loc[:, col].min()) / df2.loc[:, col].max()
+        corrected = pd.DataFrame(normalized_df2).dropna()
+    
+    return utils.correct_baseline(corrected, deg, window).dropna()
+
+
+def save_adj_spectra_to_file(df_to_save, file_name, key='default'):
+    # User can set custom name for a file to write
+    input_file_name = st.text_input('Enter the name of the file to save', key=key)
+    
+    # Checks if user have set a file name if not, it will be default
+    if input_file_name:
+        file_name = input_file_name
+    else:
+        file_name += '_spectra'
+    
+    if st.button('save dataframe', key=key):
+        open(f'{file_name}.csv', 'w').write(df_to_save.to_csv())
