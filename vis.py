@@ -20,21 +20,6 @@ st.set_option('deprecation.showfileUploaderEncoding', False)
 
 st.sidebar.image('examples/logo.png', use_column_width=True)
 
-import os
-
-conf_dir = os.path.expanduser('~') + '/.streamlit'
-os.makedirs(conf_dir, exist_ok=True)
-with open(conf_dir + '/config.toml', 'w') as infile:
-    infile.write(
-        """[theme]
-primaryColor='#FF7733'
-backgroundColor="#999999"
-secondaryBackgroundColor="#F0F2F6"
-textColor="#262730"
-font="sans serif"
-    """)
-print("config file created")
-
 SINGLE = 'Single spectra'
 MS = 'Mean spectrum'
 GS = 'Grouped spectra'
