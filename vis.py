@@ -24,7 +24,7 @@ import os
 
 conf_dir = os.path.expanduser('~') + '/.streamlit'
 os.makedirs(conf_dir, exist_ok=True)
-with open(conf_dir + '/config.toml') as infile:
+with open(conf_dir + '/config.toml', 'w') as infile:
     infile.write(
         """[theme]
 primaryColor='#FF7733'
