@@ -11,13 +11,28 @@ from visualisation import draw
 
 st.set_page_config(
     page_title="SERSitive.eu",
-    page_icon="chart_with_upwards_trend",
+    page_icon="https://sersitive.eu/wp-content/uploads/cropped-icon.png",
     layout="wide",
+    initial_sidebar_state="auto"
 )
 
 st.set_option('deprecation.showfileUploaderEncoding', False)
 
 st.sidebar.image('examples/logo.png', use_column_width=True)
+
+import os
+
+if 'appuser' in os.getcwd():
+    os.makedirs('/home/appuser/.streamlit', exist_ok=True)
+    with open('/home/appuser/.streamlit/config.toml') as infile:
+        infile.write(
+            """[theme]
+    primaryColor='#FF7733'
+    backgroundColor="#999999"
+    secondaryBackgroundColor="#F0F2F6"
+    textColor="#262730"
+    font="sans serif"
+        """)
 
 SINGLE = 'Single spectra'
 MS = 'Mean spectrum'
