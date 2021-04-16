@@ -33,6 +33,7 @@ if 'appuser' in os.getcwd():
     textColor="#262730"
     font="sans serif"
         """)
+    print("config file created")
 
 SINGLE = 'Single spectra'
 MS = 'Mean spectrum'
