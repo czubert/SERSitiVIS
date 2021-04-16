@@ -16,11 +16,23 @@ st.set_page_config(
     initial_sidebar_state="auto"
 )
 
+# radiobuttons in one row
 st.write('<style>div.row-widget.stRadio > div{flex-direction:row;}</style>', unsafe_allow_html=True)
 
 st.set_option('deprecation.showfileUploaderEncoding', False)
 
-st.sidebar.image('examples/logo.png', use_column_width=True)
+# linked logo of sersitive at the sidebar
+link = 'http://sersitive.eu'
+
+st.sidebar.markdown(f'''
+    <a href="{link}">
+        <img src="https://sersitive.eu/wp-content/uploads/LOGO.png"
+        style="padding:0px 6px 5px 0px; 20px; height:80px"/>
+    </a>''',
+                    unsafe_allow_html=True
+                    )
+st.sidebar.markdown('\n')
+st.sidebar.markdown('\n')
 
 SINGLE = 'Single spectra'
 MS = 'Mean spectrum'
@@ -102,20 +114,30 @@ if files:
         custom_plot.show_plot(df, plots_color, template, display_opt=display_opt, key=None)
 
 else:
-    st.image('examples/logo.png', use_column_width=True)
-
+    st.markdown(f'''
+    <a href="{link}">
+        <img src="https://sersitive.eu/wp-content/uploads/LOGO.png"
+        style="
+        margin: auto;
+        width: 80%;
+        padding:0px 6px 45px 25%; 20px;
+        "/>
+        </a>''',
+                unsafe_allow_html=True
+                )
+    
     st.warning('First choose data type from left sidebar')
     st.warning('Then upload file or files for visualisation - left sidebar')
     st.header('Short manual on how to implement data')
     st.write('')
-
+    
     with st.beta_expander('Download example date'):
         st.markdown("[Download data from OneDrive](https://1drv.ms/u/s!AlbmGPIOL6ElhvdePlcXvYwtt5YzbA?e=zsdF5j)")
         st.markdown("Password: sersitive")
-
+    
     with st.beta_expander('For BWTEK - upload raw data in *.txt format'):
         st.write('Update raw data from BWTek without any changes')
-
+    
     with st.beta_expander('For WITec Alpha300 R+, upload spectra in *.txt or *.csv format as follows:'):
         st.write(pd.read_csv('data_examples/witec/WITec(7).csv'))
         st.image('examples/witec.png', use_column_width=True)
@@ -125,7 +147,7 @@ else:
                     unsafe_allow_html=True)
         st.markdown(f"<p style='color:red'><b>Important:</b> Do not duplicate names of the columns",
                     unsafe_allow_html=True)
-
+    
     with st.beta_expander('For Renishaw spectra upload raw data in *.txt or *.csv format as shown below:'):
         st.write(pd.read_csv('data_examples/renishaw/renishaw(6).txt', header=None, sep='\t'))
         st.image('examples/reni.png', use_column_width=True)
@@ -133,18 +155,45 @@ else:
         st.write('Second column is Y axis, and should be the data itself')
         st.markdown(f'<b>Name of a file</b> will be displayed as a <b>name of a plot in the legend</b>',
                     unsafe_allow_html=True)
-
+    
     with st.beta_expander('For Wasatch spectra upload raw data in *.txt or *.csv:'):
         st.write('*.csv data obtains metadata, therefore one can add important matadata to the plot name')
         st.image('examples/wasatch_wo_name.png', use_column_width=True)
         st.image('examples/wasatch_with_name.png', use_column_width=True)
-
+    
+    st.sidebar.markdown(f"\n\n\n")
+    
+    st.sidebar.markdown(
+        """<p style='display: block; text-align: center; color:#DBBD8A; text-decoration: none;'>by</p>""",
+        unsafe_allow_html=True,
+    )
+    st.sidebar.markdown(
+        """<a target="_blank" style='display: block; text-align: center; color:#DBBD8A; text-decoration: none;'
+        href="https://www.linkedin.com/in/paweł-albrycht-b791147a/">Paweł Albrycht</a>
+        """,
+        unsafe_allow_html=True,
+    )
+    
     st.stop()
 
 st.sidebar.markdown(f"\n\n\n")
-st.sidebar.markdown(f"by")
-st.sidebar.markdown(f"[Paweł Albrycht](https://www.linkedin.com/in/paweł-albrycht-b791147a/)")
-st.sidebar.markdown(f"\n")
-st.sidebar.markdown("")
+st.sidebar.markdown(
+    """<p style='display: block; text-align: center; color:#DBBD8A; text-decoration: none;'>by</p>""",
+    unsafe_allow_html=True)
+
+st.sidebar.markdown(
+    """<a style='
+    display: block;
+    text-align: center;
+    color:#DBBD8A;
+    text-decoration: none;
+    :hover {color: red}
+    :visited:hover {color: purple}
+    '
+    target="_blank"
+    href="https://www.linkedin.com/in/paweł-albrycht-b791147a/">Paweł Albrycht</a>
+    """,
+    unsafe_allow_html=True,
+)
 
 print("Streamlit finish it's work")

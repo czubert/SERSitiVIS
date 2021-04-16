@@ -1,7 +1,10 @@
 [theme]
-primaryColor='#6C9BC0'  # radiobuttons etc
+# sersitive blue: #6C9BC0
+# ~sersitive gold: #DBBD8A
+#  gold: #eedda9
+
+primaryColor='#DBBD8A'  # radiobuttons etc
 backgroundColor="#eee"  # Main color
-# secondaryBackgroundColor="#ffe49d"  # sidebar color
-secondaryBackgroundColor="#eedda9"  # sidebar color
+secondaryBackgroundColor="#6C9BC0"  # sidebar color
 textColor="#262730"
 font="sans serif"
