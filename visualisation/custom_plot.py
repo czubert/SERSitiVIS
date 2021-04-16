@@ -368,6 +368,7 @@ def process_grouped_opt_spec(df2, raw_spectra, col, deg, window):
 
 
 def save_adj_spectra_to_file(df_to_save, file_name, key='default'):
+    from processing.utils import download_button
     # User can set custom name for a file to write
     input_file_name = st.text_input('Enter the name of the file to save', key=key)
     
@@ -377,5 +378,13 @@ def save_adj_spectra_to_file(df_to_save, file_name, key='default'):
     else:
         file_name += '_spectra'
     
-    if st.button('save dataframe', key=key):
-        open(f'{file_name}.csv', 'w').write(df_to_save.to_csv())
+    tmp_download_link = download_button(df_to_save, f'{file_name}.csv',
+                                        button_text='Click here to download your text!')
+    # tmp_download_link = download_link(df_to_save, f'{file_name}.csv', 'Click here to download your text!')
+    # st.markdown(tmp_download_link, unsafe_allow_html=True)
+    
+    # if st.button('save dataframe', key=key):
+    # open(f'{file_name}.csv', 'w').write(df_to_save.to_csv())
+    #     import webbrowser
+    #     webbrowser.open_new_tab(tmp_download_link)
+    st.markdown(tmp_download_link, unsafe_allow_html=True)
