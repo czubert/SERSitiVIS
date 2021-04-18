@@ -18,7 +18,6 @@ st.set_page_config(
 
 # radiobuttons in one row
 st.write('<style>div.row-widget.stRadio > div{flex-direction:row;}</style>', unsafe_allow_html=True)
-
 st.set_option('deprecation.showfileUploaderEncoding', False)
 
 # linked logo of sersitive at the sidebar
@@ -26,11 +25,12 @@ link = 'http://sersitive.eu'
 
 st.sidebar.markdown(f'''
     <a href="{link}">
-        <img src="https://sersitive.eu/wp-content/uploads/LOGO.png"
+        <img src="https://sersitive.eu/wp-content/uploads/logo-1.png"
         style="padding:0px 6px 5px 0px; 20px; height:80px"/>
     </a>''',
                     unsafe_allow_html=True
                     )
+
 st.sidebar.markdown('\n')
 st.sidebar.markdown('\n')
 
@@ -155,45 +155,24 @@ else:
         st.write('Second column is Y axis, and should be the data itself')
         st.markdown(f'<b>Name of a file</b> will be displayed as a <b>name of a plot in the legend</b>',
                     unsafe_allow_html=True)
-    
+
     with st.beta_expander('For Wasatch spectra upload raw data in *.txt or *.csv:'):
         st.write('*.csv data obtains metadata, therefore one can add important matadata to the plot name')
         st.image('examples/wasatch_wo_name.png', use_column_width=True)
         st.image('examples/wasatch_with_name.png', use_column_width=True)
-    
-    st.sidebar.markdown(f"\n\n\n")
-    
-    st.sidebar.markdown(
-        """<p style='display: block; text-align: center; color:#DBBD8A; text-decoration: none;'>by</p>""",
-        unsafe_allow_html=True,
-    )
-    st.sidebar.markdown(
-        """<a target="_blank" style='display: block; text-align: center; color:#DBBD8A; text-decoration: none;'
-        href="https://www.linkedin.com/in/paweł-albrycht-b791147a/">Paweł Albrycht</a>
-        """,
-        unsafe_allow_html=True,
-    )
-    
+
+    import authors
+
+    authors.made_by()
+    authors.made_by_pawel()
+    authors.made_by_lukasz()
+
     st.stop()
 
-st.sidebar.markdown(f"\n\n\n")
-st.sidebar.markdown(
-    """<p style='display: block; text-align: center; color:#DBBD8A; text-decoration: none;'>by</p>""",
-    unsafe_allow_html=True)
+import authors
 
-st.sidebar.markdown(
-    """<a style='
-    display: block;
-    text-align: center;
-    color:#DBBD8A;
-    text-decoration: none;
-    :hover {color: red}
-    :visited:hover {color: purple}
-    '
-    target="_blank"
-    href="https://www.linkedin.com/in/paweł-albrycht-b791147a/">Paweł Albrycht</a>
-    """,
-    unsafe_allow_html=True,
-)
+authors.made_by()
+authors.made_by_pawel()
+authors.made_by_lukasz()
 
 print("Streamlit finish it's work")
