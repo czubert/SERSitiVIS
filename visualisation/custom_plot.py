@@ -42,10 +42,9 @@ def show_plot(df, plots_color, template, display_opt, key):
     )
     
     df_to_save = pd.DataFrame()
-    file_name = 'SERSitive'
+    file_name = ''
     
     if display_opt == SINGLE:
-        file_name += '_single'
         df2 = df.copy()
 
         for col in range(len(df2.columns)):
@@ -104,19 +103,21 @@ def show_plot(df, plots_color, template, display_opt, key):
 
                     fig_single_all = draw.add_traces(df_visual, fig_single_all,
                                                      x=RS, y=specs[spec], name=name)
-    
+
             fig_single_corr = draw.add_traces_single_spectra(df_visual, fig_single_corr, x=RS, y=plot_line,
                                                              name=df_visual.columns[0])
-    
+
             draw.fig_layout(template, fig_single_corr, plots_colorscale=plots_color, descr=description)
-    
+
             if raw_spectra == RAW:
                 st.write(fig_single_corr)
             else:
                 st.write(fig_single_corr)
                 st.write(fig_single_all)
 
-            save_adj_spectra_to_file(df_visual, file_name, key=col)
+            file_name = f'{df_visual.columns[0]}_{FLAT}_{BS}_correction'
+
+            save_adj_spectra_to_file(df_visual, file_name, key=f'{col}')
 
     elif display_opt == MS:
         file_name += '_mean'
@@ -127,20 +128,21 @@ def show_plot(df, plots_color, template, display_opt, key):
     
         # Creating a Figure to add the mean spectrum in it
         fig_mean_corr = go.Figure()
+        fig_mean_all = go.Figure()
     
         if raw_spectra == RAW:
             file_name += '_raw'
-
+        
             # Drawing plots of mean spectra of raw spectra
             fig_mean_corr = draw.add_traces_single_spectra(df2, fig_mean_corr, x=RS, y=AV,
                                                            name=f'{FLAT} + {AV} correction')
-
+        
             fig_mean_corr = draw.fig_layout(template, fig_mean_corr, plots_colorscale=plots_color,
                                             descr='Raw mean spectra')
     
         elif raw_spectra == OPT or raw_spectra == NORM:
             file_name += '_optimized'
-        
+
             if raw_spectra == NORM:
                 file_name += '_normalized'
                 normalized_df2 = (df2.loc[:, AV] + df2.loc[:, AV].min()) / df2.loc[:, AV].max()
@@ -154,16 +156,16 @@ def show_plot(df, plots_color, template, display_opt, key):
             df2 = utils.correct_baseline_single(df2, deg, MS)
             df2[FLAT] = df2['Corrected'].rolling(window=window).mean()
             df2.dropna(inplace=True)
-        
+
             # Drowing figure of mean spectra after baseline correction and flattening
-            fig_mean_corr = go.Figure()
+            # fig_mean_corr = go.Figure()
             fig_mean_corr = draw.add_traces_single_spectra(df2, fig_mean_corr, x=RS, y=FLAT,
                                                            name=f'{FLAT} + {BS} correction')
             fig_mean_corr = draw.fig_layout(template, fig_mean_corr, plots_colorscale=plots_color,
                                             descr='Mean spectra after baseline correction')
-        
+
             # Drowing figure of mean spectra  + baseline
-            fig_mean_all = go.Figure()
+            # fig_mean_all = go.Figure()
             fig_mean_all = draw.add_traces(df2, fig_mean_all, x=RS, y=AV, name=AV)
             fig_mean_all = draw.add_traces(df2, fig_mean_all, x=RS, y=BS, name=BS)
             fig_mean_all = draw.add_traces(df2, fig_mean_all, x=RS, y=COR, name=COR)
@@ -233,7 +235,7 @@ def show_plot(df, plots_color, template, display_opt, key):
                                                      col=col,
                                                      deg=vals[col][0],
                                                      window=vals[col][1])
-        
+
                 df_to_save[col] = corrected[col]
         
                 if col_ind != 0:
@@ -366,9 +368,8 @@ def save_adj_spectra_to_file(df_to_save, file_name, key='default'):
     if input_file_name:
         file_name = input_file_name
     else:
-        file_name += '_spectra'
-    
-    tmp_download_link = download_button(df_to_save, f'{file_name}.csv',
+        file_name += '_SERSitiVIS_spectra'
+    tmp_download_link = download_button(df_to_save.reset_index(), f'{file_name}.csv',
                                         button_text='Click here to download your text!')
-
+    
     st.markdown(tmp_download_link, unsafe_allow_html=True)
