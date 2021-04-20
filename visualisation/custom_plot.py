@@ -51,11 +51,11 @@ def show_plot(df, plots_color, template, display_opt, key):
             st.write('=======================================================================================')
             # Creating DataFrame that will be shown on plot
             spectra_to_show = pd.DataFrame(df2.iloc[:, col]).dropna()
-    
+
             # TODO What might be useful - would be a function to choose which part of the spectrum should be
             # TODO used for the baseline fitting.
             # Adding column with baseline that will be show on plot
-    
+
             # Showing spectra after baseline correction
             fig_single_corr = go.Figure()
             
@@ -125,21 +125,21 @@ def show_plot(df, plots_color, template, display_opt, key):
         # getting mean values for each raman shift
         df2[AV] = df2.mean(axis=1)
         df2 = df2.loc[:, [AV]]
-    
+
         # Creating a Figure to add the mean spectrum in it
         fig_mean_corr = go.Figure()
         fig_mean_all = go.Figure()
-    
+
         if raw_spectra == RAW:
             file_name += '_raw'
-        
+
             # Drawing plots of mean spectra of raw spectra
             fig_mean_corr = draw.add_traces_single_spectra(df2, fig_mean_corr, x=RS, y=AV,
                                                            name=f'{FLAT} + {AV} correction')
-        
+
             fig_mean_corr = draw.fig_layout(template, fig_mean_corr, plots_colorscale=plots_color,
                                             descr='Raw mean spectra')
-    
+
         elif raw_spectra == OPT or raw_spectra == NORM:
             file_name += '_optimized'
 
@@ -147,10 +147,10 @@ def show_plot(df, plots_color, template, display_opt, key):
                 file_name += '_normalized'
                 normalized_df2 = (df2.loc[:, AV] + df2.loc[:, AV].min()) / df2.loc[:, AV].max()
                 df2 = pd.DataFrame(normalized_df2).dropna()
-        
+
             # getting baseline for mean spectra
             deg, window = adjust_all_spectra()
-        
+
             # Preparing data to plot
             df2[BS] = peakutils.baseline(df2.loc[:, AV], deg)
             df2 = utils.correct_baseline_single(df2, deg, MS)
@@ -172,10 +172,10 @@ def show_plot(df, plots_color, template, display_opt, key):
             fig_mean_all = draw.add_traces(df2, fig_mean_all, x=RS, y=FLAT, name=f'{FLAT} + {BS} correction')
             draw.fig_layout(template, fig_mean_all, plots_colorscale=plots_color,
                             descr=f'{ORG}, {BS}, {COR}, and {COR}+ {FLAT}')
-    
+
         st.write(fig_mean_corr)
         st.write(fig_mean_all)
-    
+
         save_adj_spectra_to_file(df2, file_name)
     
     elif display_opt == GS:
@@ -208,27 +208,27 @@ def show_plot(df, plots_color, template, display_opt, key):
         elif raw_spectra == OPT or raw_spectra == NORM:
             file_name += '_optimized'
             df2 = df.copy()
-    
+
             if raw_spectra == OPT:
                 shift = st.slider('Shift spectra from each other', 0, 30000, 0, 250)
             elif raw_spectra == NORM:
                 file_name += '_normalized'
                 shift = st.slider('Shift spectra from each other', 0.0, 1.0, 0.0, 0.1)
-    
+
             adjust_plots_globally = st.radio(
                 "Adjust all spectra or each spectrum?",
                 ('all', 'each'), index=0)
-    
+
             deg = 5
             window = 3
-    
+
             if adjust_plots_globally == 'all':
                 deg, window = adjust_all_spectra()
                 vals = {col: (deg, window) for col in df.columns}
             elif adjust_plots_globally == 'each':
                 with st.beta_expander("Customize your chart"):
                     vals = {col: adjust_all_spectra(col) for col in df.columns}
-    
+
             for col_ind, col in enumerate(df2.columns):
                 corrected = process_grouped_opt_spec(df2=df2,
                                                      raw_spectra=raw_spectra,
@@ -237,10 +237,10 @@ def show_plot(df, plots_color, template, display_opt, key):
                                                      window=vals[col][1])
 
                 df_to_save[col] = corrected[col]
-        
+
                 if col_ind != 0:
                     corrected.iloc[:, 0] += shift * col_ind
-        
+
                 fig_grouped_corr = draw.add_traces(corrected.reset_index(), fig_grouped_corr, x=RS, y=col,
                                                    name=col)
                 draw.fig_layout(template, fig_grouped_corr, plots_colorscale=plots_color, descr=OPT_S)
@@ -259,29 +259,29 @@ def show_plot(df, plots_color, template, display_opt, key):
         # Adding possibility to change degree of polynominal regression
         deg = st.slider(f'{DEG}', min_value=1, max_value=20, value=5)
         window = st.slider(f'{WINDOW}', min_value=1, max_value=20, value=3)
-    
+
         # Baseline correction + flattening
         df2 = utils.correct_baseline(df=df2, deg=deg, window=window)
         # drawing a plot
         df2 = df2.reset_index()
         df2m = df2.melt('Raman Shift', df2.columns[1:])
         df2m_drop = df2m.dropna()
-    
+
         fig_3d = px.line_3d(df2m_drop, x='variable', y=RS, z='value', color='variable')
-    
+
         draw.fig_layout(template, fig_3d, plots_colorscale=plots_color,
                         descr=f'{P3D} with {COR} + {FLAT} spectra')
-    
+
         camera = dict(
             eye=dict(x=1.9, y=0.15, z=0.2)
         )
-    
+
         fig_3d.update_layout(scene_camera=camera,
                              width=900,
                              height=900,
                              margin=dict(l=1, r=1, t=30, b=1),
                              )
-    
+
         st.write(fig_3d)
 
 
@@ -362,7 +362,9 @@ def process_grouped_opt_spec(df2, raw_spectra, col, deg, window):
 def save_adj_spectra_to_file(df_to_save, file_name, key='default'):
     from processing.utils import download_button
     # User can set custom name for a file to write
-    input_file_name = st.text_input('Enter the name of the file to save', key=key)
+    input_file_name = st.text_input(
+        'Enter the name of the file to save (if not given it will be added automatically based on the name of the file)',
+        key=key)
     
     # Checks if user have set a file name if not, it will be default
     if input_file_name:
