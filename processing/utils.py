@@ -127,8 +127,23 @@ def correct_baseline_single(df, deg, model=DS):
         df2[COR] = df2[AV] - peakutils.baseline(df2[BS], deg)
     else:
         df2[COR] = df2[model] - peakutils.baseline(df2[BS], deg)
-
+    
     return df2
+
+
+def normalize_spectra(df, col):
+    """
+    Takes DataFrame and normalizes data to the range of 0-1
+    :param df: DataFrame
+    :param col: int or str
+    :return: DataFrame
+    """
+    # For name of col it uses this part
+    if type(col) == str:
+        return (df.loc[:, col] - df.loc[:, col].min()) / (df.loc[:, col].max() - df.loc[:, col].min())
+    # For index  of col it uses this part
+    else:
+        return (df.iloc[:, col] - df.iloc[:, col].min()) / (df.iloc[:, col].max() - df.iloc[:, col].min())
 
 
 def download_button(object_to_download, download_filename, button_text, pickle_it=False):
