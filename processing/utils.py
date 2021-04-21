@@ -1,6 +1,8 @@
 import base64
 import glob
+import io
 import json
+import os.path
 import pickle
 import re
 import uuid
@@ -125,7 +127,7 @@ def correct_baseline_single(df, deg, model=DS):
         df2[COR] = df2[AV] - peakutils.baseline(df2[BS], deg)
     else:
         df2[COR] = df2[model] - peakutils.baseline(df2[BS], deg)
-    
+
     return df2
 
 
@@ -158,14 +160,14 @@ def download_button(object_to_download, download_filename, button_text, pickle_i
         except pickle.PicklingError as e:
             st.write(e)
             return None
-    
+
     else:
         if isinstance(object_to_download, bytes):
             pass
-        
+
         elif isinstance(object_to_download, pd.DataFrame):
             object_to_download = object_to_download.to_csv(index=False)
-        
+
         # Try JSON encode for everything else
         else:
             object_to_download = json.dumps(object_to_download)
@@ -232,3 +234,26 @@ def download_button(object_to_download, download_filename, button_text, pickle_i
                            f'href="data:file/txt;base64,{b64}">{button_text}</a><br></br>'
 
     return dl_link
+
+
+def file_to_buffer(filepath):
+    with open(filepath) as f:
+        content = f.read()
+    buffer = io.StringIO(content)
+    buffer.name = os.path.basename(filepath)
+    return buffer
+
+
+@st.cache(hash_funcs={io.StringIO: id})
+def load_example_files(spectrometer):
+    examples = {
+        'BWTEK': ['data_examples/bwtek/bwtek(2).txt', 'data_examples/bwtek/bwtek(3).txt'],
+        'Renishaw': ['data_examples/renishaw/renishaw(5).txt', 'data_examples/renishaw/renishaw(6).txt'],
+        'WITec Alpha300 R+': ['data_examples/witec/WITec(4).csv', 'data_examples/witec/WITec(5).csv'],
+        'Wasatch System': ['data_examples/wasatch/SERSitive_next_day_1ppm-20201009-093810-270034-WP-00702.csv',
+                           'data_examples/wasatch/SERSitive_next_day_2ppm-20201009-093705-137238-WP-00702.csv'],
+        'Teledyne Princeton Instruments': [],
+    }
+
+    files = [file_to_buffer(f) for f in examples[spectrometer]]
+    return files
