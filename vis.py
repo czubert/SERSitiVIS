@@ -1,3 +1,5 @@
+import base64
+
 import pandas as pd
 import streamlit as st
 
@@ -23,13 +25,17 @@ st.set_option('deprecation.showfileUploaderEncoding', False)
 # linked logo of sersitive at the sidebar
 link = 'http://sersitive.eu'
 
-st.sidebar.markdown(f'''
+with open('examples/sersitivis_no_background.png', 'rb') as f:
+    data = f.read()
+bin_str = base64.b64encode(data).decode()
+
+html_code = f'''
     <a href="{link}">
-        <img src="https://sersitive.eu/wp-content/uploads/logo-1.png"
+        <img src="data:image/png;base64,{bin_str}" 
         style="padding:0px 6px 5px 0px; 20px; height:80px"/>
-    </a>''',
-                    unsafe_allow_html=True
-                    )
+    </a>'''
+
+st.sidebar.markdown(html_code, unsafe_allow_html=True)
 
 st.sidebar.markdown('\n')
 st.sidebar.markdown('\n')
@@ -115,7 +121,7 @@ if files:
 
 else:
     st.markdown(f'''
-    <a href="{link}">
+    <a href="#">
         <img src="https://sersitive.eu/wp-content/uploads/LOGO.png"
         style="
         margin: auto;
