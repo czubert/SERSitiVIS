@@ -282,6 +282,12 @@ def show_plot(df, plots_color, template, display_opt, key):
 
 
 def bwtek_vis_options(df, plots_color, template):
+    """
+    Different types of BWTek data visualisation
+    :param df: DataFrame
+    :param plots_color: list
+    :param template: str
+    """
     # showing sidebar
     display_options_radio = st.sidebar.radio(
         "What would you like to see?",
