@@ -1,7 +1,6 @@
 import pandas as pd
 import streamlit as st
 
-import SessionState
 from processing import bwtek
 from processing import renishaw
 from processing import utils
@@ -16,8 +15,6 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="auto"
 )
-
-session_state = SessionState.get(loaded=False)
 
 # radiobuttons in one row
 st.write('<style>div.row-widget.stRadio > div{flex-direction:row;}</style>', unsafe_allow_html=True)
@@ -54,32 +51,15 @@ spectrometer = st.sidebar.radio(
     "",
     (BWTEK, RENI, WITEC, WASATCH, TELEDYNE), index=0)
 
-# buttons for load and unload example data
-st.sidebar.write('#### Try with example data', unsafe_allow_html=True)
-col1, col2 = st.sidebar.beta_columns(2)
-with col1:
-    load_button = col1.button('Load', key='load_ex_data')
-    if load_button:
-        session_state.loaded = True
-with col2:
-    unload_button = col2.button('Unload', key='unload_ex_data')
-    if unload_button:
-        session_state.loaded = False
-
-# actually load example data
-if session_state.loaded:
-    files_ex = utils.load_example_files(spectrometer)
-else:
-    files_ex = None
-
-st.sidebar.write('#### Or upload your own data', unsafe_allow_html=True)
+# users data lodaer
+st.sidebar.write('#### Upload your data', unsafe_allow_html=True)
 files = st.sidebar.file_uploader(label='', accept_multiple_files=True, type=['txt', 'csv'])
 
-# if users data are not loaded use example
-if len(files) == 0 and files_ex:
-    files = files_ex
-else:
-    session_state.loaded = False
+# allow example data loading when no custom data are loaded
+if not files:
+    st.sidebar.write('#### Or try with our', unsafe_allow_html=True)
+    if st.sidebar.checkbox("Load example data"):
+        files = utils.load_example_files(spectrometer)
 
 separators = {'comma': ',', 'dot': '.', 'tab': '\t', 'space': ' '}
 
