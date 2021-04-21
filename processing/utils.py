@@ -101,13 +101,32 @@ def upload_file():
 def read_spec(uploaded_file, spectra_params, meta_params=None):
     uploaded_file.seek(0)
     data = pd.read_csv(uploaded_file, **spectra_params)
-
+    
     if meta_params is not None:
         uploaded_file.seek(0)
         metadata = pd.read_csv(uploaded_file, **meta_params)
         return data, metadata
-
+    
     return data
+
+
+def process_grouped_opt_spec(df2, spectra_conversion_type, col, deg, window):
+    """
+    Corrects baseline, flattens the plot and if 'normalized' is chosen, then it normalize data
+    :param df2: DataFrame
+    :param spectra_conversion_type: str
+    :param col: str
+    :param deg: int
+    :param window: int, float
+    :return: DataFrame
+    """
+    corrected = pd.DataFrame(df2.loc[:, col]).dropna()
+    
+    if spectra_conversion_type == 'Normalized':
+        normalized_df2 = normalize_spectra(df2, col)
+        corrected = pd.DataFrame(normalized_df2).dropna()
+    
+    return correct_baseline(corrected, deg, window).dropna()
 
 
 def correct_baseline(df, deg, window):
@@ -115,7 +134,7 @@ def correct_baseline(df, deg, window):
     for col in range(len(df.columns)):
         df2.iloc[:, col] = df.iloc[:, col] - peakutils.baseline(df.iloc[:, col], deg)
         df2.iloc[:, col] = df2.iloc[:, col].rolling(window=window).mean()
-
+    
     return df2
 
 
