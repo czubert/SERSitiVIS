@@ -36,7 +36,6 @@ html_code = f'''
     </a>'''
 
 st.sidebar.markdown(html_code, unsafe_allow_html=True)
-
 st.sidebar.markdown('')
 st.sidebar.markdown('')
 
@@ -50,6 +49,7 @@ RENI = 'Renishaw'
 WITEC = 'WITec Alpha300 R+'
 WASATCH = 'Wasatch System'
 TELEDYNE = 'Teledyne Princeton Instruments'
+SEPARATORS = {'comma': ',', 'dot': '.', 'tab': '\t', 'space': ' '}
 
 TEST = 'Testing bwtek'
 
@@ -68,8 +68,6 @@ if not files:
     if st.sidebar.checkbox("Load example data"):
         files = utils.load_example_files(spectrometer)
 
-separators = {'comma': ',', 'dot': '.', 'tab': '\t', 'space': ' '}
-
 temp_data_df = None
 temp_meta_df = None
 df = None
@@ -86,8 +84,8 @@ if files:
 
     # Renishaw raw spectra
     elif spectrometer == RENI:
-
-        reni_data = renishaw.read_renishaw(files, separators['space'])
+    
+        reni_data = renishaw.read_renishaw(files, SEPARATORS['space'])
 
         df = pd.concat([reni_data[data_df] for data_df in reni_data], axis=1)
 
@@ -98,7 +96,7 @@ if files:
 
     # WITec raw spectra
     elif spectrometer == WITEC:
-        witec_data = witec.read_witec(files, separators['comma'])
+        witec_data = witec.read_witec(files, SEPARATORS['comma'])
 
         df = pd.concat([witec_data[data_df] for data_df in witec_data], axis=1)
 
@@ -107,7 +105,7 @@ if files:
 
     elif spectrometer == WASATCH:
         # Read data and prepare it for plot
-        data = wasatch.read_wasatch(files, separators['comma'])
+        data = wasatch.read_wasatch(files, SEPARATORS['comma'])
 
         # Show possible options for visualisation - single/grouped spectra
         display_opt = custom_plot.vis_options()
@@ -117,8 +115,8 @@ if files:
 
     # Renishaw raw spectra
     elif spectrometer == TELEDYNE:
-
-        reni_data = renishaw.read_renishaw(files, separators['comma'])
+    
+        reni_data = renishaw.read_renishaw(files, SEPARATORS['comma'])
 
         df = pd.concat([reni_data[data_df] for data_df in reni_data], axis=1)
 
