@@ -66,35 +66,36 @@ def show_plot(df, plots_color, template, display_opt, key):
             
             elif raw_spectra == OPT or raw_spectra == NORM:
                 if raw_spectra == NORM:
-                    normalized_df2 = (df2.iloc[:, col] + df2.iloc[:, col].min()) / df2.iloc[:, col].max()
+                    normalized_df2 = utils.normalize_spectra(df2, col)
+        
                     spectra_to_show = pd.DataFrame(normalized_df2).dropna()
-
+    
                 plot_line = FLAT
                 description = OPT_S
-
+    
                 col1, col2 = st.beta_columns(2)
                 with col1:
                     deg = st.slider(f'{DEG} plot nr: {col}', min_value=0, max_value=20, value=5, key=f'{col}')
                 with col2:
                     window = st.slider(f'{WINDOW} plot nr: {col}', min_value=1, max_value=20, value=3, key=f'{col}')
-
+    
                 spectra_to_show[BS] = peakutils.baseline(spectra_to_show[spectra_to_show.columns[0]], deg)
-
+    
                 # Creating DataFrame with applied Baseline correction
                 corrected_df = utils.correct_baseline_single(spectra_to_show, deg, spectra_to_show.columns[0])
                 # Refining DataFrame to make spectra flattened
                 corrected_df[FLAT] = corrected_df[COR].rolling(window=window).mean()
                 corrected_df.dropna(inplace=True)
-
+    
                 df_visual = corrected_df
-
+    
                 # Showing spectra before baseline correction + baseline function
                 fig_single_all = go.Figure()
                 draw.fig_layout(template, fig_single_all, plots_colorscale=plots_color,
                                 descr=f'{ORG}, {BS}, and {FLAT} + {BS}')
-
+    
                 specs = {'org': df_visual.columns[0], BS: BS, COR: COR, FLAT: FLAT}
-
+    
                 for spec in specs.keys():
                     if spec == FLAT:
                         name = f'{FLAT} + {BS} correction'
@@ -145,7 +146,7 @@ def show_plot(df, plots_color, template, display_opt, key):
 
             if raw_spectra == NORM:
                 file_name += '_normalized'
-                normalized_df2 = (df2.loc[:, AV] + df2.loc[:, AV].min()) / df2.loc[:, AV].max()
+                normalized_df2 = utils.normalize_spectra(df2, AV)
                 df2 = pd.DataFrame(normalized_df2).dropna()
 
             # getting baseline for mean spectra
@@ -211,6 +212,7 @@ def show_plot(df, plots_color, template, display_opt, key):
 
             if raw_spectra == OPT:
                 shift = st.slider('Shift spectra from each other', 0, 30000, 0, 250)
+
             elif raw_spectra == NORM:
                 file_name += '_normalized'
                 shift = st.slider('Shift spectra from each other', 0.0, 1.0, 0.0, 0.1)
@@ -353,7 +355,7 @@ def process_grouped_opt_spec(df2, raw_spectra, col, deg, window):
     corrected = pd.DataFrame(df2.loc[:, col]).dropna()
     
     if raw_spectra == NORM:
-        normalized_df2 = (df2.loc[:, col] + df2.loc[:, col].min()) / df2.loc[:, col].max()
+        normalized_df2 = utils.normalize_spectra(df2, col)
         corrected = pd.DataFrame(normalized_df2).dropna()
     
     return utils.correct_baseline(corrected, deg, window).dropna()
