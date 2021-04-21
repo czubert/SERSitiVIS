@@ -1,6 +1,7 @@
 import pandas as pd
 import streamlit as st
 
+import SessionState
 from processing import bwtek
 from processing import renishaw
 from processing import utils
@@ -16,13 +17,14 @@ st.set_page_config(
     initial_sidebar_state="auto"
 )
 
+session_state = SessionState.get(loaded=False)
+
 # radiobuttons in one row
 st.write('<style>div.row-widget.stRadio > div{flex-direction:row;}</style>', unsafe_allow_html=True)
 st.set_option('deprecation.showfileUploaderEncoding', False)
 
 # linked logo of sersitive at the sidebar
 link = 'http://sersitive.eu'
-
 st.sidebar.markdown(f'''
     <a href="{link}">
         <img src="https://sersitive.eu/wp-content/uploads/logo-1.png"
@@ -31,8 +33,8 @@ st.sidebar.markdown(f'''
                     unsafe_allow_html=True
                     )
 
-st.sidebar.markdown('\n')
-st.sidebar.markdown('\n')
+st.sidebar.markdown('')
+st.sidebar.markdown('')
 
 SINGLE = 'Single spectra'
 MS = 'Mean spectrum'
@@ -47,12 +49,37 @@ TELEDYNE = 'Teledyne Princeton Instruments'
 
 TEST = 'Testing bwtek'
 
+st.sidebar.write('#### Choose spectra type', unsafe_allow_html=True)
 spectrometer = st.sidebar.radio(
     "",
     (BWTEK, RENI, WITEC, WASATCH, TELEDYNE), index=0)
 
+# buttons for load and unload example data
+st.sidebar.write('#### Try with example data', unsafe_allow_html=True)
+col1, col2 = st.sidebar.beta_columns(2)
+with col1:
+    load_button = col1.button('Load', key='load_ex_data')
+    if load_button:
+        session_state.loaded = True
+with col2:
+    unload_button = col2.button('Unload', key='unload_ex_data')
+    if unload_button:
+        session_state.loaded = False
+
+# actually load example data
+if session_state.loaded:
+    files_ex = utils.load_example_files(spectrometer)
+else:
+    files_ex = None
+
+st.sidebar.write('#### Or upload your own data', unsafe_allow_html=True)
 files = st.sidebar.file_uploader(label='', accept_multiple_files=True, type=['txt', 'csv'])
 
+# if users data are not loaded use example
+if len(files) == 0 and files_ex:
+    files = files_ex
+else:
+    session_state.loaded = False
 
 separators = {'comma': ',', 'dot': '.', 'tab': '\t', 'space': ' '}
 
@@ -125,19 +152,19 @@ else:
         </a>''',
                 unsafe_allow_html=True
                 )
-    
+
     st.warning('First choose data type from left sidebar')
     st.warning('Then upload file or files for visualisation - left sidebar')
     st.header('Short manual on how to implement data')
     st.write('')
-    
+
     with st.beta_expander('Download example date'):
         st.markdown("[Download data from OneDrive](https://1drv.ms/u/s!AlbmGPIOL6ElhvdePlcXvYwtt5YzbA?e=zsdF5j)")
         st.markdown("Password: sersitive")
-    
+
     with st.beta_expander('For BWTEK - upload raw data in *.txt format'):
         st.write('Update raw data from BWTek without any changes')
-    
+
     with st.beta_expander('For WITec Alpha300 R+, upload spectra in *.txt or *.csv format as follows:'):
         st.write(pd.read_csv('data_examples/witec/WITec(7).csv'))
         st.image('examples/witec.png', use_column_width=True)
@@ -147,7 +174,7 @@ else:
                     unsafe_allow_html=True)
         st.markdown(f"<p style='color:red'><b>Important:</b> Do not duplicate names of the columns",
                     unsafe_allow_html=True)
-    
+
     with st.beta_expander('For Renishaw spectra upload raw data in *.txt or *.csv format as shown below:'):
         st.write(pd.read_csv('data_examples/renishaw/renishaw(6).txt', header=None, sep='\t'))
         st.image('examples/reni.png', use_column_width=True)
