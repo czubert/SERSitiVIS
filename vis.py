@@ -31,14 +31,14 @@ bin_str = base64.b64encode(data).decode()
 
 html_code = f'''
     <a href="{link}">
-        <img src="data:image/png;base64,{bin_str}" 
+        <img src="data:image/png;base64,{bin_str}"
         style="padding:0px 6px 5px 0px; 20px; height:80px"/>
     </a>'''
 
 st.sidebar.markdown(html_code, unsafe_allow_html=True)
 
-st.sidebar.markdown('\n')
-st.sidebar.markdown('\n')
+st.sidebar.markdown('')
+st.sidebar.markdown('')
 
 SINGLE = 'Single spectra'
 MS = 'Mean spectrum'
@@ -53,12 +53,20 @@ TELEDYNE = 'Teledyne Princeton Instruments'
 
 TEST = 'Testing bwtek'
 
+st.sidebar.write('#### Choose spectra type', unsafe_allow_html=True)
 spectrometer = st.sidebar.radio(
     "",
     (BWTEK, RENI, WITEC, WASATCH, TELEDYNE), index=0)
 
+# users data lodaer
+st.sidebar.write('#### Upload your data', unsafe_allow_html=True)
 files = st.sidebar.file_uploader(label='', accept_multiple_files=True, type=['txt', 'csv'])
 
+# allow example data loading when no custom data are loaded
+if not files:
+    st.sidebar.write('#### Or try with our', unsafe_allow_html=True)
+    if st.sidebar.checkbox("Load example data"):
+        files = utils.load_example_files(spectrometer)
 
 separators = {'comma': ',', 'dot': '.', 'tab': '\t', 'space': ' '}
 
@@ -131,19 +139,19 @@ else:
         </a>''',
                 unsafe_allow_html=True
                 )
-    
+
     st.warning('First choose data type from left sidebar')
     st.warning('Then upload file or files for visualisation - left sidebar')
     st.header('Short manual on how to implement data')
     st.write('')
-    
+
     with st.beta_expander('Download example date'):
         st.markdown("[Download data from OneDrive](https://1drv.ms/u/s!AlbmGPIOL6ElhvdePlcXvYwtt5YzbA?e=zsdF5j)")
         st.markdown("Password: sersitive")
-    
+
     with st.beta_expander('For BWTEK - upload raw data in *.txt format'):
         st.write('Update raw data from BWTek without any changes')
-    
+
     with st.beta_expander('For WITec Alpha300 R+, upload spectra in *.txt or *.csv format as follows:'):
         st.write(pd.read_csv('data_examples/witec/WITec(7).csv'))
         st.image('examples/witec.png', use_column_width=True)
@@ -153,7 +161,7 @@ else:
                     unsafe_allow_html=True)
         st.markdown(f"<p style='color:red'><b>Important:</b> Do not duplicate names of the columns",
                     unsafe_allow_html=True)
-    
+
     with st.beta_expander('For Renishaw spectra upload raw data in *.txt or *.csv format as shown below:'):
         st.write(pd.read_csv('data_examples/renishaw/renishaw(6).txt', header=None, sep='\t'))
         st.image('examples/reni.png', use_column_width=True)
