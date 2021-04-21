@@ -128,7 +128,6 @@ def choosing_colorway():
         colorscale_names, index=31)
 
     chosen_color = getattr(modules_colors_d[chosen_module_color], f'{all_colors[plots_color]}')
-
     return chosen_color
 
 
