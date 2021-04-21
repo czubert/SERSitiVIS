@@ -121,7 +121,7 @@ if files:
 
 else:
     st.markdown(f'''
-    <a href="{link}">
+    <a href="#">
         <img src="https://sersitive.eu/wp-content/uploads/LOGO.png"
         style="
         margin: auto;
