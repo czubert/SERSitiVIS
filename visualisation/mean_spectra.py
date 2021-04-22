@@ -19,8 +19,7 @@ OPT = "Optimised Data"
 NORM = "Normalized"
 
 
-def show_mean_plot(df, params):
-    plots_color, template, display_opt, spectra_conversion_type = params
+def show_mean_plot(df, plots_color, template, spectra_conversion_type):
     file_name = 'mean'
     df2 = df.copy()
     

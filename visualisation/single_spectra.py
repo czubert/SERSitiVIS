@@ -28,8 +28,7 @@ NORM = "Normalized"
 OPT_S = "Optimised Spectrum"
 
 
-def show_single_plots(df, params):
-    plots_color, template, display_opt, spectra_conversion_type = params
+def show_single_plots(df, plots_color, template, spectra_conversion_type):
     global df_visual, plot_line, description, fig_single_all
     df2 = df.copy()
     
