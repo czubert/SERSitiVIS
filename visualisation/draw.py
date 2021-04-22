@@ -134,10 +134,18 @@ def choosing_colorway():
 @st.cache
 def get_colors_names(chosen_module_color):
     colorscale_names = []
-
+    
     # Getting all colors from modules
     colorscale_names.extend([f'{name}' for name, body
                              in inspect.getmembers(getattr(px.colors, chosen_module_color))
                              if isinstance(body, list)])
-
+    
     return colorscale_names
+
+
+def adjust_plot_colors_n_templates():
+    with st.beta_expander("Customize your chart"):
+        plots_color = choosing_colorway()
+        template = choose_template()
+    
+    return plots_color, template

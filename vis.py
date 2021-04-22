@@ -12,16 +12,14 @@ from visualisation import draw
 from visualisation import grouped_spectra as gs
 from visualisation import mean_spectra as ms
 from visualisation import p3d_spectra as p3d
-from visualisation import sigle_spectra as ss
+from visualisation import single_spectra as ss
 from visualisation import visualisation_options as vo
 
 SINGLE = 'Single spectra'
 MS = "Mean spectrum"
 GS = "Grouped spectra"
 P3D = "Plot 3D"
-RAW = "Raw Data"
-OPT = "Optimised Data"
-NORM = "Normalized"
+
 
 UplSpec = 'Upload "*.txt" spectra'
 BWTEK = 'BWTEK'
@@ -82,10 +80,6 @@ temp_meta_df = None
 df = None
 
 if files:
-    with st.beta_expander("Customize your chart"):
-        plots_color = draw.choosing_colorway()
-        template = draw.choose_template()
-
     # BWTek raw spectra
     if spectrometer == BWTEK:
         temp_data_df, temp_meta_df = bwtek.read_bwtek(files)
@@ -102,6 +96,7 @@ if files:
         witec_data = witec.read_witec(files, SEPARATORS['comma'])
         df = pd.concat([witec_data[data_df] for data_df in witec_data], axis=1)
 
+    # WASATCH raw spectra
     elif spectrometer == WASATCH:
         # Read data and prepare it for plot
         data = wasatch.read_wasatch(files, SEPARATORS['comma'])
@@ -112,17 +107,14 @@ if files:
         df = pd.concat([reni_data[data_df] for data_df in reni_data], axis=1)
         df.dropna(inplace=True, how='any', axis=0)
 
+    # choose plot colors and tamplates
+    plots_color, template = draw.adjust_plot_colors_n_templates()
+
     # lets you select chart type
     chart_type = vo.vis_options(spectrometer)
 
     # lets you select data conversion type
-    st.sidebar.write('#### How would you like to convert the data?', unsafe_allow_html=True)
-    spectra_conversion_type = st.sidebar.radio(
-        "",
-        (RAW, OPT, NORM), key=f'raw'
-    )
-
-    params = plots_color, template, chart_type, spectra_conversion_type
+    spectra_conversion_type = vo.covertion_opt()
 
     # All possible types of charts
     data_vis_option = {SINGLE: ss.show_single_plots,
@@ -131,7 +123,7 @@ if files:
                        P3D: p3d.show_3d_plots}
 
     # run specified type of chart with chosen parameters
-    data_vis_option[chart_type](df, params)
+    data_vis_option[chart_type](df, plots_color, template, spectra_conversion_type)
 
 
 else:

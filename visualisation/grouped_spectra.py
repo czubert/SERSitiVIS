@@ -16,9 +16,8 @@ OPT_S = "Optimised Spectrum"
 SHIFT = 'Shift spectra from each other'
 
 
-def show_grouped_plot(df, params):
+def show_grouped_plot(df, plots_color, template, spectra_conversion_type):
     global shift
-    plots_color, template, display_opt, spectra_conversion_type = params
     file_name = 'grouped'
     df_to_save = pd.DataFrame()
     
