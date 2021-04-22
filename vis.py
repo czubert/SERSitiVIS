@@ -99,7 +99,7 @@ if files:
     # WASATCH raw spectra
     elif spectrometer == WASATCH:
         # Read data and prepare it for plot
-        data = wasatch.read_wasatch(files, SEPARATORS['comma'])
+        df = wasatch.read_wasatch(files, SEPARATORS['comma'])
 
     # Renishaw raw spectra
     elif spectrometer == TELEDYNE:
