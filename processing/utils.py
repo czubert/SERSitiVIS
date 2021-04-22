@@ -12,6 +12,13 @@ import pandas as pd
 import peakutils
 import streamlit as st
 
+constants = {'SINGLE': 'Single spectra', 'MS': "Mean spectrum", 'GS': "Grouped spectra", 'P3D': "Plot 3D",
+             'AV': "Average", 'BS': "Baseline", 'RS': "Raman Shift", 'DS': "Dark Subtracted #1",
+             'DEG': "Polynominal degree", 'WINDOW': "Set window for spectra flattening",
+             'DFS': {'ML model grouped spectra': 'Dark Subtracted #1', 'ML model mean spectra': 'Average'},
+             'FLAT': "Flattened", 'COR': "Corrected", 'ORG': "Original spectrum", 'RAW': "Raw Data",
+             'OPT': "Optimised Data", 'NORM': "Normalized", 'OPT_S': "Optimised Spectrum", }
+
 RS = 'Raman Shift'
 COR = 'Corrected'
 DS = 'Dark Subtracted #1'
