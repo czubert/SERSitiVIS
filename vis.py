@@ -92,7 +92,7 @@ if files:
         df.dropna(inplace=True, how='any', axis=0)
 
         display_opt = custom_plot.vis_options()
-        custom_plot.show_plot(df, plots_color, template, display_opt=display_opt, key=None)
+        custom_plot.show_plot(df, plots_color, template, display_opt=display_opt)
 
     # WITec raw spectra
     elif spectrometer == WITEC:
@@ -101,7 +101,7 @@ if files:
         df = pd.concat([witec_data[data_df] for data_df in witec_data], axis=1)
 
         display_opt = custom_plot.vis_options()
-        custom_plot.show_plot(df, plots_color, template, display_opt=display_opt, key=None)
+        custom_plot.show_plot(df, plots_color, template, display_opt=display_opt)
 
     elif spectrometer == WASATCH:
         # Read data and prepare it for plot
@@ -111,19 +111,19 @@ if files:
         display_opt = custom_plot.vis_options()
 
         # Plot spectra
-        custom_plot.show_plot(data, plots_color, template, display_opt=display_opt, key=None)
+        custom_plot.show_plot(data, plots_color, template, display_opt=display_opt)
 
     # Renishaw raw spectra
     elif spectrometer == TELEDYNE:
     
         reni_data = renishaw.read_renishaw(files, SEPARATORS['comma'])
-
+    
         df = pd.concat([reni_data[data_df] for data_df in reni_data], axis=1)
-
+    
         df.dropna(inplace=True, how='any', axis=0)
-
-        display_opt = custom_plot.vis_options()
-        custom_plot.show_plot(df, plots_color, template, display_opt=display_opt, key=None)
+    
+        display_opt = custom_plot.visualisation_options()
+        custom_plot.show_plot(df, plots_color, template, display_opt=display_opt)
 
 else:
     st.markdown(f'''

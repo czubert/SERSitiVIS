@@ -109,6 +109,17 @@ def read_spec(uploaded_file, spectra_params, meta_params=None):
     
     return data
 
+def adjust_spectras_window_n_degree(col='default'):
+    col1, col2 = st.beta_columns(2)
+    with col1:
+        deg = st.slider(f'{"Polynominal degree"} for all uploaded spectra', min_value=1, max_value=20, value=5,
+                        key=f'{col}_deg')
+    
+    with col2:
+        window = st.slider(f'{"Set window for spectra flattening"} for all uploaded spectra', min_value=1, max_value=20,
+                           value=3,
+                           key=f'{col}_window')
+        return deg, window
 
 def process_grouped_opt_spec(df2, spectra_conversion_type, col, deg, window):
     """
