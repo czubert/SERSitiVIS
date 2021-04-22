@@ -11,7 +11,7 @@ FLAT = "Flattened"
 COR = "Corrected"
 
 
-def show_3d_plots(df, plots_color, template, spectra_conversion_type):
+def show_3d_plots(df, plots_color, template, _):
     df2 = df.copy()
     df2.columns = ['widmo nr ' + str(i) for i in range(len(df2.columns))]
     import plotly.express as px
