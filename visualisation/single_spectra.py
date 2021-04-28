@@ -29,7 +29,7 @@ OPT_S = "Optimised Spectrum"
 
 
 def show_single_plots(df, plots_color, template, spectra_conversion_type):
-    global df_visual, plot_line, description, fig_single_all
+    global plot_line, description, fig_single_all, corrected_df, df_visual
     df2 = df.copy()
     
     for col in range(len(df2.columns)):
@@ -57,28 +57,26 @@ def show_single_plots(df, plots_color, template, spectra_conversion_type):
             
             plot_line = FLAT
             description = OPT_S
-            
+
             col1, col2 = st.beta_columns(2)
             with col1:
                 deg = st.slider(f'{DEG} plot nr: {col}', min_value=0, max_value=20, value=5, key=f'{col}')
             with col2:
                 window = st.slider(f'{WINDOW} plot nr: {col}', min_value=1, max_value=20, value=3, key=f'{col}')
-            
+
             spectra_to_show[BS] = peakutils.baseline(spectra_to_show[spectra_to_show.columns[0]], deg)
-            
+
             # Creating DataFrame with applied Baseline correction
-            corrected_df = utils.correct_baseline_single(spectra_to_show, deg, spectra_to_show.columns[0])
+            df_visual = utils.correct_baseline(spectra_to_show, deg, key=SINGLE, model=spectra_to_show.columns[0])
+
             # Refining DataFrame to make spectra flattened
-            corrected_df[FLAT] = corrected_df[COR].rolling(window=window).mean()
-            corrected_df.dropna(inplace=True)
-            
-            df_visual = corrected_df
-            
+            df_visual = utils.smoothen_the_spectra(df_visual, window, key=SINGLE)
+
             # Showing spectra before baseline correction + baseline function
             fig_single_all = go.Figure()
             draw.fig_layout(template, fig_single_all, plots_colorscale=plots_color,
                             descr=f'{ORG}, {BS}, and {FLAT} + {BS}')
-            
+
             specs = {'org': df_visual.columns[0], BS: BS, COR: COR, FLAT: FLAT}
             
             for spec in specs.keys():

@@ -10,29 +10,17 @@ OPT = "Optimised Data"
 NORM = "Normalized"
 
 
-def bwtek_vis_options():
-    """
-    Different types of BWTek data visualisation
-    :param df: DataFrame
-    :param plots_color: list
-    :param template: str
-    """
-    # showing sidebar
-    chart_type = st.sidebar.radio(
-        'Choose type of chart',
-        (SINGLE, MS, GS, P3D), index=0)
-    
-    st.header(chart_type)
-    # show_plot(df, plots_color, template, display_opt=chart_type)
-    return chart_type
-
-
 def vis_options(spectrometer):
+    """
+    Different types of visualisation for other data types
+    :param spectrometer:
+    :return:
+    """
     options = [SINGLE, GS]
     
     if spectrometer == 'BWTEK':
         options = [SINGLE, MS, GS, P3D]
-
+    
     st.sidebar.write('#### Choose type of chart', unsafe_allow_html=True)
     chart_type = st.sidebar.radio(
         '',
