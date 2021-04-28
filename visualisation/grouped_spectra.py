@@ -62,12 +62,12 @@ def show_grouped_plot(df, plots_color, template, spectra_conversion_type):
             ('all', 'each'), index=0)
         
         if adjust_plots_globally == 'all':
-            deg, window = utils.adjust_spectras_window_n_degree()
+            deg, window = utils.adjust_spectras_by_window_and_degree()
             vals = {col: (deg, window) for col in df.columns}
         
         elif adjust_plots_globally == 'each':
             with st.beta_expander("Customize your chart"):
-                vals = {col: utils.adjust_spectras_window_n_degree(col) for col in df.columns}
+                vals = {col: utils.adjust_spectras_by_window_and_degree(col) for col in df.columns}
         
         for col_ind, col in enumerate(df2.columns):
             corrected = utils.process_grouped_opt_spec(df2=df2,

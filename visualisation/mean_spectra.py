@@ -43,28 +43,28 @@ def show_mean_plot(df, plots_color, template, spectra_conversion_type):
     
     elif spectra_conversion_type == OPT or spectra_conversion_type == NORM:
         file_name += '_optimized'
-        
+
         if spectra_conversion_type == NORM:
             file_name += '_normalized'
             normalized_df2 = utils.normalize_spectra(df2, AV)
             df2 = pd.DataFrame(normalized_df2).dropna()
-        
+
         # getting baseline for mean spectra
-        deg, window = utils.adjust_spectras_window_n_degree()
-        
+        deg, window = utils.adjust_spectras_by_window_and_degree()
+
         # Preparing data to plot
         df2[BS] = peakutils.baseline(df2.loc[:, AV], deg)
-        df2 = utils.correct_baseline_single(df2, deg, MS)
-        df2[FLAT] = df2['Corrected'].rolling(window=window).mean()
+        df2 = utils.correct_baseline(df2, deg, key=MS, model=AV)
+        df2 = utils.smoothen_the_spectra(df2, window=window, key=MS)
         df2.dropna(inplace=True)
-        
+
         # Drowing figure of mean spectra after baseline correction and flattening
         # fig_mean_corr = go.Figure()
         fig_mean_corr = draw.add_traces_single_spectra(df2, fig_mean_corr, x=RS, y=FLAT,
                                                        name=f'{FLAT} + {BS} correction')
         fig_mean_corr = draw.fig_layout(template, fig_mean_corr, plots_colorscale=plots_color,
                                         descr='Mean spectra after baseline correction')
-        
+
         # Drowing figure of mean spectra  + baseline
         # fig_mean_all = go.Figure()
         fig_mean_all = draw.add_traces(df2, fig_mean_all, x=RS, y=AV, name=AV)
