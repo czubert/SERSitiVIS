@@ -16,18 +16,18 @@ def show_3d_plots(df, plots_color, template, _):
     df2.columns = ['widmo nr ' + str(i) for i in range(len(df2.columns))]
     import plotly.express as px
     # Adding possibility to change degree of polynominal regression
-    deg = st.slider(f'{DEG}', min_value=1, max_value=20, value=5)
-    window = st.slider(f'{WINDOW}', min_value=1, max_value=20, value=3)
-    
+    deg, window = utils.adjust_spectras_by_window_and_degree()
+
     # Baseline correction + flattening
-    df2 = utils.correct_baseline(df=df2, deg=deg, window=window)
+    df2 = utils.correct_baseline(df=df2, deg=deg)
+    df2 = utils.smoothen_the_spectra(df=df2, window=window)
     # drawing a plot
     df2 = df2.reset_index()
     df2m = df2.melt('Raman Shift', df2.columns[1:])
     df2m_drop = df2m.dropna()
-    
+
     fig_3d = px.line_3d(df2m_drop, x='variable', y=RS, z='value', color='variable')
-    
+
     draw.fig_layout(template, fig_3d, plots_colorscale=plots_color,
                     descr=f'{P3D} with {COR} + {FLAT} spectra')
     

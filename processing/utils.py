@@ -18,7 +18,6 @@ constants = {'SINGLE': 'Single spectra', 'MS': "Mean spectrum", 'GS': "Grouped s
              'OPT': "Optimised Data", 'NORM': "Normalized", 'OPT_S': "Optimised Spectrum", }
 
 RS = 'Raman Shift'
-COR = 'Corrected'
 DS = 'Dark Subtracted #1'
 BS = 'Baseline'
 MS = 'Mean spectrum'
@@ -94,10 +93,12 @@ def process_grouped_opt_spec(df2, spectra_conversion_type, col, deg, window):
     :return: DataFrame
     """
     corrected = pd.DataFrame(df2.loc[:, col]).dropna()
-    
+
     if spectra_conversion_type == 'Normalized':
         normalized_df2 = normalize_spectra(df2, col)
         corrected = pd.DataFrame(normalized_df2).dropna()
+
+    corrected = smoothen_the_spectra(corrected, window=window)
 
     return correct_baseline(corrected, deg).dropna()
 
@@ -112,8 +113,12 @@ def correct_baseline(df, deg, key=None, model=None):
     """
     df2 = df.copy()
     if key == constants['SINGLE']:
-        df2[COR] = df2[model] - peakutils.baseline(df2[BS], deg)
-    
+        df2[constants['COR']] = df2[model] - peakutils.baseline(df2[BS], deg)
+
+    elif key == constants['MS']:
+        df2[constants['COR']] = df2[model] - peakutils.baseline(df2[BS], deg)
+        df2.dropna(inplace=True)
+
     else:
         for col in range(len(df.columns)):
             df2.iloc[:, col] = df.iloc[:, col] - peakutils.baseline(df.iloc[:, col], deg)
@@ -130,14 +135,16 @@ def smoothen_the_spectra(df, window, key=None):
     :return: DataFrame
     """
     df2 = df.copy()
-    
+
     if key == constants['SINGLE']:
         df2[constants['FLAT']] = df2[constants['COR']].rolling(window=window).mean()
-        df2.dropna(inplace=True)
+    elif key == constants['MS']:
+        df2[constants['FLAT']] = df2[constants['AV']].rolling(window=window).mean()
     else:
         for col in range(len(df.columns)):
             df2.iloc[:, col] = df2.iloc[:, col].rolling(window=window).mean()
-    
+
+    df2.dropna(inplace=True)
     return df2
 
 
