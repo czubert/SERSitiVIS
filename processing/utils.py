@@ -1,12 +1,10 @@
 import base64
-import glob
 import io
 import json
 import os.path
 import pickle
 import re
 import uuid
-from collections import Counter
 
 import pandas as pd
 import peakutils
@@ -25,63 +23,6 @@ DS = 'Dark Subtracted #1'
 BS = 'Baseline'
 MS = 'Mean spectrum'
 AV = 'Average'
-
-
-def get_names(url):
-    """
-    Creates list of strings of files paths
-    :param url: String
-    :return: List
-    """
-    file_names = glob.glob(url)
-    return file_names
-
-
-def lower_names(file_names):
-    """
-    Takes list of strings and makes characters lower
-    :param file_names: List
-    :return: List
-    """
-
-    file_names_lower = [x.lower() for x in file_names]
-    return file_names_lower
-
-
-def pattern_in_name(name, re_pattern):
-    if re.search(re_pattern, name) is None:
-        return False
-    elif re.search(re_pattern, name) is not None:
-        return True
-
-
-def save_df_to_csv(df, path):
-    df.to_csv(f'{path}')
-
-
-def read_df_from_csv(path):
-    return pd.read_csv(f'{path}')
-
-
-def reduce_list_dimension(dic):
-    sep_names = dic.values()
-    sep_names_chain = []
-    for el in sep_names:
-        sep_names_chain += el
-
-    return sep_names_chain
-
-
-def check_for_repetitions(list1, list2):
-    res = list((Counter(list1) - Counter(list2)).elements())
-
-    return res
-
-
-def check_for_differences(list1, list2):
-    counter = abs(len(list2) - len(list1))
-
-    return counter
 
 
 def group_dfs(data_dfs):
@@ -106,6 +47,13 @@ def upload_file():
 
 
 def read_spec(uploaded_file, spectra_params, meta_params=None):
+    """
+    Reads csv file and returns it, if metadata available returns also metadata
+    :param uploaded_file: csv file
+    :param spectra_params: Dict
+    :param meta_params: Dict
+    :return: DataFrame
+    """
     uploaded_file.seek(0)
     data = pd.read_csv(uploaded_file, **spectra_params)
     
@@ -117,7 +65,12 @@ def read_spec(uploaded_file, spectra_params, meta_params=None):
     return data
 
 
-def adjust_spectras_window_n_degree(col='default'):
+def adjust_spectras_by_window_and_degree(col='default'):
+    """
+    Shows sliders in streamlit to let user adjust the degree of polinomial regression, and window for smoothening
+    :param col: int - Just to make it possible to use multiple sliders at one 'site' of the website
+    :return: int, int
+    """
     col1, col2 = st.beta_columns(2)
     with col1:
         deg = st.slider(f'{"Polynominal degree"} for all uploaded spectra', min_value=1, max_value=20, value=5,
@@ -127,7 +80,7 @@ def adjust_spectras_window_n_degree(col='default'):
         window = st.slider(f'{"Set window for spectra flattening"} for all uploaded spectra', min_value=1, max_value=20,
                            value=3,
                            key=f'{col}_window')
-        return deg, window
+    return deg, window
 
 
 def process_grouped_opt_spec(df2, spectra_conversion_type, col, deg, window):
