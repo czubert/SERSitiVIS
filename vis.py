@@ -103,10 +103,11 @@ if files:
 
     # Renishaw raw spectra
     elif spectrometer == TELEDYNE:
+    
         reni_data = renishaw.read_renishaw(files, SEPARATORS['comma'])
         df = pd.concat([reni_data[data_df] for data_df in reni_data], axis=1)
         df.dropna(inplace=True, how='any', axis=0)
-
+        st.write(df)
     # choose plot colors and tamplates
     plots_color, template = draw.adjust_plot_colors_n_templates()
 
@@ -128,25 +129,19 @@ if files:
 
 else:
     st.markdown(f'''
-    <a href="#">
         <img src="https://sersitive.eu/wp-content/uploads/LOGO.png"
         style="
         margin: auto;
         width: 80%;
         padding:0px 6px 45px 25%; 20px;
-        "/>
-        </a>''',
+        "/>''',
                 unsafe_allow_html=True
                 )
 
     st.warning('First choose data type from left sidebar')
-    st.warning('Then upload file or files for visualisation - left sidebar')
-    st.header('Short manual on how to implement data')
+    st.warning('Then upload file or files for visualisation - sidebar')
+    st.header('Short manual on how to import data')
     st.write('')
-
-    with st.beta_expander('Download example date'):
-        st.markdown("[Download data from OneDrive](https://1drv.ms/u/s!AlbmGPIOL6ElhvdePlcXvYwtt5YzbA?e=zsdF5j)")
-        st.markdown("Password: sersitive")
 
     with st.beta_expander('For BWTEK - upload raw data in *.txt format'):
         st.write('Update raw data from BWTek without any changes')

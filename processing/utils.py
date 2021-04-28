@@ -116,6 +116,7 @@ def read_spec(uploaded_file, spectra_params, meta_params=None):
     
     return data
 
+
 def adjust_spectras_window_n_degree(col='default'):
     col1, col2 = st.beta_columns(2)
     with col1:
@@ -127,6 +128,7 @@ def adjust_spectras_window_n_degree(col='default'):
                            value=3,
                            key=f'{col}_window')
         return deg, window
+
 
 def process_grouped_opt_spec(df2, spectra_conversion_type, col, deg, window):
     """
@@ -143,27 +145,45 @@ def process_grouped_opt_spec(df2, spectra_conversion_type, col, deg, window):
     if spectra_conversion_type == 'Normalized':
         normalized_df2 = normalize_spectra(df2, col)
         corrected = pd.DataFrame(normalized_df2).dropna()
-    
-    return correct_baseline(corrected, deg, window).dropna()
+
+    return correct_baseline(corrected, deg).dropna()
 
 
-def correct_baseline(df, deg, window):
+def correct_baseline(df, deg, key=None, model=None):
+    """
+    Takes DataFrame of spectrum, and correct its baseline by changing the values.
+    :param df: DataFrame
+    :param deg: int
+    :param window: int
+    :return: DataFrame
+    """
     df2 = df.copy()
-    for col in range(len(df.columns)):
-        df2.iloc[:, col] = df.iloc[:, col] - peakutils.baseline(df.iloc[:, col], deg)
-        df2.iloc[:, col] = df2.iloc[:, col].rolling(window=window).mean()
+    if key == constants['SINGLE']:
+        df2[COR] = df2[model] - peakutils.baseline(df2[BS], deg)
+    
+    else:
+        for col in range(len(df.columns)):
+            df2.iloc[:, col] = df.iloc[:, col] - peakutils.baseline(df.iloc[:, col], deg)
     
     return df2
 
 
-def correct_baseline_single(df, deg, model=DS):
+def smoothen_the_spectra(df, window, key=None):
+    """
+    Takes DataFrame of spectrum, and correct its baseline by changing the values.
+    :param df: DataFrame
+    :param window: int - tells how many items to take into 'rolling' function
+    :param key: String - tells if it should process Single data or other
+    :return: DataFrame
+    """
     df2 = df.copy()
-    if model == DS:
-        df2[COR] = df2[DS] - peakutils.baseline(df2[BS], deg)
-    elif model == MS:
-        df2[COR] = df2[AV] - peakutils.baseline(df2[BS], deg)
+    
+    if key == constants['SINGLE']:
+        df2[constants['FLAT']] = df2[constants['COR']].rolling(window=window).mean()
+        df2.dropna(inplace=True)
     else:
-        df2[COR] = df2[model] - peakutils.baseline(df2[BS], deg)
+        for col in range(len(df.columns)):
+            df2.iloc[:, col] = df2.iloc[:, col].rolling(window=window).mean()
     
     return df2
 

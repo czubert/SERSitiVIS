@@ -19,7 +19,6 @@ def group_dfs(separated_metadata_data_dfs):
         df.dropna(axis=0, inplace=True)  # drops indices with any NaN values
         df.reset_index(inplace=True)
         grouped_df[substrate_type] = df
-
     return grouped_df
 
 
