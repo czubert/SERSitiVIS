@@ -60,6 +60,12 @@ def show_single_plots(df, plots_color, template, spectra_conversion_type):
             description = OPT_S
 
             with col2:
+                st.markdown('## Adjust your spectra')
+                st.header('\n\n\n\n')
+                st.header('\n\n\n\n')
+                st.header('\n\n\n\n')
+                st.header('\n\n\n\n')
+                st.header('\n\n\n\n')
                 deg = st.slider(f'{DEG} plot nr: {col}', min_value=0, max_value=20, value=5, key=f'{col}')
                 window = st.slider(f'{WINDOW} plot nr: {col}', min_value=1, max_value=20, value=3, key=f'{col}')
     
