@@ -62,6 +62,8 @@ def show_grouped_plot(df, plots_color, template, spectra_conversion_type):
             ('all', 'each'), index=0)
         col1, col2 = st.beta_columns((2, 1))
         with col2:
+            st.markdown('## Adjust your spectra')
+    
             if adjust_plots_globally == 'all':
                 deg, window = utils.adjust_spectras_by_window_and_degree()
                 vals = {col: (deg, window) for col in df.columns}

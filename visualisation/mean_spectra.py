@@ -52,6 +52,12 @@ def show_mean_plot(df, plots_color, template, spectra_conversion_type):
             df2 = pd.DataFrame(normalized_df2).dropna()
     
         with col2:
+            st.markdown('## Adjust your spectra')
+            st.header('\n\n\n\n')
+    
+            st.header('\n\n\n\n')
+            st.header('\n\n\n\n')
+            st.header('\n\n\n\n')
             deg, window = utils.adjust_spectras_by_window_and_degree(name=file_name)
     
         # getting baseline for mean spectra
