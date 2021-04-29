@@ -64,21 +64,19 @@ def read_spec(uploaded_file, spectra_params, meta_params=None):
     return data
 
 
-def adjust_spectras_by_window_and_degree(col='default'):
+def adjust_spectras_by_window_and_degree(name='all uploaded spectra', col='default'):
     """
     Shows sliders in streamlit to let user adjust the degree of polinomial regression, and window for smoothening
     :param col: int - Just to make it possible to use multiple sliders at one 'site' of the website
     :return: int, int
     """
-    col1, col2 = st.beta_columns(2)
-    with col1:
-        deg = st.slider(f'{"Polynominal degree"} for all uploaded spectra', min_value=1, max_value=20, value=5,
-                        key=f'{col}_deg')
     
-    with col2:
-        window = st.slider(f'{"Set window for spectra flattening"} for all uploaded spectra', min_value=1, max_value=20,
-                           value=3,
-                           key=f'{col}_window')
+    deg = st.slider(f'{"Polynominal degree"} for {name} spectra', min_value=1, max_value=20, value=5,
+                    key=f'{col}_deg')
+    
+    window = st.slider(f'{"Set window for spectra flattening"} for {name} spectra', min_value=1, max_value=20,
+                       value=3,
+                       key=f'{col}_window')
     return deg, window
 
 

@@ -36,6 +36,7 @@ def show_single_plots(df, plots_color, template, spectra_conversion_type):
         st.write('=======================================================================================')
         # Creating DataFrame that will be shown on plot
         spectra_to_show = pd.DataFrame(df2.iloc[:, col]).dropna()
+        col1, col2 = st.beta_columns((2, 1))
         
         # TODO What might be useful - would be a function to choose which part of the spectrum should be
         # TODO used for the baseline fitting.
@@ -57,8 +58,7 @@ def show_single_plots(df, plots_color, template, spectra_conversion_type):
     
             plot_line = FLAT
             description = OPT_S
-    
-            col1, col2 = st.beta_columns((2, 1))
+
             with col2:
                 deg = st.slider(f'{DEG} plot nr: {col}', min_value=0, max_value=20, value=5, key=f'{col}')
                 window = st.slider(f'{WINDOW} plot nr: {col}', min_value=1, max_value=20, value=3, key=f'{col}')
