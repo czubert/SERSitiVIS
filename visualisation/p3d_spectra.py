@@ -12,22 +12,22 @@ COR = "Corrected"
 
 
 def show_3d_plots(df, plots_color, template, _):
-    df2 = df.copy()
-    df2.columns = ['widmo nr ' + str(i) for i in range(len(df2.columns))]
+    df = df.copy()
+    df.columns = ['widmo nr ' + str(i) for i in range(len(df.columns))]
     import plotly.express as px
     # Adding possibility to change degree of polynominal regression
-    deg, window = utils.adjust_spectras_by_window_and_degree()
-
+    deg, window = utils.degree_and_window_sliders()
+    
     # Baseline correction + flattening
-    df2 = utils.subtract_baseline(df=df2, deg=deg)
-    df2 = utils.smoothen_the_spectra(df=df2, window=window)
+    df = utils.subtract_baseline(df=df, deg=deg)
+    df = utils.smoothen_the_spectra(df=df, window=window)
     # drawing a plot
-    df2 = df2.reset_index()
-    df2m = df2.melt('Raman Shift', df2.columns[1:])
-    df2m_drop = df2m.dropna()
-
-    fig_3d = px.line_3d(df2m_drop, x='variable', y=RS, z='value', color='variable')
-
+    df = df.reset_index()
+    dfm = df.melt('Raman Shift', df.columns[1:])
+    dfm_drop = dfm.dropna()
+    
+    fig_3d = px.line_3d(dfm_drop, x='variable', y=RS, z='value', color='variable')
+    
     draw.fig_layout(template, fig_3d, plots_colorscale=plots_color,
                     descr=f'{P3D} with {COR} + {FLAT} spectra')
     

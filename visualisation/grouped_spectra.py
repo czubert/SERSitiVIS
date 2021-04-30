@@ -47,7 +47,7 @@ def show_grouped_plot(df, plots_color, template, spectra_conversion_type):
     
     elif spectra_conversion_type == OPT or spectra_conversion_type == NORM:
         file_name += '_optimized'
-        df2 = df.copy()
+        df = df.copy()
         df_to_save = pd.DataFrame()
 
         if spectra_conversion_type == OPT:
@@ -72,8 +72,8 @@ def show_grouped_plot(df, plots_color, template, spectra_conversion_type):
                 with st.beta_expander("Customize your chart"):
                     vals = {col: utils.degree_and_window_sliders(col) for col in df.columns}
 
-        for col_ind, col in enumerate(df2.columns):
-            corrected = utils.process_grouped_opt_spec(df2=df2,
+        for col_ind, col in enumerate(df.columns):
+            corrected = utils.process_grouped_opt_spec(df=df,
                                                        spectra_conversion_type=spectra_conversion_type,
                                                        col=col,
                                                        deg=vals[col][0],

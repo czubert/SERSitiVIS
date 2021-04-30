@@ -30,18 +30,18 @@ OPT_S = "Optimised Spectrum"
 
 def show_single_plots(df, plots_color, template, spectra_conversion_type):
     global plot_line, description, fig_single_all, corrected_df, df_visual, col2, col1
-    df2 = df.copy()
-    
-    for col in range(len(df2.columns)):
+    df = df.copy()
+
+    for col in range(len(df.columns)):
         st.write('=======================================================================================')
         # Creating DataFrame that will be shown on plot
-        spectra_to_show = pd.DataFrame(df2.iloc[:, col]).dropna()
+        spectra_to_show = pd.DataFrame(df.iloc[:, col]).dropna()
         col1, col2 = st.beta_columns((2, 1))
-        
+    
         # TODO What might be useful - would be a function to choose which part of the spectrum should be
         # TODO used for the baseline fitting.
         # Adding column with baseline that will be show on plot
-        
+    
         # Showing spectra after baseline correction
         fig_single_corr = go.Figure()
         
@@ -52,9 +52,9 @@ def show_single_plots(df, plots_color, template, spectra_conversion_type):
         
         elif spectra_conversion_type == OPT or spectra_conversion_type == NORM:
             if spectra_conversion_type == NORM:
-                normalized_df2 = utils.normalize_spectra(df2, col)
-        
-                spectra_to_show = pd.DataFrame(normalized_df2).dropna()
+                normalized_df = utils.normalize_spectrum(df, col)
+    
+                spectra_to_show = pd.DataFrame(normalized_df).dropna()
     
             plot_line = FLAT
             description = OPT_S

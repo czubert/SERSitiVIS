@@ -54,21 +54,21 @@ def degree_and_window_sliders(name='all uploaded', col='default'):
 
 
 @st.cache
-def process_grouped_opt_spec(df2, spectra_conversion_type, col, deg, window):
+def process_grouped_opt_spec(df, spectra_conversion_type, col, deg, window):
     """
     Corrects baseline, flattens the plot and if 'normalized' is chosen, then it normalize data
-    :param df2: DataFrame
+    :param df: DataFrame
     :param spectra_conversion_type: str
     :param col: str
     :param deg: int
     :param window: int, float
     :return: DataFrame
     """
-    corrected = pd.DataFrame(df2.loc[:, col]).dropna()
-
+    corrected = pd.DataFrame(df.loc[:, col]).dropna()
+    
     if spectra_conversion_type == 'Normalized':
-        normalized_df2 = normalize_spectra(df2, col)
-        corrected = pd.DataFrame(normalized_df2).dropna()
+        normalized_df = normalize_spectrum(df, col)
+        corrected = pd.DataFrame(normalized_df).dropna()
 
     corrected = smoothen_the_spectra(corrected, window=window)
 
@@ -84,19 +84,19 @@ def subtract_baseline(df, deg, key=None, model=None):
     :param window: int
     :return: DataFrame
     """
-    df2 = df.copy()
+    df = df.copy()
     if key == LABELS['SINGLE']:
-        df2[LABELS['COR']] = df2[model] - peakutils.baseline(df2[LABELS['BS']], deg)
-    
+        df[LABELS['COR']] = df[model] - peakutils.baseline(df[LABELS['BS']], deg)
+
     elif key == LABELS['MS']:
-        df2[LABELS['COR']] = df2[model] - peakutils.baseline(df2[LABELS['BS']], deg)
-        df2.dropna(inplace=True)
+        df[LABELS['COR']] = df[model] - peakutils.baseline(df[LABELS['BS']], deg)
+        df.dropna(inplace=True)
     
     else:
         for col in range(len(df.columns)):
-            df2.iloc[:, col] = df.iloc[:, col] - peakutils.baseline(df.iloc[:, col], deg)
-    
-    return df2
+            df.iloc[:, col] = df.iloc[:, col] - peakutils.baseline(df.iloc[:, col], deg)
+
+    return df
 
 
 @st.cache
@@ -108,22 +108,22 @@ def smoothen_the_spectra(df, window, key=None):
     :param key: String - tells if it should process Single data or other
     :return: DataFrame
     """
-    df2 = df.copy()
-    
+    df = df.copy()
+
     if key == LABELS['SINGLE']:
-        df2[LABELS['FLAT']] = df2[LABELS['COR']].rolling(window=window).mean()
+        df[LABELS['FLAT']] = df[LABELS['COR']].rolling(window=window).mean()
     elif key == LABELS['MS']:
-        df2[LABELS['FLAT']] = df2[LABELS['AV']].rolling(window=window).mean()
+        df[LABELS['FLAT']] = df[LABELS['AV']].rolling(window=window).mean()
     else:
         for col in range(len(df.columns)):
-            df2.iloc[:, col] = df2.iloc[:, col].rolling(window=window).mean()
-    
-    df2.dropna(inplace=True)
-    return df2
+            df.iloc[:, col] = df.iloc[:, col].rolling(window=window).mean()
+
+    df.dropna(inplace=True)
+    return df
 
 
 @st.cache
-def normalize_spectra(df, col):
+def normalize_spectrum(df, col):
     """
     Takes DataFrame and normalizes data to the range of 0-1
     :param df: DataFrame
