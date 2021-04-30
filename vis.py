@@ -83,7 +83,8 @@ if files:
     # BWTek raw spectra
     if spectrometer == BWTEK:
         temp_data_df, temp_meta_df = bwtek.read_bwtek(files)
-        df = utils.group_dfs(temp_data_df)
+        df = pd.concat([data_df for data_df in temp_data_df.values()], axis=1)
+        df.dropna(axis=1, inplace=True, how='all')
 
     # Renishaw raw spectra
     elif spectrometer == RENI:
@@ -95,19 +96,20 @@ if files:
     elif spectrometer == WITEC:
         witec_data = witec.read_witec(files, SEPARATORS['comma'])
         df = pd.concat([witec_data[data_df] for data_df in witec_data], axis=1)
+        # st.write(df)
 
     # WASATCH raw spectra
     elif spectrometer == WASATCH:
         # Read data and prepare it for plot
         df = wasatch.read_wasatch(files, SEPARATORS['comma'])
 
-    # Renishaw raw spectra
+    # Teledyne raw spectra
     elif spectrometer == TELEDYNE:
-    
         reni_data = renishaw.read_renishaw(files, SEPARATORS['comma'])
         df = pd.concat([reni_data[data_df] for data_df in reni_data], axis=1)
         df.dropna(inplace=True, how='any', axis=0)
         st.write(df)
+
     # choose plot colors and tamplates
     plots_color, template = draw.adjust_plot_colors_n_templates()
 
@@ -115,7 +117,7 @@ if files:
     chart_type = vo.vis_options(spectrometer)
 
     # lets you select data conversion type
-    spectra_conversion_type = vo.covertion_opt()
+    spectra_conversion_type = vo.convertion_opt()
 
     # All possible types of charts
     data_vis_option = {SINGLE: ss.show_single_plots,

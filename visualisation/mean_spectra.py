@@ -58,11 +58,11 @@ def show_mean_plot(df, plots_color, template, spectra_conversion_type):
             st.header('\n\n\n\n')
             st.header('\n\n\n\n')
             st.header('\n\n\n\n')
-            deg, window = utils.adjust_spectras_by_window_and_degree(name=file_name)
+            deg, window = utils.degree_and_window_sliders(name=file_name)
     
         # getting baseline for mean spectra
         df2[BS] = peakutils.baseline(df2.loc[:, AV], deg)
-        df2 = utils.correct_baseline(df2, deg, key=MS, model=AV)
+        df2 = utils.subtract_baseline(df2, deg, key=MS, model=AV)
     
         # smoothing spectra with rolling method
         df2 = utils.smoothen_the_spectra(df2, window=window, key=MS)
@@ -82,7 +82,10 @@ def show_mean_plot(df, plots_color, template, spectra_conversion_type):
         draw.fig_layout(template, fig_mean_all, plots_colorscale=plots_color,
                         descr=f'{ORG}, {BS}, {COR}, and {COR}+ {FLAT}')
     with col1:
-        st.write(fig_mean_corr)
-        st.write(fig_mean_all)
+        if spectra_conversion_type == RAW:
+            st.write(fig_mean_corr)
+        else:
+            st.write(fig_mean_corr)
+            st.write(fig_mean_all)
 
     save_read.save_adj_spectra_to_file(df2, file_name)

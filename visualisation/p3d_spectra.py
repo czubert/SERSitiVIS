@@ -19,7 +19,7 @@ def show_3d_plots(df, plots_color, template, _):
     deg, window = utils.adjust_spectras_by_window_and_degree()
 
     # Baseline correction + flattening
-    df2 = utils.correct_baseline(df=df2, deg=deg)
+    df2 = utils.subtract_baseline(df=df2, deg=deg)
     df2 = utils.smoothen_the_spectra(df=df2, window=window)
     # drawing a plot
     df2 = df2.reset_index()

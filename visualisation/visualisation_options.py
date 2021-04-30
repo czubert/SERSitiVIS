@@ -30,7 +30,7 @@ def vis_options(spectrometer):
     return chart_type
 
 
-def covertion_opt():
+def convertion_opt():
     st.sidebar.write('#### How would you like to convert the data?', unsafe_allow_html=True)
     spectra_conversion_type = st.sidebar.radio(
         "",

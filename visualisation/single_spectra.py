@@ -72,7 +72,7 @@ def show_single_plots(df, plots_color, template, spectra_conversion_type):
             spectra_to_show[BS] = peakutils.baseline(spectra_to_show[spectra_to_show.columns[0]], deg)
     
             # Creating DataFrame with applied Baseline correction
-            df_visual = utils.correct_baseline(spectra_to_show, deg, key=SINGLE, model=spectra_to_show.columns[0])
+            df_visual = utils.subtract_baseline(spectra_to_show, deg, key=SINGLE, model=spectra_to_show.columns[0])
     
             # Refining DataFrame to make spectra flattened
             df_visual = utils.smoothen_the_spectra(df_visual, window, key=SINGLE)
