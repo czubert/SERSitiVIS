@@ -14,7 +14,7 @@ meta_params = {'sep': ';', 'skiprows': lambda x: x > 78, 'decimal': ',', 'index_
 def read_bwtek(uploaded_files):
     temp_data_df = {}
     temp_meta_df = {}
-    print(uploaded_files)
+
     for uploaded_file in uploaded_files:
         data, metadata = utils.read_spec(uploaded_file, spectra_params, meta_params)
 
