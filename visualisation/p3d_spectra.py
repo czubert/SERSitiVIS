@@ -1,3 +1,4 @@
+import plotly.express as px
 import streamlit as st
 
 from processing import utils
@@ -14,9 +15,10 @@ COR = "Corrected"
 def show_3d_plots(df, plots_color, template, *_):
     df = df.copy()
     df.columns = ['widmo nr ' + str(i) for i in range(len(df.columns))]
-    import plotly.express as px
+
     # Adding possibility to change degree of polynominal regression
     col1, col2 = st.beta_columns((2, 1))
+
     with col2:
         deg = utils.choosing_regression_degree()
         window = utils.choosing_smoothening_window()
