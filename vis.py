@@ -27,6 +27,10 @@ WITEC = 'WITec Alpha300 R+'
 WASATCH = 'Wasatch System'
 TELEDYNE = 'Teledyne Princeton Instruments'
 
+SHIFT = 'Shift spectra from each other'
+RAW = "Raw Data"
+OPT = "Optimised Data"
+NORM = "Normalized"
 
 st.set_page_config(
     page_title="SERSitive.eu",
@@ -55,7 +59,6 @@ html_code = f'''
 st.sidebar.markdown(html_code, unsafe_allow_html=True)
 st.sidebar.markdown('')
 st.sidebar.markdown('')
-
 
 st.sidebar.write('#### Choose spectra type', unsafe_allow_html=True)
 spectrometer = st.sidebar.radio(
@@ -108,7 +111,8 @@ if files:
         st.write(df)
 
     # choose plot colors and tamplates
-    plots_color, template = draw.adjust_plot_colors_n_templates()
+    with st.beta_expander("Customize your chart"):
+        plots_color, template = draw.choosing_colorway(), draw.choose_template()
 
     # lets you select chart type
     chart_type = vis_opt.vis_options(spectrometer)
@@ -123,7 +127,17 @@ if files:
                        P3D: p3d_spectra.show_3d_plots}
 
     # run specified type of chart with chosen parameters
-    data_vis_option[chart_type](df, plots_color, template, spectra_conversion_type)
+    if chart_type == GS:
+        # If many spectra on one chart we can shift them from each other
+        if spectra_conversion_type == NORM:
+            shift = st.slider(SHIFT, 0.0, 1.0, 0.0, 0.1)
+        else:
+            shift = st.slider(SHIFT, 0, 30000, 0, 250)
+    
+        data_vis_option[chart_type](df, plots_color, template, spectra_conversion_type, shift)
+
+    else:
+        data_vis_option[chart_type](df, plots_color, template, spectra_conversion_type)
 
 
 else:

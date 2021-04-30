@@ -11,12 +11,15 @@ FLAT = "Flattened"
 COR = "Corrected"
 
 
-def show_3d_plots(df, plots_color, template, _):
+def show_3d_plots(df, plots_color, template, *_):
     df = df.copy()
     df.columns = ['widmo nr ' + str(i) for i in range(len(df.columns))]
     import plotly.express as px
     # Adding possibility to change degree of polynominal regression
-    deg, window = utils.degree_and_window_sliders()
+    col1, col2 = st.beta_columns((2, 1))
+    with col2:
+        deg = utils.choosing_regression_degree()
+        window = utils.choosing_smoothening_window()
     
     # Baseline correction + flattening
     df = utils.subtract_baseline(df=df, deg=deg)
@@ -40,4 +43,6 @@ def show_3d_plots(df, plots_color, template, _):
                          height=900,
                          margin=dict(l=1, r=1, t=30, b=1),
                          )
-    st.write(fig_3d)
+    with col1:
+        st.write('\n')
+        st.write(fig_3d)

@@ -54,11 +54,13 @@ def show_mean_plot(df, plots_color, template, spectra_conversion_type):
         with col2:
             st.markdown('## Adjust your spectra')
             st.header('\n\n\n\n')
-    
+
             st.header('\n\n\n\n')
             st.header('\n\n\n\n')
             st.header('\n\n\n\n')
-            deg, window = utils.degree_and_window_sliders(name=file_name)
+
+            deg = utils.choosing_regression_degree(name=file_name)
+            window = utils.choosing_smoothening_window(name=file_name)
 
         # getting baseline for mean spectra
         df[BS] = peakutils.baseline(df.loc[:, AV], deg)
