@@ -63,21 +63,31 @@ def show_grouped_plot(df, plots_color, template, spectra_conversion_type):
         col1, col2 = st.beta_columns((2, 1))
         with col2:
             st.markdown('## Adjust your spectra')
-    
+
             if adjust_plots_globally == 'all':
-                deg, window = utils.degree_and_window_sliders()
+                deg = utils.choosing_regression_degree()
+                window = utils.choosing_smoothening_window()
                 vals = {col: (deg, window) for col in df.columns}
-    
+                print('all')
+                print(vals)
+
             elif adjust_plots_globally == 'each':
                 with st.beta_expander("Customize your chart"):
-                    vals = {col: utils.degree_and_window_sliders(col) for col in df.columns}
-
+                    vals = {col: (utils.choosing_regression_degree(col), utils.choosing_smoothening_window(col)) for col
+                            in df.columns}
+                    print('each')
+                    print(vals)
         for col_ind, col in enumerate(df.columns):
-            corrected = utils.process_grouped_opt_spec(df=df,
-                                                       spectra_conversion_type=spectra_conversion_type,
-                                                       col=col,
-                                                       deg=vals[col][0],
-                                                       window=vals[col][1])
+    
+            corrected = pd.DataFrame(df.loc[:, col]).dropna()
+    
+            if spectra_conversion_type == 'Normalized':
+                normalized_df = utils.normalize_spectrum(df, col)
+                corrected = pd.DataFrame(normalized_df).dropna()
+    
+            corrected = utils.smoothen_the_spectra(corrected, window=vals[col][1])
+            corrected = utils.subtract_baseline(corrected, vals[col][0]).dropna()
+    
             df_to_save[col] = corrected.iloc[col_ind]
     
             if col_ind != 0:

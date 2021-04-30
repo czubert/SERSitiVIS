@@ -33,46 +33,24 @@ def read_spec(uploaded_file, spectra_params, meta_params=None):
         uploaded_file.seek(0)
         metadata = pd.read_csv(uploaded_file, **meta_params)
         return data, metadata
-    
+
     return data
 
 
-def degree_and_window_sliders(name='all uploaded', col='default'):
-    """
-    Shows sliders in streamlit to let user adjust the degree of polinomial regression, and window for smoothening
-    :param col: int - Just to make it possible to use multiple sliders at one 'site' of the website
-    :return: int, int
-    """
-    
-    deg = st.slider(f'{"Polynominal degree"} for {name} spectra', min_value=1, max_value=20, value=5,
-                    key=f'{col}_deg')
-    
-    window = st.slider(f'{"Set window for spectra flattening"} for {name} spectra', min_value=1, max_value=20,
-                       value=3,
-                       key=f'{col}_window')
-    return deg, window
+def choosing_regression_degree(name='all uploaded', col='default'):
+    return st.slider(f'{"Polynominal degree"} for {name} spectra',
+                     min_value=1,
+                     max_value=20,
+                     value=5,
+                     key=f'{col}_deg')
 
 
-@st.cache
-def process_grouped_opt_spec(df, spectra_conversion_type, col, deg, window):
-    """
-    Corrects baseline, flattens the plot and if 'normalized' is chosen, then it normalize data
-    :param df: DataFrame
-    :param spectra_conversion_type: str
-    :param col: str
-    :param deg: int
-    :param window: int, float
-    :return: DataFrame
-    """
-    corrected = pd.DataFrame(df.loc[:, col]).dropna()
-    
-    if spectra_conversion_type == 'Normalized':
-        normalized_df = normalize_spectrum(df, col)
-        corrected = pd.DataFrame(normalized_df).dropna()
-
-    corrected = smoothen_the_spectra(corrected, window=window)
-
-    return subtract_baseline(corrected, deg).dropna()
+def choosing_smoothening_window(name='all uploaded', col='default'):
+    return st.slider(f'{"Set window for spectra flattening"} for {name} spectra',
+                     min_value=1,
+                     max_value=20,
+                     value=3,
+                     key=f'{col}_window')
 
 
 @st.cache

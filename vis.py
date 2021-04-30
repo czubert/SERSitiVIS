@@ -9,17 +9,16 @@ from processing import utils
 from processing import wasatch
 from processing import witec
 from visualisation import draw
-from visualisation import grouped_spectra as gs
-from visualisation import mean_spectra as ms
-from visualisation import p3d_spectra as p3d
-from visualisation import single_spectra as ss
-from visualisation import visualisation_options as vo
+from visualisation import grouped_spectra
+from visualisation import mean_spectra
+from visualisation import p3d_spectra
+from visualisation import single_spectra
+from visualisation import visualisation_options as vis_opt
 
 SINGLE = 'Single spectra'
 MS = "Mean spectrum"
 GS = "Grouped spectra"
 P3D = "Plot 3D"
-
 
 UplSpec = 'Upload "*.txt" spectra'
 BWTEK = 'BWTEK'
@@ -27,9 +26,7 @@ RENI = 'Renishaw'
 WITEC = 'WITec Alpha300 R+'
 WASATCH = 'Wasatch System'
 TELEDYNE = 'Teledyne Princeton Instruments'
-SEPARATORS = {'comma': ',', 'dot': '.', 'tab': '\t', 'space': ' '}
 
-TEST = 'Testing bwtek'
 
 st.set_page_config(
     page_title="SERSitive.eu",
@@ -88,24 +85,24 @@ if files:
 
     # Renishaw raw spectra
     elif spectrometer == RENI:
-        reni_data = renishaw.read_renishaw(files, SEPARATORS['space'])
+        reni_data = renishaw.read_renishaw(files, " ")
         df = pd.concat([reni_data[data_df] for data_df in reni_data], axis=1)
         df.dropna(inplace=True, how='any', axis=0)
 
     # WITec raw spectra
     elif spectrometer == WITEC:
-        witec_data = witec.read_witec(files, SEPARATORS['comma'])
+        witec_data = witec.read_witec(files, ',')
         df = pd.concat([witec_data[data_df] for data_df in witec_data], axis=1)
         # st.write(df)
 
     # WASATCH raw spectra
     elif spectrometer == WASATCH:
         # Read data and prepare it for plot
-        df = wasatch.read_wasatch(files, SEPARATORS['comma'])
+        df = wasatch.read_wasatch(files, ',')
 
     # Teledyne raw spectra
     elif spectrometer == TELEDYNE:
-        reni_data = renishaw.read_renishaw(files, SEPARATORS['comma'])
+        reni_data = renishaw.read_renishaw(files, ',')
         df = pd.concat([reni_data[data_df] for data_df in reni_data], axis=1)
         df.dropna(inplace=True, how='any', axis=0)
         st.write(df)
@@ -114,16 +111,16 @@ if files:
     plots_color, template = draw.adjust_plot_colors_n_templates()
 
     # lets you select chart type
-    chart_type = vo.vis_options(spectrometer)
+    chart_type = vis_opt.vis_options(spectrometer)
 
     # lets you select data conversion type
-    spectra_conversion_type = vo.convertion_opt()
+    spectra_conversion_type = vis_opt.convertion_opt()
 
     # All possible types of charts
-    data_vis_option = {SINGLE: ss.show_single_plots,
-                       MS: ms.show_mean_plot,
-                       GS: gs.show_grouped_plot,
-                       P3D: p3d.show_3d_plots}
+    data_vis_option = {SINGLE: single_spectra.show_single_plots,
+                       MS: mean_spectra.show_mean_plot,
+                       GS: grouped_spectra.show_grouped_plot,
+                       P3D: p3d_spectra.show_3d_plots}
 
     # run specified type of chart with chosen parameters
     data_vis_option[chart_type](df, plots_color, template, spectra_conversion_type)
