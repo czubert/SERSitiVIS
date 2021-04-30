@@ -18,7 +18,6 @@ LABELS = {'SINGLE': 'Single spectra', 'MS': "Mean spectrum", 'GS': "Grouped spec
           'OPT': "Optimised Data", 'NORM': "Normalized", 'OPT_S': "Optimised Spectrum", }
 
 
-@st.cache
 def read_spec(uploaded_file, spectra_params, meta_params=None):
     """
     Reads csv file and returns it, if metadata available returns also metadata
@@ -256,7 +255,7 @@ def file_to_buffer(filepath):
 @st.cache(hash_funcs={io.StringIO: id})
 def load_example_files(spectrometer):
     examples = {
-        'BWTEK': ['data_examples/bwtek/bwtek(2).txt', 'data_examples/bwtek/bwtek(3).txt'],
+        'BWTEK': ['./data_examples/bwtek/bwtek(2).txt', './data_examples/bwtek/bwtek(3).txt'],
         'Renishaw': ['data_examples/renishaw/renishaw(5).txt', 'data_examples/renishaw/renishaw(6).txt'],
         'WITec Alpha300 R+': ['data_examples/witec/WITec(4).csv', 'data_examples/witec/WITec(5).csv'],
         'Wasatch System': ['data_examples/wasatch/SERSitive_next_day_1ppm-20201009-093810-270034-WP-00702.csv',
