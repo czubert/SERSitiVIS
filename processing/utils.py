@@ -10,41 +10,15 @@ import pandas as pd
 import peakutils
 import streamlit as st
 
-constants = {'SINGLE': 'Single spectra', 'MS': "Mean spectrum", 'GS': "Grouped spectra", 'P3D': "Plot 3D",
-             'AV': "Average", 'BS': "Baseline", 'RS': "Raman Shift", 'DS': "Dark Subtracted #1",
-             'DEG': "Polynominal degree", 'WINDOW': "Set window for spectra flattening",
-             'DFS': {'ML model grouped spectra': 'Dark Subtracted #1', 'ML model mean spectra': 'Average'},
-             'FLAT': "Flattened", 'COR': "Corrected", 'ORG': "Original spectrum", 'RAW': "Raw Data",
-             'OPT': "Optimised Data", 'NORM': "Normalized", 'OPT_S': "Optimised Spectrum", }
-
-RS = 'Raman Shift'
-DS = 'Dark Subtracted #1'
-BS = 'Baseline'
-MS = 'Mean spectrum'
-AV = 'Average'
+LABELS = {'SINGLE': 'Single spectra', 'MS': "Mean spectrum", 'GS': "Grouped spectra", 'P3D': "Plot 3D",
+          'AV': "Average", 'BS': "Baseline", 'RS': "Raman Shift", 'DS': "Dark Subtracted #1",
+          'DEG': "Polynominal degree", 'WINDOW': "Set window for spectra flattening",
+          'DFS': {'ML model grouped spectra': 'Dark Subtracted #1', 'ML model mean spectra': 'Average'},
+          'FLAT': "Flattened", 'COR': "Corrected", 'ORG': "Original spectrum", 'RAW': "Raw Data",
+          'OPT': "Optimised Data", 'NORM': "Normalized", 'OPT_S': "Optimised Spectrum", }
 
 
-def group_dfs(data_dfs):
-    """
-    Returned dict consists of one DataFrame per data type, other consists of mean values per data type.
-    :param data_dfs: Dict
-    :return: DataFrame
-    """
-    # groups Dark Subtracted column from all dfs to one and overwrites data df in dictionary
-    df = pd.concat([data_df for data_df in data_dfs.values()], axis=1)
-    df.dropna(axis=1, inplace=True, how='all')  # drops columns filled with NaN values
-
-    return df
-
-
-def upload_file():
-    """
-    Shows Streamlits widget to upload files
-    :return: File
-    """
-    return st.file_uploader('Upload txt spectra')
-
-
+@st.cache
 def read_spec(uploaded_file, spectra_params, meta_params=None):
     """
     Reads csv file and returns it, if metadata available returns also metadata
@@ -64,7 +38,7 @@ def read_spec(uploaded_file, spectra_params, meta_params=None):
     return data
 
 
-def adjust_spectras_by_window_and_degree(name='all uploaded', col='default'):
+def degree_and_window_sliders(name='all uploaded', col='default'):
     """
     Shows sliders in streamlit to let user adjust the degree of polinomial regression, and window for smoothening
     :param col: int - Just to make it possible to use multiple sliders at one 'site' of the website
@@ -80,6 +54,7 @@ def adjust_spectras_by_window_and_degree(name='all uploaded', col='default'):
     return deg, window
 
 
+@st.cache
 def process_grouped_opt_spec(df2, spectra_conversion_type, col, deg, window):
     """
     Corrects baseline, flattens the plot and if 'normalized' is chosen, then it normalize data
@@ -98,10 +73,11 @@ def process_grouped_opt_spec(df2, spectra_conversion_type, col, deg, window):
 
     corrected = smoothen_the_spectra(corrected, window=window)
 
-    return correct_baseline(corrected, deg).dropna()
+    return subtract_baseline(corrected, deg).dropna()
 
 
-def correct_baseline(df, deg, key=None, model=None):
+@st.cache
+def subtract_baseline(df, deg, key=None, model=None):
     """
     Takes DataFrame of spectrum, and correct its baseline by changing the values.
     :param df: DataFrame
@@ -110,13 +86,13 @@ def correct_baseline(df, deg, key=None, model=None):
     :return: DataFrame
     """
     df2 = df.copy()
-    if key == constants['SINGLE']:
-        df2[constants['COR']] = df2[model] - peakutils.baseline(df2[BS], deg)
-
-    elif key == constants['MS']:
-        df2[constants['COR']] = df2[model] - peakutils.baseline(df2[BS], deg)
+    if key == LABELS['SINGLE']:
+        df2[LABELS['COR']] = df2[model] - peakutils.baseline(df2[LABELS['BS']], deg)
+    
+    elif key == LABELS['MS']:
+        df2[LABELS['COR']] = df2[model] - peakutils.baseline(df2[LABELS['BS']], deg)
         df2.dropna(inplace=True)
-
+    
     else:
         for col in range(len(df.columns)):
             df2.iloc[:, col] = df.iloc[:, col] - peakutils.baseline(df.iloc[:, col], deg)
@@ -124,6 +100,7 @@ def correct_baseline(df, deg, key=None, model=None):
     return df2
 
 
+@st.cache
 def smoothen_the_spectra(df, window, key=None):
     """
     Takes DataFrame of spectrum, and correct its baseline by changing the values.
@@ -133,19 +110,20 @@ def smoothen_the_spectra(df, window, key=None):
     :return: DataFrame
     """
     df2 = df.copy()
-
-    if key == constants['SINGLE']:
-        df2[constants['FLAT']] = df2[constants['COR']].rolling(window=window).mean()
-    elif key == constants['MS']:
-        df2[constants['FLAT']] = df2[constants['AV']].rolling(window=window).mean()
+    
+    if key == LABELS['SINGLE']:
+        df2[LABELS['FLAT']] = df2[LABELS['COR']].rolling(window=window).mean()
+    elif key == LABELS['MS']:
+        df2[LABELS['FLAT']] = df2[LABELS['AV']].rolling(window=window).mean()
     else:
         for col in range(len(df.columns)):
             df2.iloc[:, col] = df2.iloc[:, col].rolling(window=window).mean()
-
+    
     df2.dropna(inplace=True)
     return df2
 
 
+@st.cache
 def normalize_spectra(df, col):
     """
     Takes DataFrame and normalizes data to the range of 0-1
@@ -161,6 +139,7 @@ def normalize_spectra(df, col):
         return (df.iloc[:, col] - df.iloc[:, col].min()) / (df.iloc[:, col].max() - df.iloc[:, col].min())
 
 
+@st.cache
 def download_button(object_to_download, download_filename, button_text, pickle_it=False):
     """
     Generates a link to download the given object_to_download.

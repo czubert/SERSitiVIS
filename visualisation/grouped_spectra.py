@@ -65,12 +65,12 @@ def show_grouped_plot(df, plots_color, template, spectra_conversion_type):
             st.markdown('## Adjust your spectra')
     
             if adjust_plots_globally == 'all':
-                deg, window = utils.adjust_spectras_by_window_and_degree()
+                deg, window = utils.degree_and_window_sliders()
                 vals = {col: (deg, window) for col in df.columns}
     
             elif adjust_plots_globally == 'each':
                 with st.beta_expander("Customize your chart"):
-                    vals = {col: utils.adjust_spectras_by_window_and_degree(col) for col in df.columns}
+                    vals = {col: utils.degree_and_window_sliders(col) for col in df.columns}
 
         for col_ind, col in enumerate(df2.columns):
             corrected = utils.process_grouped_opt_spec(df2=df2,
@@ -78,7 +78,7 @@ def show_grouped_plot(df, plots_color, template, spectra_conversion_type):
                                                        col=col,
                                                        deg=vals[col][0],
                                                        window=vals[col][1])
-            df_to_save[col] = corrected[col]
+            df_to_save[col] = corrected.iloc[col_ind]
     
             if col_ind != 0:
                 corrected.iloc[:, 0] += shift * col_ind

@@ -13,11 +13,12 @@ def read_witec(uploaded_files, separator=','):
     temp_data_df = {}
 
     spectra_params = {'sep': separator, 'decimal': '.', 'skipinitialspace': True, 'encoding': 'utf-8'}
-
+    import streamlit as st
     for uploaded_file in uploaded_files:
         uploaded_file.seek(0)
 
         data = utils.read_spec(uploaded_file, spectra_params)
+        st.write(data)
         data = data.rename(columns={data.columns[0]: RS})
 
         # cleaning data
@@ -26,6 +27,7 @@ def read_witec(uploaded_files, separator=','):
         data = data.loc[:, ~data.columns.duplicated()]
 
         data.set_index(RS, inplace=True)
+        # st.write(data)
 
         temp_data_df[uploaded_file.name[:-4]] = data
 
