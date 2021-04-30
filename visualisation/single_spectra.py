@@ -29,7 +29,6 @@ OPT_S = "Optimised Spectrum"
 
 
 def show_single_plots(df, plots_color, template, spectra_conversion_type):
-    global plot_line, description, fig_single_all, corrected_df, df_visual, col2, col1
     df = df.copy()
 
     for col in range(len(df.columns)):
@@ -37,28 +36,27 @@ def show_single_plots(df, plots_color, template, spectra_conversion_type):
         # Creating DataFrame that will be shown on plot
         spectra_to_show = pd.DataFrame(df.iloc[:, col]).dropna()
         col1, col2 = st.beta_columns((2, 1))
-    
+
         # TODO What might be useful - would be a function to choose which part of the spectrum should be
         # TODO used for the baseline fitting.
         # Adding column with baseline that will be show on plot
-    
+
         # Showing spectra after baseline correction
         fig_single_corr = go.Figure()
-        
-        if spectra_conversion_type == RAW:
-            df_visual = spectra_to_show
-            plot_line = df_visual.columns[0]
-            description = ORG
-        
-        elif spectra_conversion_type == OPT or spectra_conversion_type == NORM:
+
+        df_visual = spectra_to_show
+        plot_line = df_visual.columns[0]
+        description = ORG
+
+        if spectra_conversion_type == OPT or spectra_conversion_type == NORM:
             if spectra_conversion_type == NORM:
                 normalized_df = utils.normalize_spectrum(df, col)
-    
+        
                 spectra_to_show = pd.DataFrame(normalized_df).dropna()
     
             plot_line = FLAT
             description = OPT_S
-
+    
             with col2:
                 st.markdown('## Adjust your spectra')
                 st.header('\n\n\n\n')
@@ -66,8 +64,9 @@ def show_single_plots(df, plots_color, template, spectra_conversion_type):
                 st.header('\n\n\n\n')
                 st.header('\n\n\n\n')
                 st.header('\n\n\n\n')
-                deg = st.slider(f'{DEG} plot nr: {col}', min_value=0, max_value=20, value=5, key=f'{col}')
-                window = st.slider(f'{WINDOW} plot nr: {col}', min_value=1, max_value=20, value=3, key=f'{col}')
+        
+                deg = utils.choosing_regression_degree(name=spectra_to_show.columns[0])
+                window = utils.choosing_smoothening_window(name=spectra_to_show.columns[0])
     
             spectra_to_show[BS] = peakutils.baseline(spectra_to_show[spectra_to_show.columns[0]], deg)
     

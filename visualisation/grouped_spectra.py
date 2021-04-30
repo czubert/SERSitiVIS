@@ -13,21 +13,20 @@ RAW = "Raw Data"
 OPT = "Optimised Data"
 NORM = "Normalized"
 OPT_S = "Optimised Spectrum"
-SHIFT = 'Shift spectra from each other'
 
 
-def show_grouped_plot(df, plots_color, template, spectra_conversion_type):
-    global shift, col1
+def show_grouped_plot(df, plots_color, template, spectra_conversion_type, shift):
+    global col1
     file_name = 'grouped'
     df_to_save = pd.DataFrame()
-
+    
     st.write('========================================================================')
     
     fig_grouped_corr = go.Figure()
     
     if spectra_conversion_type == RAW:
         file_name += '_raw'
-        shift = st.slider(SHIFT, 0, 30000, 0, 250)
+        
         col1, col2 = st.beta_columns((2))
         for col in range(len(df.columns)):
             col_name = df.columns[col]
@@ -49,54 +48,47 @@ def show_grouped_plot(df, plots_color, template, spectra_conversion_type):
         file_name += '_optimized'
         df = df.copy()
         df_to_save = pd.DataFrame()
-
-        if spectra_conversion_type == OPT:
-            shift = st.slider(SHIFT, 0, 30000, 0, 250)
-
-        elif spectra_conversion_type == NORM:
+    
+        if spectra_conversion_type == NORM:
             file_name += '_normalized'
-            shift = st.slider(SHIFT, 0.0, 1.0, 0.0, 0.1)
-
+    
         adjust_plots_globally = st.radio(
             "Adjust all spectra or each spectrum?",
             ('all', 'each'), index=0)
         col1, col2 = st.beta_columns((2, 1))
         with col2:
             st.markdown('## Adjust your spectra')
-
+        
             if adjust_plots_globally == 'all':
                 deg = utils.choosing_regression_degree()
                 window = utils.choosing_smoothening_window()
                 vals = {col: (deg, window) for col in df.columns}
-                print('all')
-                print(vals)
-
+        
             elif adjust_plots_globally == 'each':
                 with st.beta_expander("Customize your chart"):
                     vals = {col: (utils.choosing_regression_degree(col), utils.choosing_smoothening_window(col)) for col
                             in df.columns}
-                    print('each')
-                    print(vals)
+    
         for col_ind, col in enumerate(df.columns):
-    
+        
             corrected = pd.DataFrame(df.loc[:, col]).dropna()
-    
+        
             if spectra_conversion_type == 'Normalized':
                 normalized_df = utils.normalize_spectrum(df, col)
                 corrected = pd.DataFrame(normalized_df).dropna()
-    
+        
             corrected = utils.smoothen_the_spectra(corrected, window=vals[col][1])
             corrected = utils.subtract_baseline(corrected, vals[col][0]).dropna()
-    
+        
             df_to_save[col] = corrected.iloc[col_ind]
-    
+        
             if col_ind != 0:
                 corrected.iloc[:, 0] += shift * col_ind
-    
+        
             fig_grouped_corr = draw.add_traces(corrected.reset_index(), fig_grouped_corr, x=RS, y=col,
                                                name=col)
             draw.fig_layout(template, fig_grouped_corr, plots_colorscale=plots_color, descr=OPT_S)
     with col1:
         st.write(fig_grouped_corr)
-
+    
     save_read.save_adj_spectra_to_file(df_to_save, file_name)

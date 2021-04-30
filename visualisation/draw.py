@@ -141,11 +141,3 @@ def get_colors_names(chosen_module_color):
                              if isinstance(body, list)])
     
     return colorscale_names
-
-
-def adjust_plot_colors_n_templates():
-    with st.beta_expander("Customize your chart"):
-        plots_color = choosing_colorway()
-        template = choose_template()
-    
-    return plots_color, template
