@@ -16,7 +16,6 @@ OPT_S = "Optimised Spectrum"
 
 
 def show_grouped_plot(df, plots_color, template, spectra_conversion_type, shift):
-    global col1
     file_name = 'grouped'
     df_to_save = pd.DataFrame()
     

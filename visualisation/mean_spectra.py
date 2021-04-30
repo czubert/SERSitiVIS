@@ -20,7 +20,6 @@ NORM = "Normalized"
 
 
 def show_mean_plot(df, plots_color, template, spectra_conversion_type):
-    global col1
     file_name = 'mean'
     df = df.copy()
     col1, col2 = st.beta_columns((2, 1))
