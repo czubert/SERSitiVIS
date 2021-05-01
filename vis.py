@@ -96,7 +96,6 @@ if files:
     elif spectrometer == WITEC:
         witec_data = witec.read_witec(files, ',')
         df = pd.concat([witec_data[data_df] for data_df in witec_data], axis=1)
-        # st.write(df)
 
     # WASATCH raw spectra
     elif spectrometer == WASATCH:
@@ -108,7 +107,6 @@ if files:
         reni_data = renishaw.read_renishaw(files, ',')
         df = pd.concat([reni_data[data_df] for data_df in reni_data], axis=1)
         df.dropna(inplace=True, how='any', axis=0)
-        st.write(df)
 
     # choose plot colors and tamplates
     with st.beta_expander("Customize your chart"):
@@ -120,22 +118,26 @@ if files:
     # lets you select data conversion type
     spectra_conversion_type = vis_opt.convertion_opt()
 
+    # getting rid of duplicated columns
+    df = df.loc[:, ~df.columns.duplicated()]
+
     # All possible types of charts
     data_vis_option = {SINGLE: single_spectra.show_single_plots,
                        MS: mean_spectra.show_mean_plot,
                        GS: grouped_spectra.show_grouped_plot,
                        P3D: p3d_spectra.show_3d_plots}
 
-    # run specified type of chart with chosen parameters
+    # # Run specified type of chart with chosen parameters
+    # For grouped spectra sometimes we want to shift the spectra from each other, here it is:
     if chart_type == GS:
-        # If many spectra on one chart we can shift them from each other
+        # depending on conversion type we have to adjust the scale
         if spectra_conversion_type == NORM:
             shift = st.slider(SHIFT, 0.0, 1.0, 0.0, 0.1)
         else:
             shift = st.slider(SHIFT, 0, 30000, 0, 250)
     
         data_vis_option[chart_type](df, plots_color, template, spectra_conversion_type, shift)
-
+    # All the other conversion types are single therefore no need for shift spectra
     else:
         data_vis_option[chart_type](df, plots_color, template, spectra_conversion_type)
 
