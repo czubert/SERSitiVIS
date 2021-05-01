@@ -235,7 +235,7 @@ def load_example_files(spectrometer):
     examples = {
         'BWTEK': ['./data_examples/bwtek/bwtek(2).txt', './data_examples/bwtek/bwtek(3).txt'],
         'Renishaw': ['data_examples/renishaw/renishaw(5).txt', 'data_examples/renishaw/renishaw(6).txt'],
-        'WITec Alpha300 R+': ['data_examples/witec/WITec(4).csv', 'data_examples/witec/WITec(5).csv'],
+        'WITec Alpha300 R+': ['data_examples/witec/WITec(5).csv', 'data_examples/witec/WITec(7).csv'],
         'Wasatch System': ['data_examples/wasatch/SERSitive_next_day_1ppm-20201009-093810-270034-WP-00702.csv',
                            'data_examples/wasatch/SERSitive_next_day_2ppm-20201009-093705-137238-WP-00702.csv'],
         'Teledyne Princeton Instruments': [],
