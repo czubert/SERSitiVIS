@@ -23,11 +23,9 @@ def read_witec(uploaded_files, separator=','):
         
         tmp_data[RS] = data.iloc[:, 0]
         
-        # TODO it does not work properly, it shows that two unequal columns are equal
-        for idx in range(len(data.columns) - 1):
-            if (data.iloc[:, 0] != data.iloc[:, idx + 1]).all() and 'Unnamed' not in data.columns[idx + 1]:
-                tmp_data[data.columns[idx + 1]] = data.iloc[:, idx + 1]
-        
+        cols = [col for col in data.columns if not col.startswith('Unnamed')]
+        tmp_data[cols] = data[cols]
+
         # cleaning data
         tmp_data.dropna(inplace=True, how='any', axis=0)
         tmp_data.dropna(inplace=True, axis=1)
