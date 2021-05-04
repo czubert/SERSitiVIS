@@ -145,7 +145,6 @@ else:
     st.header('Short manual on how to prepare files')
     st.write('')
 
-    # TODO needs improvements, shows data only if BWTEK is choosen
     with st.beta_expander('BWTEK'):
         st.write('Upload raw data in *.txt format')
         st.write('Original data consists of metadata and data')
