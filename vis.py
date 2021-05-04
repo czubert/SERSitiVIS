@@ -110,8 +110,11 @@ if files:
             shift = st.slider(LABELS['SHIFT'], 0.0, 1.0, 0.0, 0.1)
         else:
             shift = st.slider(LABELS['SHIFT'], 0, 30000, 0, 250)
-    
-        data_vis_option[chart_type](df, plots_color, template, spectra_conversion_type, shift)
+
+        grouped_spectra.show_grouped_plot(df, plots_color, template, spectra_conversion_type, shift)
+
+
+
     # All the other conversion types are single therefore no need for shift spectra
     else:
         data_vis_option[chart_type](df, plots_color, template, spectra_conversion_type)
