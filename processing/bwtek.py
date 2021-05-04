@@ -1,12 +1,10 @@
 import pandas as pd
 
+from constants import LABELS
 from . import utils
 
-RS = "Raman Shift"
-DS = "Dark Subtracted #1"
-
 spectra_params = {'sep': ';', 'skiprows': lambda x: x < 79 or x > 1500, 'decimal': ',',
-                  'usecols': ['Pixel', RS, DS],
+                  'usecols': ['Pixel', LABELS["RS"], LABELS["DS"]],
                   'skipinitialspace': True, 'encoding': "utf-8"}
 
 meta_params = {'sep': ';', 'skiprows': lambda x: x > 78, 'decimal': ',', 'index_col': 0,
@@ -25,7 +23,7 @@ def read_bwtek(uploaded_files):
 
         data.dropna(inplace=True, how='any', axis=0)
 
-        data.rename(columns={DS: uploaded_file.name[:-4]}, inplace=True)
+        data.rename(columns={LABELS["DS"]: uploaded_file.name[:-4]}, inplace=True)
         data.set_index('Raman Shift', inplace=True)
 
         temp_data_df[uploaded_file.name] = data
