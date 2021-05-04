@@ -24,6 +24,7 @@ def show_grouped_plot(df, plots_color, template, spectra_conversion_type, shift)
         fig = px.line(df, x=df.index, y=df.columns)
         fig.update_traces(line=dict(width=3.5))
         draw.fig_layout(template, fig, plots_colorscale=plots_color, descr=LABELS["ORG"])
+        save_read.save_adj_spectra_to_file(df, file_name)
 
     elif spectra_conversion_type == LABELS["OPT"] or spectra_conversion_type == LABELS["NORM"]:
         file_name += '_optimized'
@@ -67,8 +68,9 @@ def show_grouped_plot(df, plots_color, template, spectra_conversion_type, shift)
             fig = draw.add_traces(corrected.reset_index(), fig, x=LABELS["RS"], y=col,
                                                name=col)
             draw.fig_layout(template, fig, plots_colorscale=plots_color, descr=LABELS["OPT_S"])
+        save_read.save_adj_spectra_to_file(df_to_save, file_name)
     with col1:
         st.write(fig)
 
 
-    save_read.save_adj_spectra_to_file(df_to_save, file_name)
+
