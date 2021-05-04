@@ -1,107 +1,34 @@
 import base64
-import glob
 import io
 import json
 import os.path
 import pickle
 import re
 import uuid
-from collections import Counter
 
 import pandas as pd
 import peakutils
 import streamlit as st
 
-RS = 'Raman Shift'
-COR = 'Corrected'
-DS = 'Dark Subtracted #1'
-BS = 'Baseline'
-MS = 'Mean spectrum'
-AV = 'Average'
-
-
-def get_names(url):
-    """
-    Creates list of strings of files paths
-    :param url: String
-    :return: List
-    """
-    file_names = glob.glob(url)
-    return file_names
-
-
-def lower_names(file_names):
-    """
-    Takes list of strings and makes characters lower
-    :param file_names: List
-    :return: List
-    """
-
-    file_names_lower = [x.lower() for x in file_names]
-    return file_names_lower
-
-
-def pattern_in_name(name, re_pattern):
-    if re.search(re_pattern, name) is None:
-        return False
-    elif re.search(re_pattern, name) is not None:
-        return True
-
-
-def save_df_to_csv(df, path):
-    df.to_csv(f'{path}')
-
-
-def read_df_from_csv(path):
-    return pd.read_csv(f'{path}')
-
-
-def reduce_list_dimension(dic):
-    sep_names = dic.values()
-    sep_names_chain = []
-    for el in sep_names:
-        sep_names_chain += el
-
-    return sep_names_chain
-
-
-def check_for_repetitions(list1, list2):
-    res = list((Counter(list1) - Counter(list2)).elements())
-
-    return res
-
-
-def check_for_differences(list1, list2):
-    counter = abs(len(list2) - len(list1))
-
-    return counter
-
-
-def group_dfs(data_dfs):
-    """
-    Returned dict consists of one DataFrame per data type, other consists of mean values per data type.
-    :param data_dfs: Dict
-    :return: DataFrame
-    """
-    # groups Dark Subtracted column from all dfs to one and overwrites data df in dictionary
-    df = pd.concat([data_df for data_df in data_dfs.values()], axis=1)
-    df.dropna(axis=1, inplace=True, how='all')  # drops columns filled with NaN values
-
-    return df
-
-
-def upload_file():
-    """
-    Shows Streamlits widget to upload files
-    :return: File
-    """
-    return st.file_uploader('Upload txt spectra')
+LABELS = {'SINGLE': 'Single spectra', 'MS': "Mean spectrum", 'GS': "Grouped spectra", 'P3D': "Plot 3D",
+          'AV': "Average", 'BS': "Baseline", 'RS': "Raman Shift", 'DS': "Dark Subtracted #1",
+          'DEG': "Polynominal degree", 'WINDOW': "Set window for spectra flattening",
+          'DFS': {'ML model grouped spectra': 'Dark Subtracted #1', 'ML model mean spectra': 'Average'},
+          'FLAT': "Flattened", 'COR': "Corrected", 'ORG': "Original spectrum", 'RAW': "Raw Data",
+          'OPT': "Optimised Data", 'NORM': "Normalized", 'OPT_S': "Optimised Spectrum", }
 
 
 def read_spec(uploaded_file, spectra_params, meta_params=None):
+    """
+    Reads csv file and returns it, if metadata available returns also metadata
+    :param uploaded_file: csv file
+    :param spectra_params: Dict
+    :param meta_params: Dict
+    :return: DataFrame
+    """
     uploaded_file.seek(0)
     data = pd.read_csv(uploaded_file, **spectra_params)
-
+    
     if meta_params is not None:
         uploaded_file.seek(0)
         metadata = pd.read_csv(uploaded_file, **meta_params)
@@ -110,27 +37,85 @@ def read_spec(uploaded_file, spectra_params, meta_params=None):
     return data
 
 
-def correct_baseline(df, deg, window):
-    df2 = df.copy()
-    for col in range(len(df.columns)):
-        df2.iloc[:, col] = df.iloc[:, col] - peakutils.baseline(df.iloc[:, col], deg)
-        df2.iloc[:, col] = df2.iloc[:, col].rolling(window=window).mean()
+def choosing_regression_degree(name='all uploaded', col='default'):
+    return st.slider(f'{"Polynominal degree"} for {name} spectra',
+                     min_value=1,
+                     max_value=20,
+                     value=5,
+                     key=f'{col}_deg')
 
-    return df2
+
+def choosing_smoothening_window(name='all uploaded', col='default'):
+    return st.slider(f'{"Set window for spectra flattening"} for {name} spectra',
+                     min_value=1,
+                     max_value=20,
+                     value=3,
+                     key=f'{col}_window')
 
 
-def correct_baseline_single(df, deg, model=DS):
-    df2 = df.copy()
-    if model == DS:
-        df2[COR] = df2[DS] - peakutils.baseline(df2[BS], deg)
-    elif model == MS:
-        df2[COR] = df2[AV] - peakutils.baseline(df2[BS], deg)
+@st.cache
+def subtract_baseline(df, deg, key=None, model=None):
+    """
+    Takes DataFrame of spectrum, and correct its baseline by changing the values.
+    :param df: DataFrame
+    :param deg: int
+    :param window: int
+    :return: DataFrame
+    """
+    df = df.copy()
+    if key == LABELS['SINGLE']:
+        df[LABELS['COR']] = df[model] - peakutils.baseline(df[LABELS['BS']], deg)
+
+    elif key == LABELS['MS']:
+        df[LABELS['COR']] = df[model] - peakutils.baseline(df[LABELS['BS']], deg)
+        df.dropna(inplace=True)
+    
     else:
-        df2[COR] = df2[model] - peakutils.baseline(df2[BS], deg)
+        for col in range(len(df.columns)):
+            df.iloc[:, col] = df.iloc[:, col] - peakutils.baseline(df.iloc[:, col], deg)
 
-    return df2
+    return df
 
 
+@st.cache
+def smoothen_the_spectra(df, window, key=None):
+    """
+    Takes DataFrame of spectrum, and correct its baseline by changing the values.
+    :param df: DataFrame
+    :param window: int - tells how many items to take into 'rolling' function
+    :param key: String - tells if it should process Single data or other
+    :return: DataFrame
+    """
+    df = df.copy()
+
+    if key == LABELS['SINGLE']:
+        df[LABELS['FLAT']] = df[LABELS['COR']].rolling(window=window).mean()
+    elif key == LABELS['MS']:
+        df[LABELS['FLAT']] = df[LABELS['AV']].rolling(window=window).mean()
+    else:
+        df = df.rolling(window=window).mean()
+
+    df.dropna(inplace=True)
+    return df
+
+
+@st.cache
+def normalize_spectrum(df, col):
+    """
+    Takes DataFrame and normalizes data to the range of 0-1
+    :param df: DataFrame
+    :param col: int or str
+    :return: DataFrame
+    """
+    # For name of col it uses this part
+    if type(col) == str:
+        return (df.loc[:, col] - df.loc[:, col].min()) / (df.loc[:, col].max() - df.loc[:, col].min())
+    # For index  of col it uses this part
+    else:
+        return (df.iloc[:, col] - df.iloc[:, col].min()) / (df.iloc[:, col].max() - df.iloc[:, col].min())
+
+
+@st.cache
 def download_button(object_to_download, download_filename, button_text, pickle_it=False):
     """
     Generates a link to download the given object_to_download.
@@ -247,9 +232,9 @@ def file_to_buffer(filepath):
 @st.cache(hash_funcs={io.StringIO: id})
 def load_example_files(spectrometer):
     examples = {
-        'BWTEK': ['data_examples/bwtek/bwtek(2).txt', 'data_examples/bwtek/bwtek(3).txt'],
+        'BWTEK': ['./data_examples/bwtek/bwtek(2).txt', './data_examples/bwtek/bwtek(3).txt'],
         'Renishaw': ['data_examples/renishaw/renishaw(5).txt', 'data_examples/renishaw/renishaw(6).txt'],
-        'WITec Alpha300 R+': ['data_examples/witec/WITec(4).csv', 'data_examples/witec/WITec(5).csv'],
+        'WITec Alpha300 R+': ['data_examples/witec/WITec(5).csv', 'data_examples/witec/WITec(7).csv'],
         'Wasatch System': ['data_examples/wasatch/SERSitive_next_day_1ppm-20201009-093810-270034-WP-00702.csv',
                            'data_examples/wasatch/SERSitive_next_day_2ppm-20201009-093705-137238-WP-00702.csv'],
         'Teledyne Princeton Instruments': [],

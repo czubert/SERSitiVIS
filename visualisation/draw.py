@@ -25,8 +25,8 @@ def fig_layout(template, fig, plots_colorscale, descr='Chosen spectra'):
                       colorway=plots_colorscale,
                       paper_bgcolor='rgba(0,0,0,0)',
                       plot_bgcolor='rgba(0,0,0,0)',
-                      width=950,
-                      height=590,
+                      width=900,
+                      height=470,
                       xaxis=dict(
                           title=f"{RS} [cm<sup>-1</sup>]",
                           linecolor="#777",  # Sets color of X-axis line
@@ -128,17 +128,16 @@ def choosing_colorway():
         colorscale_names, index=31)
 
     chosen_color = getattr(modules_colors_d[chosen_module_color], f'{all_colors[plots_color]}')
-
     return chosen_color
 
 
 @st.cache
 def get_colors_names(chosen_module_color):
     colorscale_names = []
-
+    
     # Getting all colors from modules
     colorscale_names.extend([f'{name}' for name, body
                              in inspect.getmembers(getattr(px.colors, chosen_module_color))
                              if isinstance(body, list)])
-
+    
     return colorscale_names

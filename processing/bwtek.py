@@ -1,3 +1,5 @@
+import pandas as pd
+
 from . import utils
 
 RS = "Raman Shift"
@@ -29,4 +31,13 @@ def read_bwtek(uploaded_files):
         temp_data_df[uploaded_file.name] = data
         temp_meta_df[uploaded_file.name] = metadata
 
-    return temp_data_df, temp_meta_df
+    # concatenating all updated spectra into one DataFrame
+    df = pd.concat([data_df for data_df in temp_data_df.values()], axis=1)
+
+    # concatenating all updated spectras metadata into one DataFrame
+    df_metadata = pd.concat([metadata for metadata in temp_meta_df.values()], axis=1)
+
+    # dropping NaN values
+    df.dropna(axis=1, inplace=True, how='all')
+
+    return df, df_metadata
