@@ -1,5 +1,6 @@
 import pandas as pd
 import plotly.graph_objects as go
+import plotly.express as px
 import streamlit as st
 
 from constants import LABELS
@@ -10,35 +11,22 @@ from . import draw
 
 def show_grouped_plot(df, plots_color, template, spectra_conversion_type, shift):
     file_name = 'grouped'
-    df_to_save = pd.DataFrame()
-    
-    st.write('========================================================================')
-    
-    fig_grouped_corr = go.Figure()
+    fig = go.Figure()
+    col1, col2 = st.beta_columns((2, 1))
+    df = df.copy()
 
     if spectra_conversion_type == LABELS["RAW"]:
         file_name += '_raw'
-    
-        col1, col2 = st.beta_columns((2))
-        for col in range(len(df.columns)):
-            col_name = df.columns[col]
-        
-            corrected = pd.DataFrame(df.loc[:, col_name]).dropna()
-        
-            df_to_save[col_name] = corrected[col_name]
-            
-            if col != 0:
-                corrected.iloc[:, 0] += shift * col
-        
-            fig_grouped_corr = draw.add_traces(corrected.reset_index(), fig_grouped_corr, x=LABELS["RS"], y=col_name,
-                                               name=f'{df.columns[col]}')
-        draw.fig_layout(template, fig_grouped_corr, plots_colorscale=plots_color, descr=LABELS["ORG"])
 
+        for col_ind, col_name in enumerate(df.columns):
+            df[col_name] = df[col_name] + shift * col_ind
 
+        fig = px.line(df, x=df.index, y=df.columns)
+        fig.update_traces(line=dict(width=3.5))
+        draw.fig_layout(template, fig, plots_colorscale=plots_color, descr=LABELS["ORG"])
 
     elif spectra_conversion_type == LABELS["OPT"] or spectra_conversion_type == LABELS["NORM"]:
         file_name += '_optimized'
-        df = df.copy()
         df_to_save = pd.DataFrame()
     
         if spectra_conversion_type == LABELS["NORM"]:
@@ -47,7 +35,6 @@ def show_grouped_plot(df, plots_color, template, spectra_conversion_type, shift)
         adjust_plots_globally = st.radio(
             "Adjust all spectra or each spectrum?",
             ('all', 'each'), index=0)
-        col1, col2 = st.beta_columns((2, 1))
         with col2:
             st.markdown('## Adjust your spectra')
         
@@ -77,10 +64,11 @@ def show_grouped_plot(df, plots_color, template, spectra_conversion_type, shift)
             if col_ind != 0:
                 corrected.iloc[:, 0] += shift * col_ind
 
-            fig_grouped_corr = draw.add_traces(corrected.reset_index(), fig_grouped_corr, x=LABELS["RS"], y=col,
+            fig = draw.add_traces(corrected.reset_index(), fig, x=LABELS["RS"], y=col,
                                                name=col)
-            draw.fig_layout(template, fig_grouped_corr, plots_colorscale=plots_color, descr=LABELS["OPT_S"])
+            draw.fig_layout(template, fig, plots_colorscale=plots_color, descr=LABELS["OPT_S"])
     with col1:
-        st.write(fig_grouped_corr)
-    
+        st.write(fig)
+
+
     save_read.save_adj_spectra_to_file(df_to_save, file_name)
