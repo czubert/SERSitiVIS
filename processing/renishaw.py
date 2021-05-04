@@ -1,3 +1,5 @@
+import pandas as pd
+
 from . import utils
 
 RS = 'Raman Shift'
@@ -9,7 +11,7 @@ def read_renishaw(uploaded_files, separator):
     :param uploaded_file: Streamlit uploader file
     :return: Dict of DataFrames
     """
-    temp_data_df = {}
+    reni_data = {}
 
     spectra_params = {'sep': separator, 'decimal': '.', 'skipinitialspace': True, 'encoding': 'utf-8',
                       'header': None}
@@ -25,6 +27,9 @@ def read_renishaw(uploaded_files, separator):
         data[RS] = data[RS].round(decimals=0)
         data.set_index(RS, inplace=True)
 
-        temp_data_df[uploaded_file.name[:-4]] = data
-
-    return temp_data_df
+        reni_data[uploaded_file.name[:-4]] = data
+    
+    df = pd.concat([reni_data[data_df] for data_df in reni_data], axis=1)
+    df.dropna(inplace=True, how='any', axis=0)
+    
+    return df

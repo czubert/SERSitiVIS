@@ -93,8 +93,7 @@ def smoothen_the_spectra(df, window, key=None):
     elif key == LABELS['MS']:
         df[LABELS['FLAT']] = df[LABELS['AV']].rolling(window=window).mean()
     else:
-        for col in range(len(df.columns)):
-            df.iloc[:, col] = df.iloc[:, col].rolling(window=window).mean()
+        df = df.rolling(window=window).mean()
 
     df.dropna(inplace=True)
     return df

@@ -75,38 +75,28 @@ if not files:
     if st.sidebar.checkbox("Load example data"):
         files = utils.load_example_files(spectrometer)
 
-temp_data_df = None
-temp_meta_df = None
 df = None
 
 if files:
     # BWTek raw spectra
     if spectrometer == BWTEK:
-        temp_data_df, temp_meta_df = bwtek.read_bwtek(files)
-        df = pd.concat([data_df for data_df in temp_data_df.values()], axis=1)
-        df.dropna(axis=1, inplace=True, how='all')
+        df, bwtek_metadata = bwtek.read_bwtek(files)
 
     # Renishaw raw spectra
     elif spectrometer == RENI:
-        reni_data = renishaw.read_renishaw(files, " ")
-        df = pd.concat([reni_data[data_df] for data_df in reni_data], axis=1)
-        df.dropna(inplace=True, how='any', axis=0)
+        df = renishaw.read_renishaw(files, " ")
 
     # WITec raw spectra
     elif spectrometer == WITEC:
-        witec_data = witec.read_witec(files, ',')
-        df = pd.concat([witec_data[data_df] for data_df in witec_data], axis=1)
+        df = witec.read_witec(files, ',')
 
     # WASATCH raw spectra
     elif spectrometer == WASATCH:
-        # Read data and prepare it for plot
         df = wasatch.read_wasatch(files, ',')
 
     # Teledyne raw spectra
     elif spectrometer == TELEDYNE:
-        reni_data = renishaw.read_renishaw(files, ',')
-        df = pd.concat([reni_data[data_df] for data_df in reni_data], axis=1)
-        df.dropna(inplace=True, how='any', axis=0)
+        df = renishaw.read_renishaw(files, ',')
 
     # choose plot colors and tamplates
     with st.beta_expander("Customize your chart"):
@@ -118,6 +108,7 @@ if files:
     # lets you select data conversion type
     spectra_conversion_type = vis_opt.convertion_opt()
 
+    # TODO need improvements
     # getting rid of duplicated columns
     df = df.loc[:, ~df.columns.duplicated()]
 
