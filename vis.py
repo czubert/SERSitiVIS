@@ -169,6 +169,8 @@ else:
 
     import authors
 
+    authors.contact_developers()
+
     authors.made_by()
     authors.made_by_pawel()
     authors.made_by_lukasz()
