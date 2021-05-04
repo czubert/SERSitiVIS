@@ -40,3 +40,24 @@ def made_by_lukasz():
         """,
         unsafe_allow_html=True,
     )
+
+
+def contact_developers():
+    st.subheader('')
+    
+    st.markdown('#### We will appreciate :raised_hands: any feedback from you, please contact:')
+    st.markdown(
+        """
+        <a style='
+        display: block;
+        text-align: center;
+        color:#DBBD8A;
+        text-decoration: none;
+        :hover {color: red}
+        :visited:hover {color: purple}
+        '
+        target="_self"
+        href="mailto:developers@sersitive.eu"> SERSitive Developers</a>
+        """,
+        unsafe_allow_html=True,
+    )
