@@ -1,8 +1,7 @@
 import pandas as pd
 
+from constants import LABELS
 from . import utils
-
-RS = 'Raman Shift'
 
 
 def read_witec(uploaded_files, separator=','):
@@ -21,8 +20,8 @@ def read_witec(uploaded_files, separator=','):
         uploaded_file.seek(0)
         single_uploaded_data_file = pd.DataFrame()
         data = utils.read_spec(uploaded_file, spectra_params)
-        
-        single_uploaded_data_file[RS] = data.iloc[:, 0]
+
+        single_uploaded_data_file[LABELS["RS"]] = data.iloc[:, 0]
         
         cols = [col for col in data.columns if not col.startswith('Unnamed')]
         single_uploaded_data_file[cols] = data[cols]
@@ -33,7 +32,7 @@ def read_witec(uploaded_files, separator=','):
         single_uploaded_data_file = single_uploaded_data_file.loc[:, ~single_uploaded_data_file.columns.duplicated()]
         
         # setting Raman Shift as index
-        single_uploaded_data_file.set_index(RS, inplace=True)
+        single_uploaded_data_file.set_index(LABELS["RS"], inplace=True)
         
         # saving data into dictionary
         all_uploaded_witek_data_files[uploaded_file.name[:-4]] = single_uploaded_data_file
