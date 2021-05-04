@@ -1,3 +1,4 @@
+# TODO should we split it into plural constants?
 LABELS = {
     # labels for spectrometers
     'UplSpec': 'Upload "*.txt" spectra',
