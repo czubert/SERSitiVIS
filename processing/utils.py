@@ -48,7 +48,7 @@ def choosing_smoothening_window(name='all uploaded', col='default'):
                      key=f'{col}_window')
 
 
-@st.cache
+# @st.cache
 def subtract_baseline(df, deg, key=None, model=None):
     """
     Takes DataFrame of spectrum, and correct its baseline by changing the values.
@@ -105,6 +105,8 @@ def normalize_spectrum(df, col):
     # For name of col it uses this part
     if type(col) == str:
         return (df.loc[:, col] - df.loc[:, col].min()) / (df.loc[:, col].max() - df.loc[:, col].min())
+    elif col is None:
+        return (df - df.min()) / (df.max() - df.min())
     # For index  of col it uses this part
     else:
         return (df.iloc[:, col] - df.iloc[:, col].min()) / (df.iloc[:, col].max() - df.iloc[:, col].min())
