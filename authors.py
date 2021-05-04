@@ -57,7 +57,7 @@ def contact_developers():
         :visited:hover {color: purple}
         '
         target="_self"
-        href="mailto:developers@sersitive.eu"> SERSitive Developers</a>
+        href="mailto:developers[at]sersitive.eu"> SERSitive Developers</a>
         """,
         unsafe_allow_html=True,
     )

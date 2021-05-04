@@ -1,10 +1,10 @@
 import base64
 import re
 
-import pandas as pd
 import streamlit as st
 import streamlit.components.v1 as components
 
+import authors
 from constants import LABELS
 from processing import bwtek
 from processing import renishaw
@@ -180,21 +180,22 @@ else:
         html = example_data_html('TELEDYNE')
         st.components.v1.html(html, height=200, scrolling=True)
 
-    import authors
-
+    # mail to developers
     authors.contact_developers()
 
+    # links to authors
     authors.made_by()
     authors.made_by_pawel()
     authors.made_by_lukasz()
 
     st.stop()
 
-import authors
-
+# links to authors
 authors.made_by()
 authors.made_by_pawel()
 authors.made_by_lukasz()
 
-print("Streamlit finish it's work")
+# mail to developers
+authors.contact_developers()
 
+print("Streamlit finish it's work")
