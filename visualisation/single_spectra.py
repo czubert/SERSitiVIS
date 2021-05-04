@@ -3,29 +3,10 @@ import peakutils
 import plotly.graph_objects as go
 import streamlit as st
 
+from constants import LABELS
 from processing import save_read
 from processing import utils
 from . import draw
-
-SINGLE = 'Single spectra'
-MS = "Mean spectrum"
-GS = "Grouped spectra"
-P3D = "Plot 3D"
-
-AV = "Average"
-BS = "Baseline"
-RS = "Raman Shift"
-DS = "Dark Subtracted #1"
-DEG = "Polynominal degree"
-WINDOW = "Set window for spectra flattening"
-DFS = {'ML model grouped spectra': f'{DS}', 'ML model mean spectra': f'{AV}'}
-FLAT = "Flattened"
-COR = "Corrected"
-ORG = "Original spectrum"
-RAW = "Raw Data"
-OPT = "Optimised Data"
-NORM = "Normalized"
-OPT_S = "Optimised Spectrum"
 
 
 def show_single_plots(df, plots_color, template, spectra_conversion_type):
@@ -46,16 +27,16 @@ def show_single_plots(df, plots_color, template, spectra_conversion_type):
 
         df_visual = spectra_to_show
         plot_line = df_visual.columns[0]
-        description = ORG
+        description = LABELS["ORG"]
 
-        if spectra_conversion_type == OPT or spectra_conversion_type == NORM:
-            if spectra_conversion_type == NORM:
+        if spectra_conversion_type == LABELS["OPT"] or spectra_conversion_type == LABELS["NORM"]:
+            if spectra_conversion_type == LABELS["NORM"]:
                 normalized_df = utils.normalize_spectrum(df, col)
         
                 spectra_to_show = pd.DataFrame(normalized_df).dropna()
     
-            plot_line = FLAT
-            description = OPT_S
+            plot_line = LABELS["FLAT"]
+            description = LABELS["OPT_S"]
     
             with col2:
                 st.markdown('## Adjust your spectra')
@@ -68,42 +49,44 @@ def show_single_plots(df, plots_color, template, spectra_conversion_type):
                 deg = utils.choosing_regression_degree(name=spectra_to_show.columns[0])
                 window = utils.choosing_smoothening_window(name=spectra_to_show.columns[0])
     
-            spectra_to_show[BS] = peakutils.baseline(spectra_to_show[spectra_to_show.columns[0]], deg)
+            spectra_to_show[LABELS["BS"]] = peakutils.baseline(spectra_to_show[spectra_to_show.columns[0]], deg)
     
             # Creating DataFrame with applied Baseline correction
-            df_visual = utils.subtract_baseline(spectra_to_show, deg, key=SINGLE, model=spectra_to_show.columns[0])
+            df_visual = utils.subtract_baseline(spectra_to_show, deg, key=LABELS["SINGLE"],
+                                                model=spectra_to_show.columns[0])
     
             # Refining DataFrame to make spectra flattened
-            df_visual = utils.smoothen_the_spectra(df_visual, window, key=SINGLE)
+            df_visual = utils.smoothen_the_spectra(df_visual, window, key=LABELS["SINGLE"])
     
             # Showing spectra before baseline correction + baseline function
             fig_single_all = go.Figure()
             draw.fig_layout(template, fig_single_all, plots_colorscale=plots_color,
-                            descr=f'{ORG}, {BS}, and {FLAT} + {BS}')
+                            descr=f'{LABELS["ORG"]}, {LABELS["BS"]}, and {LABELS["FLAT"]} + {LABELS["BS"]}')
     
-            specs = {'org': df_visual.columns[0], BS: BS, COR: COR, FLAT: FLAT}
+            specs = {'org': df_visual.columns[0], LABELS["BS"]: LABELS["BS"], LABELS["COR"]: LABELS["COR"],
+                     LABELS["FLAT"]: LABELS["FLAT"]}
     
             for spec in specs.keys():
-                if spec == FLAT:
-                    name = f'{FLAT} + {BS} correction'
+                if spec == LABELS["FLAT"]:
+                    name = f'{LABELS["FLAT"]} + {LABELS["BS"]} correction'
                 else:
                     name = specs[spec]
-
+        
                 fig_single_all = draw.add_traces(df_visual, fig_single_all,
-                                                 x=RS, y=specs[spec], name=name)
+                                                 x=LABELS["RS"], y=specs[spec], name=name)
 
-        fig_single_corr = draw.add_traces_single_spectra(df_visual, fig_single_corr, x=RS, y=plot_line,
+        fig_single_corr = draw.add_traces_single_spectra(df_visual, fig_single_corr, x=LABELS["RS"], y=plot_line,
                                                          name=df_visual.columns[0])
 
         draw.fig_layout(template, fig_single_corr, plots_colorscale=plots_color, descr=description)
 
         with col1:
-            if spectra_conversion_type == RAW:
+            if spectra_conversion_type == LABELS["RAW"]:
                 st.write(fig_single_corr)
             else:
                 st.write(fig_single_corr)
                 st.write(fig_single_all)
 
-        file_name = f'{df_visual.columns[0]}_{FLAT}_{BS}_correction'
+        file_name = f'{df_visual.columns[0]}_{LABELS["FLAT"]}_{LABELS["BS"]}_correction'
 
         save_read.save_adj_spectra_to_file(df_visual, file_name, key=f'{col}')

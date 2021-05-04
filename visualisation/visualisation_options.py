@@ -1,13 +1,6 @@
 import streamlit as st
 
-SINGLE = 'Single spectra'
-MS = "Mean spectrum"
-GS = "Grouped spectra"
-P3D = "Plot 3D"
-
-RAW = "Raw Data"
-OPT = "Optimised Data"
-NORM = "Normalized"
+from constants import LABELS
 
 
 def vis_options(spectrometer):
@@ -16,10 +9,10 @@ def vis_options(spectrometer):
     :param spectrometer:
     :return:
     """
-    options = [SINGLE, GS]
+    options = [LABELS["SINGLE"], LABELS["GS"]]
     
     if spectrometer == 'BWTEK':
-        options = [SINGLE, MS, GS, P3D]
+        options = [LABELS["SINGLE"], LABELS["MS"], LABELS["GS"], LABELS["P3D"]]
     
     st.sidebar.write('#### Choose type of chart', unsafe_allow_html=True)
     chart_type = st.sidebar.radio(
@@ -34,6 +27,6 @@ def convertion_opt():
     st.sidebar.write('#### How would you like to convert the data?', unsafe_allow_html=True)
     spectra_conversion_type = st.sidebar.radio(
         "",
-        (RAW, OPT, NORM), key=f'raw')
+        (LABELS["RAW"], LABELS["OPT"], LABELS["NORM"]), key=f'raw')
     
     return spectra_conversion_type
