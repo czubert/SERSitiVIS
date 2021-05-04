@@ -140,40 +140,44 @@ else:
                 unsafe_allow_html=True
                 )
 
-    st.warning('First choose data type from left sidebar')
-    st.warning('Then upload file or files for visualisation - sidebar')
-    st.header('Short manual on how to import data')
+    st.warning('First choose data type')
+    st.warning('Then upload single or multiple files for visualisation')
+    st.header('Short manual on how to prepare files')
     st.write('')
 
     # TODO needs improvements, shows data only if BWTEK is choosen
-    with st.beta_expander('For BWTEK - upload raw data in *.txt format without any changes'):
-        st.markdown('### Original data consists of metadata and data')
+    with st.beta_expander('BWTEK'):
+        st.write('Upload raw data in *.txt format')
+        st.write('Original data consists of metadata and data')
         html = example_data_html('BWTEK')
         st.components.v1.html(html, height=200, scrolling=True)
 
-    with st.beta_expander('For WITec Alpha300 R+, upload spectra in *.txt or *.csv format as follows:'):
-        st.write('First column is X axis i.e Raman Shift (name of column is not important here)')
-        st.write('Other columns should be the data itself')
+    with st.beta_expander('WITec Alpha300 R+'):
+        st.write('Upload spectra in *.txt or *.csv format')
+        st.write('First column is X axis i.e Raman Shift (name of column is not important)')
+        st.write('Other columns should contain the intensity')
         st.markdown(f'<b>Name of column</b> will be displayed as a <b>name of a plot in the legend</b>',
                     unsafe_allow_html=True)
-        st.markdown(f"<p style='color:red'><b>Important:</b> Do not duplicate names of the columns",
-                    unsafe_allow_html=True)
+        st.markdown(f"Do not duplicate names of the columns", unsafe_allow_html=True)
         html = example_data_html('WITEC')
         st.components.v1.html(html, height=200, scrolling=True)
 
-    with st.beta_expander('For Renishaw spectra upload raw data in *.txt or *.csv format as shown below:'):
-        st.write('First column is X axis i.e Raman Shift (name of column is not important here)')
-        st.write('Second column is Y axis, and should be the data itself')
+    with st.beta_expander('Renishaw'):
+        st.write('Upload raw data in *.txt or *.csv format')
+        st.write('First column is X axis i.e Raman Shift (name of column is not important)')
+        st.write('Second column is Y axis, and should contain the intensity')
         st.markdown(f'<b>Name of a file</b> will be displayed as a <b>name of a plot in the legend</b>',
                     unsafe_allow_html=True)
         html = example_data_html('RENI')
         st.components.v1.html(html, height=200, scrolling=True)
 
-    with st.beta_expander('For Wasatch spectra upload raw data in *.txt or *.csv:'):
+    with st.beta_expander('Wasatch'):
+        st.write('Upload raw data in *.txt or *.csv')
         html = example_data_html('WASATCH')
         st.components.v1.html(html, height=200, scrolling=True)
 
-    with st.beta_expander('For Teledyne Princeton Instruments spectra upload raw data in *.txt or *.csv:'):
+    with st.beta_expander('Teledyne Princeton Instruments'):
+        st.write('Upload raw data in *.txt or *.csv:')
         html = example_data_html('TELEDYNE')
         st.components.v1.html(html, height=200, scrolling=True)
 
