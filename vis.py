@@ -111,10 +111,24 @@ if files:
         else:
             shift = st.slider(LABELS['SHIFT'], 0, 30000, 0, 250)
 
-        grouped_spectra.show_grouped_plot(df, plots_color, template, spectra_conversion_type, shift)
+        adjust_plots_globally = st.radio(
+            "Adjust all spectra or each spectrum?",
+            ('all', 'each'), index=0)
 
+        col1, col2 = st.beta_columns([5, 2])
+        with col2:
+            with st.beta_expander("Customize your chart", expanded=True):
+                if adjust_plots_globally == 'all':
+                    deg = utils.choosing_regression_degree()
+                    window = utils.choosing_smoothening_window()
+                    vals = {col: (deg, window) for col in df.columns}
+                else:
+                    vals = {col: (utils.choosing_regression_degree(col), utils.choosing_smoothening_window(col)) for col
+                            in df.columns}
 
-
+        fig = grouped_spectra.show_grouped_plot(df, plots_color, template, spectra_conversion_type, shift, vals)
+        with col1:
+            st.plotly_chart(fig, use_container_width=True)
     # All the other conversion types are single therefore no need for shift spectra
     else:
         data_vis_option[chart_type](df, plots_color, template, spectra_conversion_type)
