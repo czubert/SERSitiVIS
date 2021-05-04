@@ -10,12 +10,7 @@ import pandas as pd
 import peakutils
 import streamlit as st
 
-LABELS = {'SINGLE': 'Single spectra', 'MS': "Mean spectrum", 'GS': "Grouped spectra", 'P3D': "Plot 3D",
-          'AV': "Average", 'BS': "Baseline", 'RS': "Raman Shift", 'DS': "Dark Subtracted #1",
-          'DEG': "Polynominal degree", 'WINDOW': "Set window for spectra flattening",
-          'DFS': {'ML model grouped spectra': 'Dark Subtracted #1', 'ML model mean spectra': 'Average'},
-          'FLAT': "Flattened", 'COR': "Corrected", 'ORG': "Original spectrum", 'RAW': "Raw Data",
-          'OPT': "Optimised Data", 'NORM': "Normalized", 'OPT_S': "Optimised Spectrum", }
+from constants import LABELS
 
 
 def read_spec(uploaded_file, spectra_params, meta_params=None):
@@ -237,7 +232,8 @@ def load_example_files(spectrometer):
         'WITec Alpha300 R+': ['data_examples/witec/WITec(5).csv', 'data_examples/witec/WITec(7).csv'],
         'Wasatch System': ['data_examples/wasatch/SERSitive_next_day_1ppm-20201009-093810-270034-WP-00702.csv',
                            'data_examples/wasatch/SERSitive_next_day_2ppm-20201009-093705-137238-WP-00702.csv'],
-        'Teledyne Princeton Instruments': [],
+        'Teledyne Princeton Instruments': ['data_examples/teledyne/teledyne(1).csv',
+                                           'data_examples/teledyne/teledyne(2).csv'],
     }
 
     files = [file_to_buffer(f) for f in examples[spectrometer]]

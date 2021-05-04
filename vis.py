@@ -3,6 +3,7 @@ import base64
 import pandas as pd
 import streamlit as st
 
+from constants import LABELS
 from processing import bwtek
 from processing import renishaw
 from processing import utils
@@ -14,23 +15,6 @@ from visualisation import mean_spectra
 from visualisation import p3d_spectra
 from visualisation import single_spectra
 from visualisation import visualisation_options as vis_opt
-
-SINGLE = 'Single spectra'
-MS = "Mean spectrum"
-GS = "Grouped spectra"
-P3D = "Plot 3D"
-
-UplSpec = 'Upload "*.txt" spectra'
-BWTEK = 'BWTEK'
-RENI = 'Renishaw'
-WITEC = 'WITec Alpha300 R+'
-WASATCH = 'Wasatch System'
-TELEDYNE = 'Teledyne Princeton Instruments'
-
-SHIFT = 'Shift spectra from each other'
-RAW = "Raw Data"
-OPT = "Optimised Data"
-NORM = "Normalized"
 
 st.set_page_config(
     page_title="SERSitive.eu",
@@ -63,7 +47,7 @@ st.sidebar.markdown('')
 st.sidebar.write('#### Choose spectra type', unsafe_allow_html=True)
 spectrometer = st.sidebar.radio(
     "",
-    (BWTEK, RENI, WITEC, WASATCH, TELEDYNE), index=0)
+    (LABELS['BWTEK'], LABELS['RENI'], LABELS['WITEC'], LABELS['WASATCH'], LABELS['TELEDYNE']), index=0)
 
 # users data lodaer
 st.sidebar.write('#### Upload your data', unsafe_allow_html=True)
@@ -79,23 +63,23 @@ df = None
 
 if files:
     # BWTek raw spectra
-    if spectrometer == BWTEK:
+    if spectrometer == LABELS['BWTEK']:
         df, bwtek_metadata = bwtek.read_bwtek(files)
 
     # Renishaw raw spectra
-    elif spectrometer == RENI:
+    elif spectrometer == LABELS['RENI']:
         df = renishaw.read_renishaw(files, " ")
 
     # WITec raw spectra
-    elif spectrometer == WITEC:
+    elif spectrometer == LABELS['WITEC']:
         df = witec.read_witec(files, ',')
 
     # WASATCH raw spectra
-    elif spectrometer == WASATCH:
+    elif spectrometer == LABELS['WASATCH']:
         df = wasatch.read_wasatch(files, ',')
 
     # Teledyne raw spectra
-    elif spectrometer == TELEDYNE:
+    elif spectrometer == LABELS['TELEDYNE']:
         df = renishaw.read_renishaw(files, ',')
 
     # choose plot colors and tamplates
@@ -113,19 +97,19 @@ if files:
     df = df.loc[:, ~df.columns.duplicated()]
 
     # All possible types of charts
-    data_vis_option = {SINGLE: single_spectra.show_single_plots,
-                       MS: mean_spectra.show_mean_plot,
-                       GS: grouped_spectra.show_grouped_plot,
-                       P3D: p3d_spectra.show_3d_plots}
+    data_vis_option = {LABELS['SINGLE']: single_spectra.show_single_plots,
+                       LABELS['MS']: mean_spectra.show_mean_plot,
+                       LABELS['GS']: grouped_spectra.show_grouped_plot,
+                       LABELS['P3D']: p3d_spectra.show_3d_plots}
 
     # # Run specified type of chart with chosen parameters
     # For grouped spectra sometimes we want to shift the spectra from each other, here it is:
-    if chart_type == GS:
+    if chart_type == LABELS['GS']:
         # depending on conversion type we have to adjust the scale
-        if spectra_conversion_type == NORM:
-            shift = st.slider(SHIFT, 0.0, 1.0, 0.0, 0.1)
+        if spectra_conversion_type == LABELS['NORM']:
+            shift = st.slider(LABELS['SHIFT'], 0.0, 1.0, 0.0, 0.1)
         else:
-            shift = st.slider(SHIFT, 0, 30000, 0, 250)
+            shift = st.slider(LABELS['SHIFT'], 0, 30000, 0, 250)
     
         data_vis_option[chart_type](df, plots_color, template, spectra_conversion_type, shift)
     # All the other conversion types are single therefore no need for shift spectra
@@ -149,12 +133,18 @@ else:
     st.header('Short manual on how to import data')
     st.write('')
 
-    with st.beta_expander('For BWTEK - upload raw data in *.txt format'):
-        st.write('Update raw data from BWTek without any changes')
+    # TODO needs improvements, shows data only if BWTEK is choosen
+    with st.beta_expander('For BWTEK - upload raw data in *.txt format without any changes'):
+        if spectrometer == LABELS['BWTEK']:
+            files = utils.load_example_files(spectrometer)
+            df, bwtek_metadata = bwtek.read_bwtek(files)
+            st.markdown('### Original data consists of metadata')
+            st.write(bwtek_metadata)
+            st.markdown('### And data')
+            st.write(df)
 
     with st.beta_expander('For WITec Alpha300 R+, upload spectra in *.txt or *.csv format as follows:'):
         st.write(pd.read_csv('data_examples/witec/WITec(7).csv'))
-        st.image('examples/witec.png', use_column_width=True)
         st.write('First column is X axis i.e Raman Shift (name of column is not important here)')
         st.write('Other columns should be the data itself')
         st.markdown(f'<b>Name of column</b> will be displayed as a <b>name of a plot in the legend</b>',
@@ -164,16 +154,18 @@ else:
 
     with st.beta_expander('For Renishaw spectra upload raw data in *.txt or *.csv format as shown below:'):
         st.write(pd.read_csv('data_examples/renishaw/renishaw(6).txt', header=None, sep='\t'))
-        st.image('examples/reni.png', use_column_width=True)
         st.write('First column is X axis i.e Raman Shift (name of column is not important here)')
         st.write('Second column is Y axis, and should be the data itself')
         st.markdown(f'<b>Name of a file</b> will be displayed as a <b>name of a plot in the legend</b>',
                     unsafe_allow_html=True)
 
     with st.beta_expander('For Wasatch spectra upload raw data in *.txt or *.csv:'):
-        st.write('*.csv data obtains metadata, therefore one can add important matadata to the plot name')
-        st.image('examples/wasatch_wo_name.png', use_column_width=True)
-        st.image('examples/wasatch_with_name.png', use_column_width=True)
+        st.write(pd.read_csv('data_examples/wasatch/SERSitive_next_day_1ppm-20201009-093810-270034-WP-00702.csv',
+                             header=None, sep='\t'))
+
+    with st.beta_expander('For Teledyne Princeton Instruments spectra upload raw data in *.txt or *.csv:'):
+        st.write(pd.read_csv('data_examples/teledyne/teledyne(1).csv',
+                             header=None, sep=','))
 
     import authors
 

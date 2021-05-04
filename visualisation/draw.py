@@ -5,11 +5,7 @@ import plotly.graph_objects as go
 import plotly.io as pio
 import streamlit as st
 
-RS = 'Raman Shift'
-DS = 'Dark Subtracted #1'
-BS = 'Baseline'
-FLAT = 'Flattened'
-LINE = 'Set thicknes of the line in chart'
+from constants import LABELS
 
 
 def fig_layout(template, fig, plots_colorscale, descr='Chosen spectra'):
@@ -28,7 +24,7 @@ def fig_layout(template, fig, plots_colorscale, descr='Chosen spectra'):
                       width=900,
                       height=470,
                       xaxis=dict(
-                          title=f"{RS} [cm<sup>-1</sup>]",
+                          title=f"{LABELS['RS']} [cm<sup>-1</sup>]",
                           linecolor="#777",  # Sets color of X-axis line
                           showgrid=False,  # Removes X-axis grid lines
                           linewidth=2.5,
@@ -121,7 +117,6 @@ def choosing_colorway():
     colorscale_names = get_colors_names(chosen_module_color)
     for el in colorscale_names:
         all_colors[el] = el  # TODO color name as key and color object as a value
-
 
     plots_color = st.radio(
         "Choose set of colors from colorsets for spectra",
