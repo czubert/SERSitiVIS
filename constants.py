@@ -44,5 +44,6 @@ LABELS = {
     'IT': 'Integration Time',
     'LP': 'Laser Power',
     'PAT': '-20201009-093705-137238-WP-00702.txt',
+    'RAW_WASATCH': 'Raw'
     
 }
