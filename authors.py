@@ -19,7 +19,7 @@ def made_by_pawel():
         :visited:hover {color: purple}
         '
         target="_blank"
-        href="linkedin.com/in/lukasz-charzewski">Paweł Albrycht</a>
+        href="https://linkedin.com/in/paweł-albrycht-b791147a">Paweł Albrycht</a>
         """,
         unsafe_allow_html=True,
     )
@@ -36,7 +36,7 @@ def made_by_lukasz():
         :visited:hover {color: purple}
         '
         target="_blank"
-        href="linkedin.com/in/lukasz-charzewski">Łukasz Charzewski</a>
+        href="https://linkedin.com/in/lukasz-charzewski">Łukasz Charzewski</a>
         """,
         unsafe_allow_html=True,
     )
