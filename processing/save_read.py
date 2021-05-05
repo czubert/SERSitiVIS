@@ -3,7 +3,6 @@ import streamlit as st
 from processing.utils import download_button
 
 
-# TODO does this function has any occurance in the code beside this one?
 def save_adj_spectra_to_file(df_to_save, file_name, key='default'):
     """
     Save data directly from streamlit as csv file after pressing 'download' button.
