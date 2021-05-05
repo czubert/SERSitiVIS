@@ -32,16 +32,18 @@ def read_spec(uploaded_file, spectra_params, meta_params=None):
     return data
 
 
-def choosing_regression_degree(name='all uploaded', col='default'):
-    return st.slider(f'{"Polynominal degree"} for {name} spectra',
+def choosing_regression_degree(name=None, col='default'):
+    label = 'Polynominal degree' if name is None else f'Polynomial degree for {name}'
+    return st.slider(label,
                      min_value=1,
                      max_value=20,
                      value=5,
                      key=f'{col}_deg')
 
 
-def choosing_smoothening_window(name='all uploaded', col='default'):
-    return st.slider(f'{"Set window for spectra flattening"} for {name} spectra',
+def choosing_smoothening_window(name=None, col='default'):
+    label = 'Smoothing window' if name is None else f'Smoothing window for {name}'
+    return st.slider(label,
                      min_value=1,
                      max_value=20,
                      value=3,
