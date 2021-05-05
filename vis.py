@@ -123,8 +123,11 @@ if files:
                     window = utils.choosing_smoothening_window()
                     vals = {col: (deg, window) for col in df.columns}
                 else:
-                    vals = {col: (utils.choosing_regression_degree(col), utils.choosing_smoothening_window(col)) for col
-                            in df.columns}
+                    vals = {}
+                    for col in df.columns:
+                        st.write(col)
+                        vals[col] = (utils.choosing_regression_degree(None, col),
+                                     utils.choosing_smoothening_window(None, col))
 
         fig = grouped_spectra.show_grouped_plot(df, plots_color, template, spectra_conversion_type, shift, vals)
         with col1:
