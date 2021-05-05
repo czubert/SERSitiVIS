@@ -181,7 +181,7 @@ def download_button(object_to_download, download_filename, button_text, pickle_i
                 border-style: solid;
                 border-color: {bg_color};
                 border-image: initial;
-                filter: brightness(105%);
+                filter: brightness(95%);
                 justify-content: center;
                 margin: 0px;
                 width: auto;

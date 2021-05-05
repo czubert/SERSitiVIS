@@ -1,17 +1,11 @@
-# [theme]
 # # sersitive blue: #6C9BC0
 # # ~sersitive gold: #DBBD8A
 # #  gold: #eedda9
-#
-# primaryColor='#DBBD8A'  # radiobuttons etc
-# backgroundColor="#eee"  # Main color
-# secondaryBackgroundColor="#6C9BC0"  # sidebar color
-# textColor="#262730"
-# font="sans serif"
+# # alternative color for background: #F5F1FB
 
 [theme]
 primaryColor='#6C9BC0'  # radiobuttons etc
-backgroundColor="#FFFFFF"  # Main color
+backgroundColor="#FFF"  # Main color
 secondaryBackgroundColor="#d3d4db"  # sidebar color
 textColor="#262730"
 font="sans serif"
