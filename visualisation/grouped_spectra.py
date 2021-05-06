@@ -39,8 +39,7 @@ def show_grouped_plot(df, plots_color, template, spectra_conversion_type, shift)
     elif spectra_conversion_type == LABELS["OPT"] or spectra_conversion_type == LABELS["NORM"]:
         file_name += '_optimized'
         df = df.copy()
-        df_to_save = pd.DataFrame()
-    
+
         if spectra_conversion_type == LABELS["NORM"]:
             file_name += '_normalized'
     
@@ -62,21 +61,21 @@ def show_grouped_plot(df, plots_color, template, spectra_conversion_type, shift)
                             in df.columns}
     
         for col_ind, col in enumerate(df.columns):
-        
+    
             corrected = pd.DataFrame(df.loc[:, col]).dropna()
-        
+    
             if spectra_conversion_type == 'Normalized':
                 normalized_df = utils.normalize_spectrum(df, col)
                 corrected = pd.DataFrame(normalized_df).dropna()
-        
+            # TODO duzo printow do wyjebania
             corrected = utils.smoothen_the_spectra(corrected, window=vals[col][1])
             corrected = utils.subtract_baseline(corrected, vals[col][0]).dropna()
-        
-            df_to_save[col] = corrected.iloc[col_ind]
-        
+    
+            df_to_save[col] = corrected.iloc[:, 0]
+    
             if col_ind != 0:
                 corrected.iloc[:, 0] += shift * col_ind
-
+    
             fig_grouped_corr = draw.add_traces(corrected.reset_index(), fig_grouped_corr, x=LABELS["RS"], y=col,
                                                name=col)
             draw.fig_layout(template, fig_grouped_corr, plots_colorscale=plots_color, descr=LABELS["OPT_S"])
