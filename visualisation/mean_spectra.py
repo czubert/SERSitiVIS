@@ -54,6 +54,7 @@ def show_mean_plot(df, plots_color, template, spectra_conversion_type):
         # getting baseline for mean spectra
         df[LABELS["BS"]] = peakutils.baseline(df.loc[:, LABELS["AV"]], deg)
         df = utils.subtract_baseline(df, deg, key=LABELS["MS"], model=LABELS["AV"])
+        st.write(df)
         
         # smoothing spectra with rolling method
         df = utils.smoothen_the_spectra(df, window=window, key=LABELS["MS"])
