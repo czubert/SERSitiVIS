@@ -35,45 +35,37 @@ def show_mean_plot(df, plots_color, template, spectra_conversion_type, deg, wind
     
     elif spectra_conversion_type == LABELS["OPT"] or spectra_conversion_type == LABELS["NORM"]:
         file_name += '_optimized'
-        
+
         if spectra_conversion_type == LABELS["NORM"]:
             file_name += '_normalized'
             normalized_df2 = utils.normalize_spectrum(df, LABELS["AV"])
-            df = pd.DataFrame(normalized_df2)#.dropna()
+            df = pd.DataFrame(normalized_df2)
 
         # getting baseline for mean spectra
         df[LABELS["BS"]] = peakutils.baseline(df.loc[:, LABELS["AV"]], deg)
         df = utils.subtract_baseline(df, deg, key=LABELS["MS"], model=LABELS["AV"])
-        
+
         # smoothing spectra with rolling method
         df = utils.smoothen_the_spectra(df, window=window, key=LABELS["MS"])
         df.dropna(inplace=True)
-        
+
         # Drawing figure of mean spectra after baseline correction and flattening
         fig_mean_corr = px.line(df, x=df.index, y=[LABELS["FLAT"]],
                                 color_discrete_sequence=plots_color,
                                 )
         fig_mean_corr = draw.fig_layout(template, fig_mean_corr, plots_colorscale=None,
                                         descr='Mean spectrum after baseline correction')
+        fig_mean_corr.update_traces(hovertemplate=None)
+        fig_mean_corr.update_layout(hovermode="x")
 
         fig_mean_all = px.line(df, x=df.index, y=[LABELS["AV"], LABELS["BS"], LABELS["COR"], LABELS["FLAT"]],
-                               color_discrete_sequence=plots_color,
-                            )
-        # Drawing figure of mean spectra  + baseline
-        fig_mean_all = draw.add_traces(df, fig_mean_all, x=LABELS["RS"], y=LABELS["AV"], name=LABELS["AV"])
-        fig_mean_all = draw.add_traces(df, fig_mean_all, x=LABELS["RS"], y=LABELS["BS"], name=LABELS["BS"])
-        fig_mean_all = draw.add_traces(df, fig_mean_all, x=LABELS["RS"], y=LABELS["COR"], name=LABELS["COR"])
-        fig_mean_all = draw.add_traces(df, fig_mean_all, x=LABELS["RS"], y=LABELS["FLAT"],
-                                       name=f'{LABELS["FLAT"]} + {LABELS["BS"]} correction')
-        
-        draw.fig_layout(template, fig_mean_all, plots_colorscale=plots_color,
-                        descr=f'{LABELS["ORG"]}, {LABELS["BS"]}, {LABELS["COR"]}, and {LABELS["COR"]}+ {LABELS["FLAT"]}')
+                               color_discrete_sequence=plots_color)
+        fig_mean_all = draw.fig_layout(template, fig_mean_all, plots_colorscale=plots_color,
+                                       descr='Mean spectra after baseline correction')
 
     save_read.save_adj_spectra_to_file(df, file_name)
-
 
     if spectra_conversion_type == LABELS["RAW"]:
         return fig_mean_corr,
     else:
         return fig_mean_corr, fig_mean_all
-    

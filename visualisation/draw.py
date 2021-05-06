@@ -59,6 +59,9 @@ def fig_layout(template, fig, plots_colorscale, descr=None):
 
     fig.update_yaxes(showgrid=True, gridwidth=1.4, gridcolor='#ccc')
 
+    # plain hover
+    fig.update_traces(hovertemplate=None)
+    fig.update_layout(hovermode="x")
     return fig
 
 
