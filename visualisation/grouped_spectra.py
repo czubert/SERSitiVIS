@@ -22,14 +22,16 @@ def show_grouped_plot(df, plots_color, template, spectra_conversion_type, shift)
         col1, col2 = st.beta_columns((2))
         for col in range(len(df.columns)):
             col_name = df.columns[col]
-        
+
             corrected = pd.DataFrame(df.loc[:, col_name]).dropna()
-        
+
             df_to_save[col_name] = corrected[col_name]
-            
+            st.write(corrected)
             if col != 0:
+                st.write('lol')
                 corrected.iloc[:, 0] += shift * col
-        
+            st.write(corrected)
+
             fig_grouped_corr = draw.add_traces(corrected.reset_index(), fig_grouped_corr, x=LABELS["RS"], y=col_name,
                                                name=f'{df.columns[col]}')
         draw.fig_layout(template, fig_grouped_corr, plots_colorscale=plots_color, descr=LABELS["ORG"])
