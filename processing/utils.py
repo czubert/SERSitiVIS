@@ -83,10 +83,9 @@ def smoothen_the_spectra(df, window, key=None):
     """
     df = df.copy()
 
-    if key == LABELS['SINGLE']:
+    if key == LABELS['SINGLE'] or key == LABELS['MS']:
         df[LABELS['FLAT']] = df[LABELS['COR']].rolling(window=window).mean()
-    elif key == LABELS['MS']:
-        df[LABELS['FLAT']] = df[LABELS['AV']].rolling(window=window).mean()
+
     else:
         df = df.rolling(window=window).mean()
 
