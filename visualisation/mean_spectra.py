@@ -60,7 +60,7 @@ def show_mean_plot(df, plots_color, template, spectra_conversion_type):
         df.dropna(inplace=True)
         
         # Drowing figure of mean spectra after baseline correction and flattening
-        fig_mean_corr = draw.add_traces_single_spectra(df, fig_mean_corr, x=LABELS["S"], y=LABELS["FLAT"],
+        fig_mean_corr = draw.add_traces_single_spectra(df, fig_mean_corr, x=LABELS["RS"], y=LABELS["FLAT"],
                                                        name=f'{LABELS["FLAT"]} + {LABELS["BS"]} correction')
         fig_mean_corr = draw.fig_layout(template, fig_mean_corr, plots_colorscale=plots_color,
                                         descr='Mean spectra after baseline correction')
