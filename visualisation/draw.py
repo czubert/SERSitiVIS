@@ -8,7 +8,7 @@ import streamlit as st
 from constants import LABELS
 
 
-def fig_layout(template, fig, plots_colorscale, descr='Chosen spectra'):
+def fig_layout(template, fig, plots_colorscale, descr=None):
     """
     Changing layout and styles
     :param template: Str, Plotly template

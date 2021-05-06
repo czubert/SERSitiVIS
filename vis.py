@@ -98,12 +98,15 @@ if files:
 
     # All possible types of charts
     data_vis_option = {LABELS['SINGLE']: single_spectra.show_single_plots,
-                       LABELS['MS']: mean_spectra.show_mean_plot,
-                       LABELS['GS']: grouped_spectra.show_grouped_plot,
-                       LABELS['P3D']: p3d_spectra.show_3d_plots}
+                       # LABELS['MS']: mean_spectra.show_mean_plot,
+                       # LABELS['GS']: grouped_spectra.show_grouped_plot,
+                       # LABELS['P3D']: p3d_spectra.show_3d_plots,
+                       }
 
     # # Run specified type of chart with chosen parameters
     # For grouped spectra sometimes we want to shift the spectra from each other, here it is:
+    col1, col2 = st.beta_columns([5, 2])
+
     if chart_type == LABELS['GS']:
         # depending on conversion type we have to adjust the scale
         if spectra_conversion_type == LABELS['NORM']:
@@ -115,7 +118,6 @@ if files:
             "Adjust all spectra or each spectrum?",
             ('all', 'each'), index=0)
 
-        col1, col2 = st.beta_columns([5, 2])
         with col2:
             with st.beta_expander("Customize your chart", expanded=True):
                 if adjust_plots_globally == 'all':
@@ -132,6 +134,31 @@ if files:
         fig = grouped_spectra.show_grouped_plot(df, plots_color, template, spectra_conversion_type, shift, vals)
         with col1:
             st.plotly_chart(fig, use_container_width=True)
+
+    elif chart_type == LABELS['P3D']:
+        with col2:
+            with st.beta_expander("Customize your chart", expanded=True):
+                deg = utils.choosing_regression_degree()
+                window = utils.choosing_smoothening_window()
+
+        fig = p3d_spectra.show_3d_plots(df, plots_color, template, deg, window)
+        with col1:
+            st.write(fig)
+
+    elif chart_type == LABELS['MS']:
+        if spectra_conversion_type in {LABELS["OPT"], LABELS["NORM"]}:
+            with col2:
+                with st.beta_expander("Customize your chart", expanded=True):
+                    deg = utils.choosing_regression_degree()
+                    window = utils.choosing_smoothening_window()
+        else:
+            deg, window = None, None
+
+        figs = mean_spectra.show_mean_plot(df, plots_color, template, spectra_conversion_type, deg, window)
+        with col1:
+            for fig in figs:
+                st.plotly_chart(fig, use_container_width=True)
+
     # All the other conversion types are single therefore no need for shift spectra
     else:
         data_vis_option[chart_type](df, plots_color, template, spectra_conversion_type)
