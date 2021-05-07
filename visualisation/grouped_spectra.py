@@ -26,11 +26,8 @@ def show_grouped_plot(df, plots_color, template, spectra_conversion_type, shift)
             corrected = pd.DataFrame(df.loc[:, col_name]).dropna()
 
             df_to_save[col_name] = corrected[col_name]
-            st.write(corrected)
             if col != 0:
-                st.write('lol')
                 corrected.iloc[:, 0] += shift * col
-            st.write(corrected)
 
             fig_grouped_corr = draw.add_traces(corrected.reset_index(), fig_grouped_corr, x=LABELS["RS"], y=col_name,
                                                name=f'{df.columns[col]}')
