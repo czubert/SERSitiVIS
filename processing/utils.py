@@ -65,13 +65,15 @@ def subtract_baseline(df, deg, key=None, model=None):
 
     elif key == LABELS['MS']:
         df[LABELS['COR']] = df[model] - peakutils.baseline(df[LABELS['BS']], deg)
-        df.dropna(inplace=True)
-    
+        df.dropna(inplace=True)  # TODO: why?
     else:
         for col in range(len(df.columns)):
             df.iloc[:, col] = df.iloc[:, col] - peakutils.baseline(df.iloc[:, col], deg)
-
     return df
+
+
+def subtract_baseline_series(series, deg):
+    return series - peakutils.baseline(series, deg)
 
 
 @st.cache
@@ -113,6 +115,10 @@ def normalize_spectrum(df, col):
     else:
         return (df.iloc[:, col] - df.iloc[:, col].min()) / (df.iloc[:, col].max() - df.iloc[:, col].min())
 
+
+def normalize_spectrum_series(ser):
+    min_, max_ = ser.min(), ser.max()
+    return (ser - min_) / (max_ - min_)
 
 @st.cache
 def download_button(object_to_download, download_filename, button_text, pickle_it=False):
