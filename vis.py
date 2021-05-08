@@ -1,6 +1,8 @@
 import base64
 
 import pandas as pd
+import peakutils
+import plotly.express as px
 import streamlit as st
 
 from constants import LABELS
@@ -10,10 +12,6 @@ from processing import utils
 from processing import wasatch
 from processing import witec
 from visualisation import draw
-from visualisation import grouped_spectra
-from visualisation import mean_spectra
-from visualisation import p3d_spectra
-from visualisation import single_spectra
 from visualisation import visualisation_options as vis_opt
 
 st.set_page_config(
@@ -97,26 +95,33 @@ if files:
     # getting rid of duplicated columns
     df = df.loc[:, ~df.columns.duplicated()]
 
-    # All possible types of charts
-    data_vis_option = {LABELS['SINGLE']: single_spectra.show_single_plots,
-                       # LABELS['MS']: mean_spectra.show_mean_plot,
-                       # LABELS['GS']: grouped_spectra.show_grouped_plot,
-                       # LABELS['P3D']: p3d_spectra.show_3d_plots,
-                       }
-
     # # Run specified type of chart with chosen parameters
     # For grouped spectra sometimes we want to shift the spectra from each other, here it is:
     col1, col2 = st.beta_columns([5, 2])
 
-    if chart_type == LABELS['GS']:
-        # depending on conversion type we have to adjust the scale
-        if spectra_conversion_type == LABELS['NORM']:
-            shift = st.slider(LABELS['SHIFT'], 0.0, 1.0, 0.0, 0.1)
-        else:
-            shift = st.slider(LABELS['SHIFT'], 0, 30000, 0, 250)
+    if True:
+        #
+        # # data manipulation - raw / optimization / normalization
+        #
+        if spectra_conversion_type == LABELS["NORM"]:
+            df = (df - df.min()) / (df.max() - df.min())
+
+        if chart_type == LABELS['MS']:
+            df = df.mean(axis=1).rename('Average').to_frame()
+        elif chart_type == LABELS['GS']:
+            # depending on conversion type we have to adjust the scale
+            if spectra_conversion_type == LABELS['NORM']:
+                shift = st.slider(LABELS['SHIFT'], 0.0, 1.0, 0.0, 0.1)
+            else:
+                shift = st.slider(LABELS['SHIFT'], 0, 30000, 0, 250)
 
         if spectra_conversion_type == LABELS['RAW']:
             vals = None
+        elif chart_type == LABELS['MS']:
+            with col2:
+                deg = utils.choosing_regression_degree()
+                window = utils.choosing_smoothening_window()
+                vals = {col: (deg, window) for col in df.columns}
         else:
             adjust_plots_globally = st.radio(
                 "Adjust all spectra or each spectrum?",
@@ -135,38 +140,54 @@ if files:
                             vals[col] = (utils.choosing_regression_degree(None, col),
                                          utils.choosing_smoothening_window(None, col))
 
-        fig = grouped_spectra.show_grouped_plot(df, plots_color, template, spectra_conversion_type, shift, vals)
-        with col1:
-            st.plotly_chart(fig, use_container_width=True)
-
-    elif chart_type == LABELS['P3D']:
-        with col2:
-            with st.beta_expander("Customize spectra", expanded=True):
-                deg = utils.choosing_regression_degree()
-                window = utils.choosing_smoothening_window()
-
-        fig = p3d_spectra.show_3d_plots(df, plots_color, template, deg, window)
-        with col1:
-            st.plotly_chart(fig, use_container_width=True)
-
-    elif chart_type == LABELS['MS']:
         if spectra_conversion_type in {LABELS["OPT"], LABELS["NORM"]}:
-            with col2:
-                with st.beta_expander("Customize spectra", expanded=True):
-                    deg = utils.choosing_regression_degree()
-                    window = utils.choosing_smoothening_window()
+            baselines = pd.DataFrame(index=df.index)
+            baselined = pd.DataFrame(index=df.index)
+            flattened = pd.DataFrame(index=df.index)
+            for col in df.columns:
+                baselines[col] = peakutils.baseline(df[col], vals[col][0])
+                baselined[col] = df[col] - baselines[col]
+                flattened[col] = baselined[col].rolling(window=vals[col][1], min_periods=1, center=True).mean()
+
+        #
+        # # plotting
+        #
+        if chart_type == LABELS['GS']:
+            shifters = [(i + 1) * shift for i in range(len(df.columns))]
+            df = df + shifters
+
+            fig = px.line(df, x=df.index, y=df.columns, color_discrete_sequence=plots_color)
+
+        elif chart_type == LABELS['MS']:
+            if spectra_conversion_type == LABELS["RAW"]:
+                fig = px.line(df, x=df.index, y=df.columns, color_discrete_sequence=plots_color)
+            elif spectra_conversion_type in {LABELS["OPT"], LABELS["NORM"]}:
+                plot_df = pd.concat([df, baselines, baselined, flattened], axis=1)
+                plot_df.columns = ['Average', 'Baseline', 'BL-Corrected', 'Flattened + BL-Corrected']
+                fig = px.line(plot_df, x=plot_df.index, y=plot_df.columns, color_discrete_sequence=plots_color)
+
+        elif chart_type == LABELS['P3D']:
+            df3d = flattened if spectra_conversion_type in {LABELS["OPT"], LABELS["NORM"]} else df
+
+            df3d = df3d.reset_index().melt('Raman Shift', df3d.columns)
+            fig = px.line_3d(df3d, x='variable', y='Raman Shift', z='value', color='variable')
+
+            camera = dict(eye=dict(x=1.9, y=0.15, z=0.2))
+            fig.update_layout(scene_camera=camera,
+                              width=1200, height=1200,
+                              margin=dict(l=1, r=1, t=30, b=1),
+                              )
+
+        elif chart_type == LABELS['SINGLE']:
+            pass
+
         else:
-            deg, window = None, None
+            raise ValueError("Something unbelievable has been chosen")
 
-        figs = mean_spectra.show_mean_plot(df, plots_color, template, spectra_conversion_type, deg, window)
+        draw.fig_layout(template, fig, plots_colorscale=plots_color, descr=LABELS["OPT_S"])
+        fig.update_traces(line=dict(width=3.5))
         with col1:
-            for fig in figs:
-                st.plotly_chart(fig, use_container_width=True)
-
-    # All the other conversion types are single therefore no need for shift spectra
-    else:
-        data_vis_option[chart_type](df, plots_color, template, spectra_conversion_type)
-
+            st.plotly_chart(fig, use_container_width=True)
 
 else:
     st.markdown(f'''
