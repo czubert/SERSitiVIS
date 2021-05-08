@@ -60,6 +60,7 @@ if not files:
         files = utils.load_example_files(spectrometer)
 
 df = None
+figs = None
 
 if files:
     # BWTek raw spectra
@@ -114,22 +115,25 @@ if files:
         else:
             shift = st.slider(LABELS['SHIFT'], 0, 30000, 0, 250)
 
-        adjust_plots_globally = st.radio(
-            "Adjust all spectra or each spectrum?",
-            ('all', 'each'), index=0)
+        if spectra_conversion_type == LABELS['RAW']:
+            vals = None
+        else:
+            adjust_plots_globally = st.radio(
+                "Adjust all spectra or each spectrum?",
+                ('all', 'each'), index=0)
 
-        with col2:
-            with st.beta_expander("Customize your chart", expanded=True):
-                if adjust_plots_globally == 'all':
-                    deg = utils.choosing_regression_degree()
-                    window = utils.choosing_smoothening_window()
-                    vals = {col: (deg, window) for col in df.columns}
-                else:
-                    vals = {}
-                    for col in df.columns:
-                        st.write(col)
-                        vals[col] = (utils.choosing_regression_degree(None, col),
-                                     utils.choosing_smoothening_window(None, col))
+            with col2:
+                with st.beta_expander("Customize spectra", expanded=True):
+                    if adjust_plots_globally == 'all':
+                        deg = utils.choosing_regression_degree()
+                        window = utils.choosing_smoothening_window()
+                        vals = {col: (deg, window) for col in df.columns}
+                    else:
+                        vals = {}
+                        for col in df.columns:
+                            st.write(col)
+                            vals[col] = (utils.choosing_regression_degree(None, col),
+                                         utils.choosing_smoothening_window(None, col))
 
         fig = grouped_spectra.show_grouped_plot(df, plots_color, template, spectra_conversion_type, shift, vals)
         with col1:
@@ -137,18 +141,18 @@ if files:
 
     elif chart_type == LABELS['P3D']:
         with col2:
-            with st.beta_expander("Customize your chart", expanded=True):
+            with st.beta_expander("Customize spectra", expanded=True):
                 deg = utils.choosing_regression_degree()
                 window = utils.choosing_smoothening_window()
 
         fig = p3d_spectra.show_3d_plots(df, plots_color, template, deg, window)
         with col1:
-            st.write(fig)
+            st.plotly_chart(fig, use_container_width=True)
 
     elif chart_type == LABELS['MS']:
         if spectra_conversion_type in {LABELS["OPT"], LABELS["NORM"]}:
             with col2:
-                with st.beta_expander("Customize your chart", expanded=True):
+                with st.beta_expander("Customize spectra", expanded=True):
                     deg = utils.choosing_regression_degree()
                     window = utils.choosing_smoothening_window()
         else:
