@@ -2,6 +2,10 @@ import streamlit as st
 
 
 # TODO does this function has any occurance in the code beside this one?
+from constants import LABELS
+from processing import bwtek, renishaw, witec, wasatch
+
+
 def save_adj_spectra_to_file(df_to_save, file_name, key='default'):
     """
     Save data directly from streamlit as csv file after pressing 'download' button.
@@ -25,3 +29,29 @@ def save_adj_spectra_to_file(df_to_save, file_name, key='default'):
                                         button_text='Click here to download your text!')
     
     st.markdown(tmp_download_link, unsafe_allow_html=True)
+
+
+def read_files(spectrometer, files):
+    # BWTek raw spectra
+    if spectrometer == LABELS['BWTEK']:
+        df, bwtek_metadata = bwtek.read_bwtek(files)
+
+    # Renishaw raw spectra
+    elif spectrometer == LABELS['RENI']:
+        df = renishaw.read_renishaw(files, " ")
+
+    # WITec raw spectra
+    elif spectrometer == LABELS['WITEC']:
+        df = witec.read_witec(files, ',')
+
+    # WASATCH raw spectra
+    elif spectrometer == LABELS['WASATCH']:
+        df = wasatch.read_wasatch(files, ',')
+
+    # Teledyne raw spectra
+    elif spectrometer == LABELS['TELEDYNE']:
+        df = renishaw.read_renishaw(files, ',')
+
+    else:
+        raise ValueError('Unknown spectrometer type')
+    return df
