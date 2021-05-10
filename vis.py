@@ -121,6 +121,15 @@ if files:
             deg = utils.choosing_regression_degree()
             window = utils.choosing_smoothening_window()
             vals = {col: (deg, window) for col in df.columns}
+    elif chart_type == LABELS['SINGLE']:
+        tmp_cols = [st.beta_columns([5,2]) for col in df.columns]
+        cols1, cols2 = zip(*tmp_cols)
+        vals = {}
+
+        for col2, col in zip(cols2, df.columns):
+            with col2:
+                st.write(col)
+                vals[col] = (utils.choosing_regression_degree(None, col), utils.choosing_smoothening_window(None, col))
     else:
         adjust_plots_globally = st.radio(
             "Adjust all spectra or each spectrum?",
@@ -184,8 +193,25 @@ if files:
                           )
 
     elif chart_type == LABELS['SINGLE']:
-        raise NotImplementedError('Write stuff for single spectra')
+        columns = ['Average', 'Baseline', 'BL-Corrected', 'Flattened + BL-Corrected']
 
+        for col1, col in zip(cols1, df.columns):
+            plot_df = pd.concat([df[col], baselines[col], baselined[col], flattened[col]], axis=1)
+            plot_df.columns = columns
+
+            fig1 = px.line(plot_df, x=plot_df.index, y=columns[-1], color_discrete_sequence=plots_color[3:])
+            draw.fig_layout(template, fig1, plots_colorscale=plots_color)
+            fig1.update_traces(line=dict(width=3.5))
+
+            fig2 = px.line(plot_df, x=plot_df.index, y=plot_df.columns, color_discrete_sequence=plots_color)
+            draw.fig_layout(template, fig2, plots_colorscale=plots_color)
+            fig2.update_traces(line=dict(width=3.5))
+
+            with col1:
+                st.plotly_chart(fig1, use_container_width=True)
+                with st.beta_expander('Detailed view'):
+                    st.plotly_chart(fig2, use_container_width=True)
+        fig = []
     else:
         raise ValueError("Something unbelievable has been chosen")
 
