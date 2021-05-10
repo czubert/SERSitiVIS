@@ -61,3 +61,11 @@ def contact_developers():
         """,
         unsafe_allow_html=True,
     )
+
+
+def show_developers():
+    contact_developers()
+
+    made_by()
+    made_by_pawel()
+    made_by_lukasz()
