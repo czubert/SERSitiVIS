@@ -1,5 +1,4 @@
 import base64
-import io
 
 import pandas as pd
 import peakutils
@@ -21,7 +20,8 @@ def main():
     st.sidebar.write('#### Choose spectra type', unsafe_allow_html=True)
     spectrometer = st.sidebar.radio(
         "",
-        (LABELS['BWTEK'], LABELS['RENI'], LABELS['WITEC'], LABELS['WASATCH'], LABELS['TELEDYNE']), index=0)
+        (LABELS['BWTEK'], LABELS['RENI'], LABELS['WITEC'], LABELS['WASATCH'], LABELS['TELEDYNE']),
+        index=0)
 
     # users data loader
     st.sidebar.write('#### Upload your data', unsafe_allow_html=True)
@@ -62,46 +62,13 @@ def main():
 
         if chart_type == LABELS['MS']:
             df = df.mean(axis=1).rename('Average').to_frame()
-        elif chart_type == LABELS['GS']:
-            # depending on conversion type we have to adjust the scale
-            if spectra_conversion_type == LABELS['NORM']:
-                shift = st.slider(LABELS['SHIFT'], 0.0, 1.0, 0.0, 0.1)
-            else:
-                shift = st.slider(LABELS['SHIFT'], 0, 30000, 0, 250)
 
-        if spectra_conversion_type == LABELS['RAW']:
-            vals = None
-        elif chart_type == LABELS['MS']:
-            with col2:
-                deg = utils.choosing_regression_degree()
-                window = utils.choosing_smoothening_window()
-                vals = {col: (deg, window) for col in df.columns}
-        elif chart_type == LABELS['SINGLE']:
-            tmp_cols = [st.beta_columns([5,2]) for col in df.columns]
-            cols1, cols2 = zip(*tmp_cols)
-            vals = {}
-
-            for col2, col in zip(cols2, df.columns):
-                with col2:
-                    st.write(col)
-                    vals[col] = (utils.choosing_regression_degree(None, col), utils.choosing_smoothening_window(None, col))
+        if chart_type == LABELS['GS']:
+            shift = get_shifting_distance(spectra_conversion_type)
         else:
-            adjust_plots_globally = st.radio(
-                "Adjust all spectra or each spectrum?",
-                ('all', 'each'), index=0)
+            shift = None
 
-            with col2:
-                with st.beta_expander("Customize spectra", expanded=True):
-                    if adjust_plots_globally == 'all':
-                        deg = utils.choosing_regression_degree()
-                        window = utils.choosing_smoothening_window()
-                        vals = {col: (deg, window) for col in df.columns}
-                    else:
-                        vals = {}
-                        for col in df.columns:
-                            st.write(col)
-                            vals[col] = (utils.choosing_regression_degree(None, col),
-                                         utils.choosing_smoothening_window(None, col))
+        vals, cols1 = get_deg_win(chart_type, spectra_conversion_type, col2, df.columns)
 
         if spectra_conversion_type in {LABELS["OPT"], LABELS["NORM"]}:
             baselines = pd.DataFrame(index=df.index)
@@ -116,21 +83,16 @@ def main():
         # # plotting
         #
         if chart_type == LABELS['GS']:
-            if spectra_conversion_type == LABELS["RAW"]:
-                shifters = [(i + 1) * shift for i in range(len(df.columns))]
-                df = df + shifters
+            shifters = [(i + 1) * shift for i in range(len(df.columns))]
+            df_plot = df if spectra_conversion_type == LABELS["RAW"] else flattened
+            df_plot = df_plot + shifters
 
-                fig = px.line(df, x=df.index, y=df.columns, color_discrete_sequence=plots_color)
-
-            else:
-                shifters = [(i + 1) * shift for i in range(len(df.columns))]
-                flattened = flattened + shifters
-
-                fig = px.line(flattened, x=flattened.index, y=flattened.columns, color_discrete_sequence=plots_color)
+            figs = [px.line(df_plot, x=df_plot.index, y=df_plot.columns, color_discrete_sequence=plots_color)]
 
         elif chart_type == LABELS['MS']:
             if spectra_conversion_type == LABELS["RAW"]:
-                fig = px.line(df, x=df.index, y=df.columns, color_discrete_sequence=plots_color)
+                figs = [px.line(df, x=df.index, y=df.columns, color_discrete_sequence=plots_color)]
+
             elif spectra_conversion_type in {LABELS["OPT"], LABELS["NORM"]}:
                 columns = ['Average', 'Baseline', 'BL-Corrected', 'Flattened + BL-Corrected']
                 plot_df = pd.concat([df, baselines, baselined, flattened], axis=1)
@@ -138,7 +100,7 @@ def main():
 
                 fig1 = px.line(plot_df, x=plot_df.index, y=columns[-1], color_discrete_sequence=plots_color[3:])
                 fig2 = px.line(plot_df, x=plot_df.index, y=plot_df.columns, color_discrete_sequence=plots_color)
-                fig = [fig1, fig2]
+                figs = [fig1, fig2]
             else:
                 raise ValueError('Unknown conversion type for Mean spectrum chart')
 
@@ -153,11 +115,12 @@ def main():
                               width=1200, height=1200,
                               margin=dict(l=1, r=1, t=30, b=1),
                               )
+            figs = [fig]
 
         elif chart_type == LABELS['SINGLE']:
 
             if spectra_conversion_type == LABELS["RAW"]:
-                fig = [px.line(df[col], color_discrete_sequence=plots_color) for col in df.columns]
+                figs = [px.line(df[col], color_discrete_sequence=plots_color) for col in df.columns]
             else:
                 columns = ['Average', 'Baseline', 'BL-Corrected', 'Flattened + BL-Corrected']
                 for col1, col in zip(cols1, df.columns):
@@ -176,25 +139,80 @@ def main():
                         st.plotly_chart(fig1, use_container_width=True)
                         with st.beta_expander('Detailed view'):
                             st.plotly_chart(fig2, use_container_width=True)
-                fig = []
+                figs = []
         else:
             raise ValueError("Something unbelievable has been chosen")
 
         with col1:
-            if isinstance(fig, (list, tuple)):
-                for f in fig:
+            if isinstance(figs, (list, tuple)):
+                for f in figs:
                     draw.fig_layout(template, f, plots_colorscale=plots_color)
                     f.update_traces(line=dict(width=3.5))
                     st.plotly_chart(f, use_container_width=True)
             else:
-                draw.fig_layout(template, fig, plots_colorscale=plots_color)
-                fig.update_traces(line=dict(width=3.5))
-                st.plotly_chart(fig, use_container_width=True)
+                draw.fig_layout(template, figs, plots_colorscale=plots_color)
+                figs.update_traces(line=dict(width=3.5))
+                st.plotly_chart(figs, use_container_width=True)
 
     else:
         show_manual()
 
     authors.show_developers()
+
+
+def get_deg_win(chart_type, spectra_conversion_type, col2, df_columns):
+    if spectra_conversion_type == LABELS['RAW']:
+        vals = None
+        cols1 = None
+
+    elif chart_type == LABELS['MS']:
+        cols1 = None
+        with col2:
+            deg = utils.choosing_regression_degree()
+            window = utils.choosing_smoothening_window()
+            vals = {col: (deg, window) for col in df_columns}
+
+    elif chart_type == LABELS['SINGLE']:
+        tmp_cols = [st.beta_columns([5, 2]) for _ in df_columns]
+        cols1, cols2 = zip(*tmp_cols)
+        vals = {}
+
+        for col2, col in zip(cols2, df_columns):
+            with col2:
+                st.write(col)
+                vals[col] = (utils.choosing_regression_degree(None, col), utils.choosing_smoothening_window(None, col))
+
+    elif chart_type in {LABELS['GS'], LABELS['P3D']}:
+        cols1 = None
+        adjust_plots_globally = st.radio(
+            "Adjust all spectra or each spectrum?",
+            ('all', 'each'), index=0)
+
+        with col2:
+            with st.beta_expander("Customize spectra", expanded=True):
+                if adjust_plots_globally == 'all':
+                    deg = utils.choosing_regression_degree()
+                    window = utils.choosing_smoothening_window()
+                    vals = {col: (deg, window) for col in df_columns}
+                else:
+                    vals = {}
+                    for col in df_columns:
+                        st.write(col)
+                        vals[col] = (utils.choosing_regression_degree(None, col),
+                                     utils.choosing_smoothening_window(None, col))
+    else:
+        raise ValueError('Unknown chart type')
+
+    return vals, cols1
+
+
+def get_shifting_distance(spectra_conversion_type):
+    # depending on conversion type we have to adjust the scale
+    if spectra_conversion_type == LABELS['NORM']:
+        shift = st.slider(LABELS['SHIFT'], 0.0, 1.0, 0.0, 0.1)
+    else:
+        shift = st.slider(LABELS['SHIFT'], 0, 30000, 0, 250)
+    return shift
 
 
 def show_manual():
