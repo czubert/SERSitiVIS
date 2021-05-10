@@ -161,9 +161,13 @@ if files:
         if spectra_conversion_type == LABELS["RAW"]:
             fig = px.line(df, x=df.index, y=df.columns, color_discrete_sequence=plots_color)
         elif spectra_conversion_type in {LABELS["OPT"], LABELS["NORM"]}:
+            columns = ['Average', 'Baseline', 'BL-Corrected', 'Flattened + BL-Corrected']
             plot_df = pd.concat([df, baselines, baselined, flattened], axis=1)
-            plot_df.columns = ['Average', 'Baseline', 'BL-Corrected', 'Flattened + BL-Corrected']
-            fig = px.line(plot_df, x=plot_df.index, y=plot_df.columns, color_discrete_sequence=plots_color)
+            plot_df.columns = columns
+
+            fig1 = px.line(plot_df, x=plot_df.index, y=columns[-1], color_discrete_sequence=plots_color[3:])
+            fig2 = px.line(plot_df, x=plot_df.index, y=plot_df.columns, color_discrete_sequence=plots_color)
+            fig = [fig1, fig2]
         else:
             raise ValueError('Unknown conversion type for Mean spectrum chart')
 
@@ -185,10 +189,16 @@ if files:
     else:
         raise ValueError("Something unbelievable has been chosen")
 
-    draw.fig_layout(template, fig, plots_colorscale=plots_color, descr=LABELS["OPT_S"])
-    fig.update_traces(line=dict(width=3.5))
     with col1:
-        st.plotly_chart(fig, use_container_width=True)
+        if isinstance(fig, (list, tuple)):
+            for f in fig:
+                draw.fig_layout(template, f, plots_colorscale=plots_color)
+                f.update_traces(line=dict(width=3.5))
+                st.plotly_chart(f, use_container_width=True)
+        else:
+            draw.fig_layout(template, fig, plots_colorscale=plots_color)
+            fig.update_traces(line=dict(width=3.5))
+            st.plotly_chart(fig, use_container_width=True)
 
 else:
     st.markdown(f'''
