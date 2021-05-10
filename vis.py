@@ -161,10 +161,17 @@ if files:
     # # plotting
     #
     if chart_type == LABELS['GS']:
-        shifters = [(i + 1) * shift for i in range(len(df.columns))]
-        flattened = flattened + shifters
+        if spectra_conversion_type == LABELS["RAW"]:
+            shifters = [(i + 1) * shift for i in range(len(df.columns))]
+            df = df + shifters
 
-        fig = px.line(flattened, x=flattened.index, y=flattened.columns, color_discrete_sequence=plots_color)
+            fig = px.line(df, x=df.index, y=df.columns, color_discrete_sequence=plots_color)
+
+        else:
+            shifters = [(i + 1) * shift for i in range(len(df.columns))]
+            flattened = flattened + shifters
+
+            fig = px.line(flattened, x=flattened.index, y=flattened.columns, color_discrete_sequence=plots_color)
 
     elif chart_type == LABELS['MS']:
         if spectra_conversion_type == LABELS["RAW"]:
@@ -193,25 +200,28 @@ if files:
                           )
 
     elif chart_type == LABELS['SINGLE']:
-        columns = ['Average', 'Baseline', 'BL-Corrected', 'Flattened + BL-Corrected']
 
-        for col1, col in zip(cols1, df.columns):
-            plot_df = pd.concat([df[col], baselines[col], baselined[col], flattened[col]], axis=1)
-            plot_df.columns = columns
+        if spectra_conversion_type == LABELS["RAW"]:
+            fig = [px.line(df[col], color_discrete_sequence=plots_color) for col in df.columns]
+        else:
+            columns = ['Average', 'Baseline', 'BL-Corrected', 'Flattened + BL-Corrected']
+            for col1, col in zip(cols1, df.columns):
+                plot_df = pd.concat([df[col], baselines[col], baselined[col], flattened[col]], axis=1)
+                plot_df.columns = columns
 
-            fig1 = px.line(plot_df, x=plot_df.index, y=columns[-1], color_discrete_sequence=plots_color[3:])
-            draw.fig_layout(template, fig1, plots_colorscale=plots_color)
-            fig1.update_traces(line=dict(width=3.5))
+                fig1 = px.line(plot_df, x=plot_df.index, y=columns[-1], color_discrete_sequence=plots_color[3:])
+                draw.fig_layout(template, fig1, plots_colorscale=plots_color)
+                fig1.update_traces(line=dict(width=3.5))
 
-            fig2 = px.line(plot_df, x=plot_df.index, y=plot_df.columns, color_discrete_sequence=plots_color)
-            draw.fig_layout(template, fig2, plots_colorscale=plots_color)
-            fig2.update_traces(line=dict(width=3.5))
+                fig2 = px.line(plot_df, x=plot_df.index, y=plot_df.columns, color_discrete_sequence=plots_color)
+                draw.fig_layout(template, fig2, plots_colorscale=plots_color)
+                fig2.update_traces(line=dict(width=3.5))
 
-            with col1:
-                st.plotly_chart(fig1, use_container_width=True)
-                with st.beta_expander('Detailed view'):
-                    st.plotly_chart(fig2, use_container_width=True)
-        fig = []
+                with col1:
+                    st.plotly_chart(fig1, use_container_width=True)
+                    with st.beta_expander('Detailed view'):
+                        st.plotly_chart(fig2, use_container_width=True)
+            fig = []
     else:
         raise ValueError("Something unbelievable has been chosen")
 
