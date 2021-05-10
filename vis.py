@@ -153,9 +153,9 @@ if files:
     #
     if chart_type == LABELS['GS']:
         shifters = [(i + 1) * shift for i in range(len(df.columns))]
-        df = df + shifters
+        flattened = flattened + shifters
 
-        fig = px.line(df, x=df.index, y=df.columns, color_discrete_sequence=plots_color)
+        fig = px.line(flattened, x=flattened.index, y=flattened.columns, color_discrete_sequence=plots_color)
 
     elif chart_type == LABELS['MS']:
         if spectra_conversion_type == LABELS["RAW"]:
