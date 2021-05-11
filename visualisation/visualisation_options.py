@@ -9,10 +9,10 @@ def vis_options(spectrometer):
     :param spectrometer:
     :return:
     """
-    if spectrometer == 'BWTEK':
-        options = [LABELS["SINGLE"], LABELS["MS"], LABELS["GS"], LABELS["P3D"]]
-    else:
-        options = [LABELS["SINGLE"], LABELS["GS"]]
+    # if spectrometer == 'BWTEK':
+    options = [LABELS["SINGLE"], LABELS["MS"], LABELS["GS"], LABELS["P3D"]]
+    # else:
+    #     options = [LABELS["SINGLE"], LABELS["GS"]]
 
     st.sidebar.write('#### Choose type of chart', unsafe_allow_html=True)
     chart_type = st.sidebar.radio('', options, 0)
