@@ -101,7 +101,7 @@ def main():
 
                 fig1 = px.line(plot_df, x=plot_df.index, y=columns[-1], color_discrete_sequence=plots_color[3:])
                 fig2 = px.line(plot_df, x=plot_df.index, y=plot_df.columns, color_discrete_sequence=plots_color)
-                figs = [fig1, fig2]
+                figs = [(fig1, fig2)]
             else:
                 raise ValueError('Unknown conversion type for Mean spectrum chart')
 
@@ -119,49 +119,79 @@ def main():
             figs = [fig]
 
         elif chart_type == LABELS['SINGLE']:
-
             if spectra_conversion_type == LABELS["RAW"]:
                 figs = [px.line(df[col], color_discrete_sequence=plots_color) for col in df.columns]
             else:
                 columns = ['Average', 'Baseline', 'BL-Corrected', 'Flattened + BL-Corrected']
+                figs = []
                 for col_left, col in zip(cols_left, df.columns):
+
                     plot_df = pd.concat([df[col], baselines[col], baselined[col], flattened[col]], axis=1)
                     plot_df.columns = columns
 
-                    fig1 = px.line(plot_df, x=plot_df.index, y=columns[-1], color_discrete_sequence=plots_color[3:])
-                    draw.fig_layout(template, fig1, plots_colorscale=plots_color)
-                    fig1.update_traces(line=dict(width=3.5))
-
-                    fig2 = px.line(plot_df, x=plot_df.index, y=plot_df.columns, color_discrete_sequence=plots_color)
-                    draw.fig_layout(template, fig2, plots_colorscale=plots_color)
-                    fig2.update_traces(line=dict(width=3.5))
-
-                    with col_left:
-                        st.plotly_chart(fig1, use_container_width=True)
-                        with st.beta_expander('Detailed view'):
-                            st.plotly_chart(fig2, use_container_width=True)
-                figs = []
+                    fig1 = px.line(plot_df, x=plot_df.index, y=columns[-1],
+                                   color_discrete_sequence=plots_color[3:])  # trick for color consistency
+                    fig2 = px.line(plot_df, x=plot_df.index, y=plot_df.columns,
+                                   color_discrete_sequence=plots_color)
+                    fig_tup = (fig1, fig2)
+                    figs.append(fig_tup)
         else:
             raise ValueError("Something unbelievable has been chosen")
 
-        with cols_left[0]:
-            if isinstance(figs, (list, tuple)):
-                for f in figs:
-                    draw.fig_layout(template, f, plots_colorscale=plots_color)
-                    f.update_traces(line=dict(width=3.5))
-                    st.plotly_chart(f, use_container_width=True)
-            else:
-                draw.fig_layout(template, figs, plots_colorscale=plots_color)
-                figs.update_traces(line=dict(width=3.5))
-                st.plotly_chart(figs, use_container_width=True)
-
+        show_charts(cols_left, figs, plots_color, template)
     else:
         show_manual()
 
     authors.show_developers()
 
 
+def show_charts(cols_left, figs, plots_color, template):
+    """
+    Neat function for plotting charst on left side.
+
+    Elements of fig type are simply drawn.
+    For elements of type list or tuple creates inner loop - first element is
+    drawn and the rest is hidden in beta_expander
+
+    Args:
+        cols_left (list): columns to draw on
+        figs (list): list of figures to plot (might be nested)
+        plots_color: color scale for plotly
+        template: plotly template
+
+    """
+    for col_left, fig in zip(cols_left, figs):
+        with col_left:
+            if isinstance(fig, (list, tuple)):
+                f = fig[0]
+                draw.fig_layout(template, f, plots_colorscale=plots_color)
+                f.update_traces(line=dict(width=3.5))
+                st.plotly_chart(f, use_container_width=True)
+
+                with st.beta_expander('Detailed view'):
+                    for f in fig[1:]:
+                        draw.fig_layout(template, f, plots_colorscale=plots_color)
+                        f.update_traces(line=dict(width=3.5))
+                        st.plotly_chart(f, use_container_width=True)
+            else:
+                draw.fig_layout(template, fig, plots_colorscale=plots_color)
+                fig.update_traces(line=dict(width=3.5))
+                st.plotly_chart(fig, use_container_width=True)
+
+
 def get_deg_win(chart_type, spectra_conversion_type, cols_right, df_columns):
+    """
+    Fills in right side of webside with sliders for polynomial degree and smoothening window
+
+    Args:
+        chart_type (str): type of plot
+        spectra_conversion_type (str): type of data preprocessing
+        cols_right (list): list of right side st.beta_columns
+        df_columns (list): df column names
+
+    Returns:
+        dict: polynomial degree and smoothening window tuple for each data series
+    """
     if spectra_conversion_type == LABELS['RAW']:
         vals = None
 
