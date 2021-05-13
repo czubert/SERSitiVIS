@@ -1,11 +1,9 @@
 import base64
-import re
 
 import pandas as pd
 import peakutils
 import plotly.express as px
 import streamlit as st
-import streamlit.components.v1 as components
 
 import authors
 from constants import LABELS
@@ -127,7 +125,6 @@ def main():
                 columns = ['Average', 'Baseline', 'BL-Corrected', 'Flattened + BL-Corrected']
                 figs = []
                 for col_left, col in zip(cols_left, df.columns):
-
                     plot_df = pd.concat([df[col], baselines[col], baselined[col], flattened[col]], axis=1)
                     plot_df.columns = columns
 
@@ -319,7 +316,3 @@ def sidebar_head():
 if __name__ == '__main__':
     main()
     print("Streamlit finished it's work")
-# mail to developers
-authors.contact_developers()
-
-print("Streamlit finish it's work")
