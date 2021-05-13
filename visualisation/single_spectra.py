@@ -39,13 +39,8 @@ def show_single_plots(df, plots_color, template, spectra_conversion_type):
             description = LABELS["OPT_S"]
     
             with col2:
-                st.markdown('## Adjust your spectra')
-                st.header('\n\n\n\n')
-                st.header('\n\n\n\n')
-                st.header('\n\n\n\n')
-                st.header('\n\n\n\n')
-                st.header('\n\n\n\n')
-        
+                st.markdown('## Adjust chart')
+
                 deg = utils.choosing_regression_degree(name=spectra_to_show.columns[0])
                 window = utils.choosing_smoothening_window(name=spectra_to_show.columns[0])
     
@@ -82,10 +77,10 @@ def show_single_plots(df, plots_color, template, spectra_conversion_type):
 
         with col1:
             if spectra_conversion_type == LABELS["RAW"]:
-                st.write(fig_single_corr)
+                st.plotly_chart(fig_single_corr, use_container_width=True)
             else:
-                st.write(fig_single_corr)
-                st.write(fig_single_all)
+                st.plotly_chart(fig_single_corr, use_container_width=True)
+                st.plotly_chart(fig_single_all, use_container_width=True)
 
         file_name = f'{df_visual.columns[0]}_{LABELS["FLAT"]}_{LABELS["BS"]}_correction'
 
