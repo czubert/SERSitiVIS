@@ -41,11 +41,12 @@ def main():
     # Check if data loaded, if yes, perform actions
     if files:
         df = save_read.read_files(spectrometer, files)
-        
+
+        main_expander = st.beta_expander("Customize your chart")
         # Choose plot colors and templates
-        with st.beta_expander("Customize your chart"):
+        with main_expander:
             plots_color, template = draw.choosing_colorway(), draw.choose_template()
-        
+
         # Select chart type
         chart_type = vis_opt.vis_options(spectrometer)
         
@@ -67,12 +68,23 @@ def main():
         # Mean Spectra
         if chart_type == LABELS['MS']:
             df = df.mean(axis=1).rename('Average').to_frame()
-        
-        # For grouped spectra sometimes we want to shift the spectra from each other, here it is:
-        if chart_type == LABELS['GS']:
-            shift = data_customisation.get_shifting_distance(spectra_conversion_type)
-        else:
-            shift = None
+
+        with main_expander:
+            # trick to better fit sliders in expander
+            _, main_expander_column, _ = st.beta_columns([1, 38, 1])
+            with main_expander_column:
+                # trim raman shift range
+                min_, max_ = float(df.index.min()), float(df.index.max())
+                min_rs, max_rs = st.slider('custom range',
+                                           min_value=min_, max_value=max_, value=[min_, max_])
+                mask = (min_rs <= df.index) & (df.index <= max_rs)
+                df = df[mask]
+
+                # For grouped spectra sometimes we want to shift the spectra from each other, here it is:
+                if chart_type == LABELS['GS']:
+                    shift = data_customisation.get_shifting_distance(spectra_conversion_type)
+                else:
+                    shift = None
         
         # Every chart (or pair) gets its own columns
         tmp_cols = [st.beta_columns([5, 2]) for _ in df.columns]
