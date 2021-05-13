@@ -17,7 +17,7 @@ def sidebar_head():
     # linked logo of sersitive at the sidebar
     link = 'http://sersitive.eu'
     
-    with open('examples/sersitivis_no_background.png', 'rb') as f:
+    with open('logos/sersitivis_no_background.png', 'rb') as f:
         data = f.read()
     
     bin_str = base64.b64encode(data).decode()
