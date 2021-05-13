@@ -7,10 +7,9 @@ import streamlit as st
 
 import authors
 from constants import LABELS
-from processing import bwtek
 from processing import utils
 from processing.save_read import read_files
-from visualisation import draw
+from visualisation import draw, manual
 from visualisation import visualisation_options as vis_opt
 
 
@@ -139,7 +138,7 @@ def main():
 
         show_charts(cols_left, figs, plots_color, template)
     else:
-        show_manual()
+        manual.show_manual()
 
     authors.show_developers()
 
@@ -238,50 +237,6 @@ def get_shifting_distance(spectra_conversion_type):
     else:
         shift = st.slider(LABELS['SHIFT'], 0, 30000, 0, 250)
     return shift
-
-
-def show_manual():
-    st.markdown(f'''
-            <img src="https://sersitive.eu/wp-content/uploads/LOGO.png"
-            style="
-            margin: auto;
-            width: 80%;
-            padding:0px 6px 45px 25%; 20px;
-            "/>''',
-                unsafe_allow_html=True
-                )
-    st.warning('First choose data type from left sidebar')
-    st.warning('Then upload file or files for visualisation - sidebar')
-    st.header('Short manual on how to import data')
-    st.write('')
-    # TODO needs improvements, shows data only if BWTEK is choosen
-    with st.beta_expander('For BWTEK - upload raw data in *.txt format without any changes'):
-        streams = utils.load_example_files('BWTEK')
-        df, bwtek_metadata = bwtek.read_bwtek(streams[0:1])
-        st.markdown('### Original data consists of metadata')
-        st.write(bwtek_metadata)
-        st.markdown('### And data')
-        st.write(df)
-    with st.beta_expander('For WITec Alpha300 R+, upload spectra in *.txt or *.csv format as follows:'):
-        st.write(pd.read_csv('data_examples/witec/WITec(7).csv'))
-        st.write('First column is X axis i.e Raman Shift (name of column is not important here)')
-        st.write('Other columns should be the data itself')
-        st.markdown(f'<b>Name of column</b> will be displayed as a <b>name of a plot in the legend</b>',
-                    unsafe_allow_html=True)
-        st.markdown(f"<p style='color:red'><b>Important:</b> Do not duplicate names of the columns",
-                    unsafe_allow_html=True)
-    with st.beta_expander('For Renishaw spectra upload raw data in *.txt or *.csv format as shown below:'):
-        st.write(pd.read_csv('data_examples/renishaw/renishaw(6).txt', header=None, sep='\t'))
-        st.write('First column is X axis i.e Raman Shift (name of column is not important here)')
-        st.write('Second column is Y axis, and should be the data itself')
-        st.markdown(f'<b>Name of a file</b> will be displayed as a <b>name of a plot in the legend</b>',
-                    unsafe_allow_html=True)
-    with st.beta_expander('For Wasatch spectra upload raw data in *.txt or *.csv:'):
-        st.write(pd.read_csv('data_examples/wasatch/SERSitive_next_day_1ppm-20201009-093810-270034-WP-00702.csv',
-                             header=None, sep='\t'))
-    with st.beta_expander('For Teledyne Princeton Instruments spectra upload raw data in *.txt or *.csv:'):
-        st.write(pd.read_csv('data_examples/teledyne/teledyne(1).csv',
-                             header=None, sep=','))
 
 
 def sidebar_head():
