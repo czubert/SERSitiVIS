@@ -208,12 +208,13 @@ def get_deg_win(chart_type, spectra_conversion_type, cols_right, df_columns):
                 vals[col] = (utils.choosing_regression_degree(None, col), utils.choosing_smoothening_window(None, col))
 
     elif chart_type in {LABELS['GS'], LABELS['P3D']}:
-        adjust_plots_globally = st.radio(
-            "Adjust all spectra or each spectrum?",
-            ('all', 'each'), index=0)
-
+    
         with cols_right[0]:
             with st.beta_expander("Customize spectra", expanded=True):
+                adjust_plots_globally = st.radio(
+                    "Adjust all spectra or each spectrum?",
+                    ('all', 'each'), index=0)
+            
                 if adjust_plots_globally == 'all':
                     deg = utils.choosing_regression_degree()
                     window = utils.choosing_smoothening_window()
