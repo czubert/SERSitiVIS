@@ -14,14 +14,19 @@ authors_css = """
 """
 
 def made_by():
+    """
+    Shows formatted 'by'
+    """
     st.sidebar.markdown(f"\n\n\n")
-    # st.sidebar.header(f"\n\n\n")
     st.sidebar.markdown(
         '<p ' + authors_css + '>' + 'By </p>',
         unsafe_allow_html=True)
 
 
 def made_by_pawel():
+    """
+    Shows formated text, linked with https address
+    """
     st.sidebar.markdown(
         '<a ' + authors_css + ' target="_blank" href="https://linkedin.com/in/paweł-albrycht-b791147a">' + 'Paweł Albrycht</a>',
         unsafe_allow_html=True,
@@ -29,6 +34,9 @@ def made_by_pawel():
 
 
 def made_by_lukasz():
+    """
+    Shows formated text, linked with https address
+    """
     st.sidebar.markdown(
         "<a " + authors_css + ' target="_blank" href="https://linkedin.com/in/lukasz-charzewski">' + "Łukasz Charzewski</a>",
         unsafe_allow_html=True,
@@ -36,6 +44,9 @@ def made_by_lukasz():
 
 # TODO nie wiem jak zrobić, żeby ten mail dzialal po przycisnieciu
 def contact_developers():
+    """
+    Shows formated text, linked with email address
+    """
     st.subheader('')
     st.subheader('')
     
@@ -47,8 +58,12 @@ def contact_developers():
 
 
 def show_developers():
+    """
+    Shows all the links and mails to developers
+    :return:
+    """
     contact_developers()
-
+    
     made_by()
     made_by_pawel()
     made_by_lukasz()

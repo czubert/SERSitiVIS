@@ -3,9 +3,8 @@ import peakutils
 import plotly.express as px
 import streamlit as st
 
-import authors
 from constants import LABELS
-from for_streamlit_only import manual, sidebar, data_customisation, charts
+from for_streamlit_only import manual, sidebar, data_customisation, charts, authors
 from processing import save_read
 from processing import utils
 from visualisation import draw
