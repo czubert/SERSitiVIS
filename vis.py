@@ -1,5 +1,3 @@
-
-
 import pandas as pd
 import peakutils
 import plotly.express as px
@@ -8,8 +6,8 @@ import streamlit as st
 import authors
 from constants import LABELS
 from for_streamlit_only import manual, sidebar, data_customisation, charts
+from processing import save_read
 from processing import utils
-from processing.save_read import read_files
 from visualisation import draw
 from visualisation import visualisation_options as vis_opt
 
@@ -34,7 +32,7 @@ def main():
             files = utils.load_example_files(spectrometer)
 
     if files:
-        df = read_files(spectrometer, files)
+        df = save_read.read_files(spectrometer, files)
 
         # choose plot colors and tamplates
         with st.beta_expander("Customize your chart"):
@@ -85,14 +83,15 @@ def main():
         #
         if chart_type == LABELS['GS']:
             shifters = [(i + 1) * shift for i in range(len(df.columns))]
-            df_plot = df if spectra_conversion_type == LABELS["RAW"] else flattened
-            df_plot = df_plot + shifters
+            plot_df = df if spectra_conversion_type == LABELS["RAW"] else flattened
+            plot_df = plot_df + shifters
 
-            figs = [px.line(df_plot, x=df_plot.index, y=df_plot.columns, color_discrete_sequence=plots_color)]
+            figs = [px.line(plot_df, x=plot_df.index, y=plot_df.columns, color_discrete_sequence=plots_color)]
 
         elif chart_type == LABELS['MS']:
             if spectra_conversion_type == LABELS["RAW"]:
-                figs = [px.line(df, x=df.index, y=df.columns, color_discrete_sequence=plots_color)]
+                plot_df = df
+                figs = [px.line(plot_df, x=plot_df.index, y=plot_df.columns, color_discrete_sequence=plots_color)]
 
             elif spectra_conversion_type in {LABELS["OPT"], LABELS["NORM"]}:
                 columns = ['Average', 'Baseline', 'BL-Corrected', 'Flattened + BL-Corrected']
@@ -106,10 +105,10 @@ def main():
                 raise ValueError('Unknown conversion type for Mean spectrum chart')
 
         elif chart_type == LABELS['P3D']:
-            df3d = flattened if spectra_conversion_type in {LABELS["OPT"], LABELS["NORM"]} else df
+            plot_df = flattened if spectra_conversion_type in {LABELS["OPT"], LABELS["NORM"]} else df
 
-            df3d = df3d.reset_index().melt('Raman Shift', df3d.columns)
-            fig = px.line_3d(df3d, x='variable', y='Raman Shift', z='value', color='variable')
+            plot_df = plot_df.reset_index().melt('Raman Shift', plot_df.columns)
+            fig = px.line_3d(plot_df, x='variable', y='Raman Shift', z='value', color='variable')
 
             camera = dict(eye=dict(x=1.9, y=0.15, z=0.2))
             fig.update_layout(scene_camera=camera,
@@ -120,10 +119,12 @@ def main():
 
         elif chart_type == LABELS['SINGLE']:
             if spectra_conversion_type == LABELS["RAW"]:
-                figs = [px.line(df[col], color_discrete_sequence=plots_color) for col in df.columns]
+                plot_df = df
+                figs = [px.line(plot_df[col], color_discrete_sequence=plots_color) for col in plot_df.columns]
             else:
                 columns = ['Average', 'Baseline', 'BL-Corrected', 'Flattened + BL-Corrected']
                 figs = []
+                plot_dfs = []
                 for col_left, col in zip(cols_left, df.columns):
                     plot_df = pd.concat([df[col], baselines[col], baselined[col], flattened[col]], axis=1)
                     plot_df.columns = columns
@@ -134,10 +135,25 @@ def main():
                                    color_discrete_sequence=plots_color)
                     fig_tup = (fig1, fig2)
                     figs.append(fig_tup)
+                    plot_dfs.append(plot_df)
         else:
             raise ValueError("Something unbelievable has been chosen")
 
         charts.show_charts(cols_left, figs, plots_color, template)
+
+        # this is just until we change SINGLE plots to one plot per site.
+        #  than we'll resign of the loop
+        if chart_type == LABELS['SINGLE'] and spectra_conversion_type != LABELS["RAW"]:
+            for col_left, plot_df in zip(cols_left, plot_dfs):
+                with col_left:
+                    link = utils.download_button(plot_df.reset_index(), f'spectrum.csv',
+                                                 button_text='Download plot as CSV file')
+                    st.markdown(link, unsafe_allow_html=True)
+        else:
+            link = utils.download_button(plot_df.reset_index(), f'spectrum.csv',
+                                         button_text='Download CSV')
+            st.markdown(link, unsafe_allow_html=True)
+
     else:
         manual.show_manual()
 
