@@ -16,6 +16,8 @@ def main():
     Main is responsible for the visualisation of everything connected with streamlit.
     It is the web application itself.
     """
+    
+    # Sets header, logo and radiobuttons in a row
     sidebar.sidebar_head()
     
     #
@@ -155,7 +157,7 @@ def main():
 
         charts.show_charts(cols_left, figs, plots_color, template)
 
-        # this is just until we change SINGLE plots to one plot per site.
+        # TODO this is just until we change SINGLE plots to one plot per site.
         #  than we'll resign of the loop
         if chart_type == LABELS['SINGLE'] and spectra_conversion_type != LABELS["RAW"]:
             for col_left, plot_df in zip(cols_left, plot_dfs):
@@ -170,11 +172,8 @@ def main():
 
     else:
         manual.show_manual()
-
+    
     authors.show_developers()
-
-
-
 
 
 if __name__ == '__main__':

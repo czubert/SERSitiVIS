@@ -137,6 +137,7 @@ def normalize_spectrum_series(ser):
     min_, max_ = ser.min(), ser.max()
     return (ser - min_) / (max_ - min_)
 
+
 @st.cache
 def download_button(object_to_download, download_filename, button_text, pickle_it=False):
     """
