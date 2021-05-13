@@ -33,6 +33,12 @@ def read_spec(uploaded_file, spectra_params, meta_params=None):
 
 
 def choosing_regression_degree(name=None, col='default'):
+    """
+    Slider, choose your polynomial regression degree
+    :param name: Str
+    :param col: Str
+    :return: Int, degree for polynomial regression
+    """
     label = 'Polynominal degree' if name is None else f'Polynomial degree for {name}'
     return st.slider(label,
                      min_value=1,
@@ -42,6 +48,12 @@ def choosing_regression_degree(name=None, col='default'):
 
 
 def choosing_smoothening_window(name=None, col='default'):
+    """
+    Slider, choose window for rolling function for smoothing the spectra
+    :param name: Str
+    :param col: Str
+    :return: Int, window for smoothening
+    """
     label = 'Smoothing window' if name is None else f'Smoothing window for {name}'
     return st.slider(label,
                      min_value=1,
@@ -73,6 +85,12 @@ def subtract_baseline(df, deg, key=None, model=None):
 
 
 def subtract_baseline_series(series, deg):
+    """
+    Subtracts baseline from plot.
+    :param series: Pandas Series, to be manipulated
+    :param deg: Degree of polynomial degree for the baseline correction
+    :return: Pandas Series, after correction
+    """
     return series - peakutils.baseline(series, deg)
 
 
@@ -226,6 +244,11 @@ def download_button(object_to_download, download_filename, button_text, pickle_i
 
 
 def file_to_buffer(filepath):
+    """
+    Takes data from file under given path
+    :param filepath: Str
+    :return: StringIO object
+    """
     with open(filepath) as f:
         content = f.read()
     buffer = io.StringIO(content)
@@ -235,6 +258,11 @@ def file_to_buffer(filepath):
 
 @st.cache(hash_funcs={io.StringIO: id})
 def load_example_files(spectrometer):
+    """
+    Loads example files from server
+    :param spectrometer: Str, name of chosen spectrometer
+    :return: StringIO object, contains of uploaded files
+    """
     examples = {
         'BWTEK': ['./data/data_examples/bwtek/bwtek(2).txt', './data/data_examples/bwtek/bwtek(3).txt'],
         'Renishaw': ['data/data_examples/renishaw/renishaw(5).txt', 'data/data_examples/renishaw/renishaw(6).txt'],
@@ -246,4 +274,5 @@ def load_example_files(spectrometer):
     }
 
     files = [file_to_buffer(f) for f in examples[spectrometer]]
+    print(files)
     return files

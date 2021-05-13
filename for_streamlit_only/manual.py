@@ -7,6 +7,11 @@ from processing import utils
 
 
 def example_data_html(spectrometer):
+    """
+    Shows example data as a raw file, i.e. *.csv
+    :param spectrometer: Str, name of the chosen spectrometer
+    :return: Str
+    """
     files = utils.load_example_files(LABELS[spectrometer])
     text = files[0].read()
     files[0].seek(0)
@@ -16,6 +21,9 @@ def example_data_html(spectrometer):
 
 
 def show_manual():
+    """
+    Shows manual on front page if data is not uploaded
+    """
     st.markdown(f'''
             <img src="https://sersitive.eu/wp-content/uploads/LOGO.png"
             style="

@@ -59,6 +59,12 @@ def get_deg_win(chart_type, spectra_conversion_type, cols_right, df_columns):
 
 
 def get_shifting_distance(spectra_conversion_type):
+    """
+    Shift spectra between each other.
+    Depending on the conversion type it takes different values
+    :param spectra_conversion_type: Str, Optimisation/Normalization
+    :return: Int or Float
+    """
     # depending on conversion type we have to adjust the scale
     if spectra_conversion_type == LABELS['NORM']:
         shift = st.slider(LABELS['SHIFT'], 0.0, 1.0, 0.0, 0.1)
