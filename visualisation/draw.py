@@ -8,7 +8,7 @@ import streamlit as st
 from constants import LABELS
 
 
-def fig_layout(template, fig, plots_colorscale, descr='Chosen spectra'):
+def fig_layout(template, fig, plots_colorscale, descr=None):
     """
     Changing layout and styles
     :param template: Str, Plotly template
@@ -59,6 +59,9 @@ def fig_layout(template, fig, plots_colorscale, descr='Chosen spectra'):
 
     fig.update_yaxes(showgrid=True, gridwidth=1.4, gridcolor='#ccc')
 
+    # plain hover
+    fig.update_traces(hovertemplate=None)
+    fig.update_layout(hovermode="x")
     return fig
 
 

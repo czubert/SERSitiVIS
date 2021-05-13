@@ -45,21 +45,10 @@ def contact_developers():
         unsafe_allow_html=True,
     )
 
-# TODO backup just in case
-# def made_by_pawel():
-#     st.sidebar.markdown(
-#         """<a style='
-#         display: block;
-#         font-weight: 500;
-#         font-size:1.2em;
-#         color:#DBBD8A;
-#         text-align: center;
-#         text-decoration: none;
-#         :hover {color: red}
-#         :visited:hover {color: purple}
-#         '
-#         target="_blank"
-#         href="https://linkedin.com/in/paweł-albrycht-b791147a">Paweł Albrycht
-#         </a>""",
-#         unsafe_allow_html=True,
-#     )
+
+def show_developers():
+    contact_developers()
+
+    made_by()
+    made_by_pawel()
+    made_by_lukasz()
