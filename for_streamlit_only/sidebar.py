@@ -22,7 +22,7 @@ def sidebar_head():
     
     bin_str = base64.b64encode(data).decode()
     html_code = f'''
-        <a href="{link}">
+        <a href="{link}" target = _blank>
             <img src="data:image/png;base64,{bin_str}"
             style="padding:0px 6px 5px 0px; 20px; height:80px"/>
         </a>'''
