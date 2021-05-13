@@ -1,4 +1,4 @@
-import base64
+
 
 import pandas as pd
 import peakutils
@@ -7,14 +7,15 @@ import streamlit as st
 
 import authors
 from constants import LABELS
+from for_streamlit_only import manual, sidebar, data_customisation, charts
 from processing import utils
 from processing.save_read import read_files
-from visualisation import draw, manual
+from visualisation import draw
 from visualisation import visualisation_options as vis_opt
 
 
 def main():
-    sidebar_head()
+    sidebar.sidebar_head()
 
     st.sidebar.write('#### Choose spectra type', unsafe_allow_html=True)
     spectrometer = st.sidebar.radio(
@@ -60,14 +61,14 @@ def main():
 
         # For grouped spectra sometimes we want to shift the spectra from each other, here it is:
         if chart_type == LABELS['GS']:
-            shift = get_shifting_distance(spectra_conversion_type)
+            shift = data_customisation.get_shifting_distance(spectra_conversion_type)
         else:
             shift = None
 
         # every chart (or pair) gets its own columns
         tmp_cols = [st.beta_columns([5, 2]) for _ in df.columns]
         cols_left, cols_right = zip(*tmp_cols)
-        vals = get_deg_win(chart_type, spectra_conversion_type, cols_right, df.columns)
+        vals = data_customisation.get_deg_win(chart_type, spectra_conversion_type, cols_right, df.columns)
 
         # data conversion and
         if spectra_conversion_type in {LABELS["OPT"], LABELS["NORM"]}:
@@ -136,137 +137,14 @@ def main():
         else:
             raise ValueError("Something unbelievable has been chosen")
 
-        show_charts(cols_left, figs, plots_color, template)
+        charts.show_charts(cols_left, figs, plots_color, template)
     else:
         manual.show_manual()
 
     authors.show_developers()
 
 
-def show_charts(cols_left, figs, plots_color, template):
-    """
-    Neat function for plotting charst on left side.
 
-    Elements of fig type are simply drawn.
-    For elements of type list or tuple creates inner loop - first element is
-    drawn and the rest is hidden in beta_expander
-
-    Args:
-        cols_left (list): columns to draw on
-        figs (list): list of figures to plot (might be nested)
-        plots_color: color scale for plotly
-        template: plotly template
-
-    """
-    for col_left, fig in zip(cols_left, figs):
-        with col_left:
-            if isinstance(fig, (list, tuple)):
-                f = fig[0]
-                draw.fig_layout(template, f, plots_colorscale=plots_color)
-                f.update_traces(line=dict(width=3.5))
-                st.plotly_chart(f, use_container_width=True)
-
-                with st.beta_expander('Detailed view'):
-                    for f in fig[1:]:
-                        draw.fig_layout(template, f, plots_colorscale=plots_color)
-                        f.update_traces(line=dict(width=3.5))
-                        st.plotly_chart(f, use_container_width=True)
-            else:
-                draw.fig_layout(template, fig, plots_colorscale=plots_color)
-                fig.update_traces(line=dict(width=3.5))
-                st.plotly_chart(fig, use_container_width=True)
-
-
-def get_deg_win(chart_type, spectra_conversion_type, cols_right, df_columns):
-    """
-    Fills in right side of webside with sliders for polynomial degree and smoothening window
-
-    Args:
-        chart_type (str): type of plot
-        spectra_conversion_type (str): type of data preprocessing
-        cols_right (list): list of right side st.beta_columns
-        df_columns (list): df column names
-
-    Returns:
-        dict: polynomial degree and smoothening window tuple for each data series
-    """
-    if spectra_conversion_type == LABELS['RAW']:
-        vals = None
-
-    elif chart_type == LABELS['MS']:
-        with cols_right[0]:
-            deg = utils.choosing_regression_degree()
-            window = utils.choosing_smoothening_window()
-            vals = {col: (deg, window) for col in df_columns}
-
-    elif chart_type == LABELS['SINGLE']:
-        vals = {}
-
-        for col_right, col in zip(cols_right, df_columns):
-            with col_right:
-                st.write(col)
-                vals[col] = (utils.choosing_regression_degree(None, col), utils.choosing_smoothening_window(None, col))
-
-    elif chart_type in {LABELS['GS'], LABELS['P3D']}:
-    
-        with cols_right[0]:
-            with st.beta_expander("Customize spectra", expanded=True):
-                adjust_plots_globally = st.radio(
-                    "Adjust all spectra or each spectrum?",
-                    ('all', 'each'), index=0)
-            
-                if adjust_plots_globally == 'all':
-                    deg = utils.choosing_regression_degree()
-                    window = utils.choosing_smoothening_window()
-                    vals = {col: (deg, window) for col in df_columns}
-                else:
-                    vals = {}
-                    for col in df_columns:
-                        st.write(col)
-                        vals[col] = (utils.choosing_regression_degree(None, col),
-                                     utils.choosing_smoothening_window(None, col))
-    else:
-        raise ValueError('Unknown chart type')
-
-    return vals
-
-
-def get_shifting_distance(spectra_conversion_type):
-    # depending on conversion type we have to adjust the scale
-    if spectra_conversion_type == LABELS['NORM']:
-        shift = st.slider(LABELS['SHIFT'], 0.0, 1.0, 0.0, 0.1)
-    else:
-        shift = st.slider(LABELS['SHIFT'], 0, 30000, 0, 250)
-    return shift
-
-
-def sidebar_head():
-    st.set_page_config(
-        page_title="SERSitive.eu",
-        page_icon="https://sersitive.eu/wp-content/uploads/cropped-icon.png",
-        layout="wide",
-        initial_sidebar_state="auto"
-    )
-
-    # radiobuttons in one row
-    st.write('<style>div.row-widget.stRadio > div{flex-direction:row;}</style>', unsafe_allow_html=True)
-    st.set_option('deprecation.showfileUploaderEncoding', False)
-    # linked logo of sersitive at the sidebar
-    link = 'http://sersitive.eu'
-
-    with open('examples/sersitivis_no_background.png', 'rb') as f:
-        data = f.read()
-
-    bin_str = base64.b64encode(data).decode()
-    html_code = f'''
-        <a href="{link}">
-            <img src="data:image/png;base64,{bin_str}"
-            style="padding:0px 6px 5px 0px; 20px; height:80px"/>
-        </a>'''
-
-    st.sidebar.markdown(html_code, unsafe_allow_html=True)
-    st.sidebar.markdown('')
-    st.sidebar.markdown('')
 
 
 if __name__ == '__main__':
