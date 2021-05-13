@@ -13,62 +13,73 @@ from visualisation import visualisation_options as vis_opt
 
 
 def main():
+    """
+    Main is responsible for the visualisation of everything connected with streamlit.
+    It is the web application itself.
+    """
     sidebar.sidebar_head()
-
+    
+    #
+    # # Spectrometer type - BWTek / Renishaw / Witec / Wasatch / Teledyne
+    #
     st.sidebar.write('#### Choose spectra type', unsafe_allow_html=True)
     spectrometer = st.sidebar.radio(
         "",
         (LABELS['BWTEK'], LABELS['RENI'], LABELS['WITEC'], LABELS['WASATCH'], LABELS['TELEDYNE']),
         index=0)
-
-    # users data loader
+    
+    # User data loader
     st.sidebar.write('#### Upload your data', unsafe_allow_html=True)
     files = st.sidebar.file_uploader(label='', accept_multiple_files=True, type=['txt', 'csv'])
-
-    # allow example data loading when no custom data are loaded
+    
+    # Allow example data loading when no custom data are loaded
     if not files:
         st.sidebar.write('#### Or try with our', unsafe_allow_html=True)
         if st.sidebar.checkbox("Load example data"):
             files = utils.load_example_files(spectrometer)
-
+    
+    # Check if data loaded, if yes, perform actions
     if files:
         df = save_read.read_files(spectrometer, files)
-
-        # choose plot colors and tamplates
+        
+        # Choose plot colors and templates
         with st.beta_expander("Customize your chart"):
             plots_color, template = draw.choosing_colorway(), draw.choose_template()
-
-        # lets you select chart type
+        
+        # Select chart type
         chart_type = vis_opt.vis_options(spectrometer)
-
-        # lets you select data conversion type
+        
+        # Select data conversion type
         spectra_conversion_type = vis_opt.convertion_opt()
-
+        
         # TODO need improvements
         # getting rid of duplicated columns
         df = df.loc[:, ~df.columns.duplicated()]
-
+        
         #
         # # data manipulation - raw / optimization / normalization
         #
+        
+        # Normalization
         if spectra_conversion_type == LABELS["NORM"]:
             df = (df - df.min()) / (df.max() - df.min())
-
+        
+        # Mean Spectra
         if chart_type == LABELS['MS']:
             df = df.mean(axis=1).rename('Average').to_frame()
-
+        
         # For grouped spectra sometimes we want to shift the spectra from each other, here it is:
         if chart_type == LABELS['GS']:
             shift = data_customisation.get_shifting_distance(spectra_conversion_type)
         else:
             shift = None
-
-        # every chart (or pair) gets its own columns
+        
+        # Every chart (or pair) gets its own columns
         tmp_cols = [st.beta_columns([5, 2]) for _ in df.columns]
         cols_left, cols_right = zip(*tmp_cols)
         vals = data_customisation.get_deg_win(chart_type, spectra_conversion_type, cols_right, df.columns)
-
-        # data conversion and
+        
+        # data conversion end
         if spectra_conversion_type in {LABELS["OPT"], LABELS["NORM"]}:
             baselines = pd.DataFrame(index=df.index)
             baselined = pd.DataFrame(index=df.index)
@@ -77,17 +88,20 @@ def main():
                 baselines[col] = peakutils.baseline(df[col], vals[col][0])
                 baselined[col] = df[col] - baselines[col]
                 flattened[col] = baselined[col].rolling(window=vals[col][1], min_periods=1, center=True).mean()
-
+        
         #
-        # # plotting
+        # # Plotting
         #
+        
+        # Groupped spectra
         if chart_type == LABELS['GS']:
             shifters = [(i + 1) * shift for i in range(len(df.columns))]
             plot_df = df if spectra_conversion_type == LABELS["RAW"] else flattened
             plot_df = plot_df + shifters
-
+            
             figs = [px.line(plot_df, x=plot_df.index, y=plot_df.columns, color_discrete_sequence=plots_color)]
-
+        
+        # Mean spectra
         elif chart_type == LABELS['MS']:
             if spectra_conversion_type == LABELS["RAW"]:
                 plot_df = df
@@ -103,7 +117,7 @@ def main():
                 figs = [(fig1, fig2)]
             else:
                 raise ValueError('Unknown conversion type for Mean spectrum chart')
-
+        # 3D spectra
         elif chart_type == LABELS['P3D']:
             plot_df = flattened if spectra_conversion_type in {LABELS["OPT"], LABELS["NORM"]} else df
 
@@ -116,7 +130,8 @@ def main():
                               margin=dict(l=1, r=1, t=30, b=1),
                               )
             figs = [fig]
-
+        
+        # Single spectra
         elif chart_type == LABELS['SINGLE']:
             if spectra_conversion_type == LABELS["RAW"]:
                 plot_df = df

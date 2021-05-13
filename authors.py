@@ -34,7 +34,7 @@ def made_by_lukasz():
         unsafe_allow_html=True,
     )
 
-
+# TODO nie wiem jak zrobić, żeby ten mail dzialal po przycisnieciu
 def contact_developers():
     st.subheader('')
     st.subheader('')
