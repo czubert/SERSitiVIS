@@ -15,14 +15,14 @@ def vis_options(spectrometer):
     #     options = [LABELS["SINGLE"], LABELS["GS"]]
 
     st.sidebar.write('#### Choose type of chart', unsafe_allow_html=True)
-    chart_type = st.sidebar.radio('', options, 0)
+    chart_type = st.sidebar.selectbox('', options, 2)
 
     return chart_type
 
 
 def convertion_opt():
     st.sidebar.write('#### How would you like to convert the data?', unsafe_allow_html=True)
-    spectra_conversion_type = st.sidebar.radio(
+    spectra_conversion_type = st.sidebar.selectbox(
         "",
         (LABELS["RAW"], LABELS["OPT"], LABELS["NORM"]), key=f'raw')
     

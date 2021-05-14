@@ -24,18 +24,18 @@ def main():
     # # Spectrometer type - BWTek / Renishaw / Witec / Wasatch / Teledyne
     #
     st.sidebar.write('#### Choose spectra type', unsafe_allow_html=True)
-    spectrometer = st.sidebar.radio(
+    spectrometer = st.sidebar.selectbox(
         "",
         (LABELS['BWTEK'], LABELS['RENI'], LABELS['WITEC'], LABELS['WASATCH'], LABELS['TELEDYNE']),
         index=0)
     
     # User data loader
-    st.sidebar.write('#### Upload your data', unsafe_allow_html=True)
+    st.sidebar.write('#### Upload your data or try with ours', unsafe_allow_html=True)
     files = st.sidebar.file_uploader(label='', accept_multiple_files=True, type=['txt', 'csv'])
     
     # Allow example data loading when no custom data are loaded
     if not files:
-        st.sidebar.write('#### Or try with our', unsafe_allow_html=True)
+        # st.sidebar.write('#### Or try with our', unsafe_allow_html=True)
         if st.sidebar.checkbox("Load example data"):
             files = utils.load_example_files(spectrometer)
     
