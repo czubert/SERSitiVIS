@@ -1,10 +1,11 @@
 import streamlit as st
 
+import for_streamlit_only.utils
 from constants import LABELS
 from processing import utils
 
 
-def get_deg_win(chart_type, spectra_conversion_type, cols_right, df_columns):
+def get_deg_win(df, chart_type, spectra_conversion_type, cols_right, df_columns):
     """
     Fills in right side of webside with sliders for polynomial degree and smoothening window
 
@@ -41,7 +42,9 @@ def get_deg_win(chart_type, spectra_conversion_type, cols_right, df_columns):
                 adjust_plots_globally = st.radio(
                     "Adjust all spectra or each spectrum?",
                     ('all', 'each'), index=0)
-                
+    
+                df = for_streamlit_only.utils.trim_spectra(df)
+    
                 if adjust_plots_globally == 'all':
                     deg = utils.choosing_regression_degree()
                     window = utils.choosing_smoothening_window()
@@ -55,7 +58,7 @@ def get_deg_win(chart_type, spectra_conversion_type, cols_right, df_columns):
     else:
         raise ValueError('Unknown chart type')
     
-    return vals
+    return df, vals
 
 
 def get_shifting_distance(spectra_conversion_type):
