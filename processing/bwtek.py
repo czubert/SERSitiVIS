@@ -3,7 +3,7 @@ import pandas as pd
 from constants import LABELS
 from . import utils
 
-spectra_params = {'sep': ';', 'skiprows': lambda x: x < 79 or x > 1500, 'decimal': ',',
+spectra_params = {'sep': ';', 'skiprows': lambda x: x < 79, 'decimal': ',',
                   'usecols': ['Pixel', LABELS["RS"], LABELS["DS"]],
                   'skipinitialspace': True, 'encoding': "utf-8"}
 
