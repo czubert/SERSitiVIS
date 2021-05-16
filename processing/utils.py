@@ -275,5 +275,4 @@ def load_example_files(spectrometer):
     }
 
     files = [file_to_buffer(f) for f in examples[spectrometer]]
-    print(files)
     return files
