@@ -26,6 +26,7 @@ def show_manual():
     Shows manual on front page if data is not uploaded
     """
     
+    # company logo
     with open('logos/logo.png', 'rb') as f:
         data = f.read()
     
@@ -41,7 +42,8 @@ def show_manual():
                 '''
     
     st.markdown(html_code, unsafe_allow_html=True)
-    
+
+    # warnings with tips how to work with this program
     st.warning('First choose data type from left sidebar')
     st.warning('Then upload file or files for visualisation - sidebar')
     st.header('Short manual on how to import data')
