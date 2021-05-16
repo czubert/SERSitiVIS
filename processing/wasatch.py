@@ -11,17 +11,6 @@ def read_wasatch(uploaded_files, separator):
     
     # Column to show
     col_to_show = LABELS["RAW_WASATCH"]
-    st.sidebar.markdown(f"<p style='color:red'>----------------------------------------------</p>",
-                        unsafe_allow_html=True)
-    
-    modified_data = st.sidebar.radio(
-        "Choose type of data",
-        (LABELS["RAW_WASATCH"], LABELS["PRCSD"]), index=0)
-    
-    if modified_data == LABELS["RAW_WASATCH"]:
-        col_to_show = LABELS["RAW_WASATCH"]
-    elif modified_data == LABELS["PRCSD"]:
-        col_to_show = LABELS["PRCSD"]
     
     spectra_params = {LABELS["CSV"]: {'sep': separator, 'skiprows': lambda x: x < 34 or x > 1058, 'decimal': '.',
                                       'usecols': ['Pixel', 'Wavenumber', col_to_show],
@@ -66,25 +55,27 @@ def read_wasatch(uploaded_files, separator):
             data = utils.read_spec(uploaded_file, spectra_params[LABELS["TXT"]])
             
             data.dropna(inplace=True, how='any', axis=0)
-            
+
             data = data.iloc[:, [2, 3, 4]]
             data.rename(columns={2: LABELS["RS"], 3: LABELS["PRCSD"], 4: LABELS["RAW_WASATCH"]}, inplace=True)
-            
+
             data[LABELS["RS"]] = data[LABELS["RS"]].round(decimals=0)
             data.set_index(LABELS["RS"], inplace=True)
             data = pd.DataFrame(data[col_to_show])
-            
+
             data.columns = [f'{name} - {col_to_show} data']
             temp_data_df[name] = data
-    
-    if file_type[0] == LABELS["CSV"]:
-        if st.sidebar.button('Add metadata to plot name'):
-            for key in temp_data_df:
-                name = temp_data_df[key].columns[0]
-                new_name = f'{name}_{temp_meta_df[key].loc[LABELS["IT"], 1]}ms_{temp_meta_df[key].loc[LABELS["LP"], 1]}%'
-                
-                temp_data_df[key].rename(columns={name: new_name}, inplace=True)
-    
+
+    # TODO do we need it? is it a nice tool? if yes, we should do the same with bwtek,
+    #  maybe we should use it in creating filenames
+    # if file_type[0] == LABELS["CSV"]:
+    #     if st.sidebar.button('Add metadata to plot name'):
+    #         for key in temp_data_df:
+    #             name = temp_data_df[key].columns[0]
+    #             new_name = f'{name}_{temp_meta_df[key].loc[LABELS["IT"], 1]}ms_{temp_meta_df[key].loc[LABELS["LP"], 1]}%'
+    #
+    #             temp_data_df[key].rename(columns={name: new_name}, inplace=True)
+    #
     data = pd.concat([temp_data_df[data_df] for data_df in temp_data_df], axis=1)
-    
+
     return data
