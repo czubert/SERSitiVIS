@@ -105,37 +105,37 @@ def choose_template():
 
 
 def choosing_colorway():
-    all_colors = dict()
+    # Plotly express color modules that you can pick colors from
+    palettes = {
+        'qualitative': ['Alphabet', 'Antique', 'Bold', 'D3', 'Dark2', 'Dark24', 'G10', 'Light24', 'Pastel',
+                        'Pastel1', 'Pastel2', 'Plotly', 'Prism', 'Safe', 'Set1', 'Set2', 'Set3', 'T10', 'Vivid',
+                        ],
+        'diverging': ['Armyrose', 'BrBG', 'Earth', 'Fall', 'Geyser', 'PRGn', 'PiYG', 'Picnic', 'Portland', 'PuOr',
+                      'RdBu', 'RdGy', 'RdYlBu', 'RdYlGn', 'Spectral', 'Tealrose', 'Temps', 'Tropic', 'balance',
+                      'curl', 'delta', 'oxy',
+                      ],
+        'sequential': ['Aggrnyl', 'Agsunset', 'Blackbody', 'Bluered', 'Blues', 'Blugrn', 'Bluyl', 'Brwnyl', 'BuGn',
+                       'BuPu', 'Burg', 'Burgyl', 'Cividis', 'Darkmint', 'Electric', 'Emrld', 'GnBu', 'Greens', 'Greys',
+                       'Hot', 'Inferno', 'Jet', 'Magenta', 'Magma', 'Mint', 'OrRd', 'Oranges', 'Oryel', 'Peach',
+                       'Pinkyl', 'Plasma', 'Plotly3', 'PuBu', 'PuBuGn', 'PuRd', 'Purp', 'Purples', 'Purpor', 'Rainbow',
+                       'RdBu', 'RdPu', 'Redor', 'Reds', 'Sunset', 'Sunsetdark', 'Teal', 'Tealgrn', 'Turbo', 'Viridis',
+                       'YlGn', 'YlGnBu', 'YlOrBr', 'YlOrRd', 'algae', 'amp', 'deep', 'dense', 'gray', 'haline', 'ice',
+                       'matter', 'solar', 'speed', 'tempo', 'thermal', 'turbid',
+                       ]
+        }
 
-    # Plotly express color modules that you can try colors from
-    modules_colors_l = ['diverging', 'qualitative', 'sequential']
-    modules_colors_d = {'diverging': px.colors.diverging,
-                        'qualitative': px.colors.qualitative, 'sequential': px.colors.sequential}
+    col1, col2, col3 = st.beta_columns(3)
 
-    # Getting colors model
-    chosen_module_color = st.radio(
-        "Choose module of color sets, to see colorsets",
-        modules_colors_l, 1)
+    with col1:
+        palette_type = st.selectbox("Type of color palette", list(palettes.keys()), 0)
+    with col2:
+        palette = st.selectbox("Color palette", palettes[palette_type], index=0)
+    with col3:
+        st.markdown('# ')
+        if st.checkbox('Reversed', False):
+            palette = palette + '_r'
 
-    colorscale_names = get_colors_names(chosen_module_color)
-    for el in colorscale_names:
-        all_colors[el] = el  # TODO color name as key and color object as a value
+    palette_module = getattr(px.colors, palette_type)
+    palette = getattr(palette_module, palette)
 
-    plots_color = st.radio(
-        "Choose set of colors from colorsets for spectra",
-        colorscale_names, index=31)
-
-    chosen_color = getattr(modules_colors_d[chosen_module_color], f'{all_colors[plots_color]}')
-    return chosen_color
-
-
-@st.cache
-def get_colors_names(chosen_module_color):
-    colorscale_names = []
-    
-    # Getting all colors from modules
-    colorscale_names.extend([f'{name}' for name, body
-                             in inspect.getmembers(getattr(px.colors, chosen_module_color))
-                             if isinstance(body, list)])
-    
-    return colorscale_names
+    return palette
