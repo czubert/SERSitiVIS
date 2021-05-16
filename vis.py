@@ -16,7 +16,7 @@ def main():
     Main is responsible for the visualisation of everything connected with streamlit.
     It is the web application itself.
     """
-    
+
     # Sets header, logo and radiobuttons in a row
     sidebar.sidebar_head()
     
@@ -178,8 +178,10 @@ def main():
 
     else:
         manual.show_manual()
-    
+
     authors.show_developers()
+
+    # footer.footer()
 
 
 if __name__ == '__main__':
