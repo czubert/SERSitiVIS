@@ -12,7 +12,7 @@ def read_wasatch(uploaded_files, separator):
     # Column to show
     col_to_show = LABELS["RAW_WASATCH"]
     
-    spectra_params = {LABELS["CSV"]: {'sep': separator, 'skiprows': lambda x: x < 34 or x > 1058, 'decimal': '.',
+    spectra_params = {LABELS["CSV"]: {'sep': separator, 'skiprows': lambda x: x < 34, 'decimal': '.',
                                       'usecols': ['Pixel', 'Wavenumber', col_to_show],
                                       'skipinitialspace': True, 'encoding': "utf-8"},
                       LABELS["TXT"]: {'delim_whitespace': True, 'decimal': '.', 'skipinitialspace': True,
