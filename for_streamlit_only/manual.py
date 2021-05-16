@@ -1,3 +1,4 @@
+import base64
 import re
 
 import streamlit as st
@@ -24,15 +25,23 @@ def show_manual():
     """
     Shows manual on front page if data is not uploaded
     """
-    st.markdown(f'''
-            <img src="https://sersitive.eu/wp-content/uploads/LOGO.png"
-            style="
-            margin: auto;
-            width: 80%;
-            padding:0px 6px 45px 25%; 20px;
-            "/>''',
-                unsafe_allow_html=True
-                )
+    
+    with open('logos/logo.png', 'rb') as f:
+        data = f.read()
+    
+    bin_str = base64.b64encode(data).decode()
+    html_code = f'''
+                    <img src="data:image/png;base64,{bin_str}"
+                    style="
+                         margin: auto;
+                         margin-top:-30px;
+                         width: 65%;
+                         padding:0px 6px 20px 25%;
+                         "/>
+                '''
+    
+    st.markdown(html_code, unsafe_allow_html=True)
+    
     st.warning('First choose data type from left sidebar')
     st.warning('Then upload file or files for visualisation - sidebar')
     st.header('Short manual on how to import data')

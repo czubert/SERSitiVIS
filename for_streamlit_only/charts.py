@@ -5,7 +5,7 @@ from visualisation import draw
 
 def show_charts(cols_left, figs, plots_color, template):
     """
-    Neat function for plotting charst on left side.
+    Neat function for plotting charts on left side.
 
     Elements of fig type are simply drawn.
     For elements of type list or tuple creates inner loop - first element is
