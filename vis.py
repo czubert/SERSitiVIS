@@ -4,9 +4,9 @@ import plotly.express as px
 import streamlit as st
 
 from constants import LABELS
-from for_streamlit_only import manual, sidebar, data_customisation, charts, authors
 from processing import save_read
 from processing import utils
+from vis_helpers import manual, sidebar, data_customisation, charts, authors
 from visualisation import draw
 from visualisation import visualisation_options as vis_opt
 
@@ -77,7 +77,7 @@ def main():
     
                 # For grouped spectra sometimes we want to shift the spectra from each other, here it is:
                 if chart_type == LABELS['GS']:
-                    shift = data_customisation.get_shifting_distance(spectra_conversion_type)
+                    shift = data_customisation.separate_spectra(spectra_conversion_type)
                 else:
                     shift = None
         
