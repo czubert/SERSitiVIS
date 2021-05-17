@@ -1,8 +1,8 @@
 import streamlit as st
 
-import for_streamlit_only.utils
 from constants import LABELS
 from processing import utils
+from vis_helpers import vis_utils
 
 
 def get_deg_win(df, chart_type, spectra_conversion_type, cols_right, df_columns):
@@ -42,8 +42,8 @@ def get_deg_win(df, chart_type, spectra_conversion_type, cols_right, df_columns)
                 adjust_plots_globally = st.radio(
                     "Adjust all spectra or each spectrum?",
                     ('all', 'each'), index=0)
-    
-                df = for_streamlit_only.utils.trim_spectra(df)
+
+                df = vis_utils.trim_spectra(df)
     
                 if adjust_plots_globally == 'all':
                     deg = utils.choosing_regression_degree()
@@ -61,7 +61,7 @@ def get_deg_win(df, chart_type, spectra_conversion_type, cols_right, df_columns)
     return df, vals
 
 
-def get_shifting_distance(spectra_conversion_type):
+def separate_spectra(spectra_conversion_type):
     """
     Shift spectra between each other.
     Depending on the conversion type it takes different values

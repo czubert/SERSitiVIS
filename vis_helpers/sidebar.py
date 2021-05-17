@@ -1,6 +1,6 @@
-import base64
-
 import streamlit as st
+
+from vis_helpers import vis_utils
 
 
 def sidebar_head():
@@ -20,22 +20,9 @@ def sidebar_head():
     st.write('<style>div.row-widget.stRadio > div{flex-direction:row;}</style>', unsafe_allow_html=True)
     st.set_option('deprecation.showfileUploaderEncoding', False)
     
-    # link to company page
-    link = 'http://sersitive.eu'
+    # SERSitivis logo
+    html_code = vis_utils.show_sersitivis_logo()
     
-    #
-    # # SERSitivis logo
-    #
-    with open('logos/sersitivis_no_background.png', 'rb') as f:
-        data = f.read()
-    
-    bin_str = base64.b64encode(data).decode()
-    html_code = f'''
-        <a href="{link}" target = _blank>
-            <img src="data:image/png;base64,{bin_str}"
-            style="padding:0px 6px 5px 0px; 20px; height:80px"/>
-        </a>'''
-
     st.sidebar.markdown(html_code, unsafe_allow_html=True)
     st.sidebar.markdown('')
     st.sidebar.markdown('')

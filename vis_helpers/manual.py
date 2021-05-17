@@ -1,15 +1,16 @@
-import base64
+
 import re
 
 import streamlit as st
 
 from constants import LABELS
 from processing import utils
+from vis_helpers import vis_utils
 
 
 def example_data_html(spectrometer):
     """
-    Shows example data as a raw file, i.e. *.csv
+    Prepares string to show in manual, i.e. *.csv
     :param spectrometer: Str, name of the chosen spectrometer
     :return: Str
     """
@@ -27,20 +28,7 @@ def show_manual():
     """
     
     # company logo
-    with open('logos/logo.png', 'rb') as f:
-        data = f.read()
-    
-    bin_str = base64.b64encode(data).decode()
-    html_code = f'''
-                    <img src="data:image/png;base64,{bin_str}"
-                    style="
-                         margin: auto;
-                         margin-top:-30px;
-                         width: 65%;
-                         padding:0px 6px 20px 25%;
-                         "/>
-                '''
-    
+    html_code = vis_utils.show_logo()
     st.markdown(html_code, unsafe_allow_html=True)
 
     # warnings with tips how to work with this program
