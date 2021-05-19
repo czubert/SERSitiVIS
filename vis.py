@@ -19,9 +19,9 @@ def main():
 
     # Sets header, logo and radiobuttons in a row
     sidebar.sidebar_head()
-    
+
     #
-    # # Spectrometer type - BWTek / Renishaw / Witec / Wasatch / Teledyne
+    # # Spectrometer type `- BWTek / Renishaw / Witec / Wasatch / Teledyne
     #
     st.sidebar.write('#### Choose spectra type', unsafe_allow_html=True)
     spectrometer = st.sidebar.selectbox(
@@ -42,18 +42,18 @@ def main():
     # Check if data loaded, if yes, perform actions
     if files:
         df = save_read.read_files(spectrometer, files)
-
+    
         main_expander = st.beta_expander("Customize your chart")
         # Choose plot colors and templates
         with main_expander:
-            plots_color, template = draw.choosing_colorway(), draw.choose_template()
-
+            plots_color, template = draw.get_chart_vis_properties()
+    
         # Select chart type
         chart_type = vis_opt.vis_options(spectrometer)
-        
+    
         # Select data conversion type
         spectra_conversion_type = vis_opt.convertion_opt()
-        
+    
         # TODO need improvements
         # getting rid of duplicated columns
         df = df.loc[:, ~df.columns.duplicated()]
@@ -61,21 +61,24 @@ def main():
         #
         # # data manipulation - raw / optimization / normalization
         #
-        
+    
         # Normalization
         if spectra_conversion_type == LABELS["NORM"]:
             df = (df - df.min()) / (df.max() - df.min())
-        
+    
         # Mean Spectra
         if chart_type == LABELS['MS']:
             df = df.mean(axis=1).rename('Average').to_frame()
-
+    
+        # For grouped spectra sometimes we want to shift the spectra from each other, here it is:
         with main_expander:
+            # TODO the code below needed?
             # trick to better fit sliders in expander
-            _, main_expander_column, _ = st.beta_columns([1, 38, 1])
-            with main_expander_column:
-
-                # For grouped spectra sometimes we want to shift the spectra from each other, here it is:
+            # _, main_expander_column, _ = st.beta_columns([1, 38, 1])
+            # with main_expander_column:
+        
+            shift_col, _, trim_col = st.beta_columns([5, 1, 5])
+            with shift_col:
                 if chart_type == LABELS['GS']:
                     shift = data_customisation.separate_spectra(spectra_conversion_type)
                 elif chart_type == LABELS['SINGLE']:
@@ -83,13 +86,15 @@ def main():
                     df = df[[col]]
                 else:
                     shift = None
-        
+            with trim_col:
+                df = vis_utils.trim_spectra(df)
+    
         col_left, col_right = st.beta_columns([5, 2])
-        col_right = col_right.beta_expander("Customize spectra", expanded=False)
-        with col_right:
-            df = vis_utils.trim_spectra(df)
-            vals = data_customisation.get_deg_win(chart_type, spectra_conversion_type, df.columns)
-
+        if spectra_conversion_type != LABELS["RAW"]:
+            col_right = col_right.beta_expander("Customize spectra", expanded=False)
+            with col_right:
+                vals = data_customisation.get_deg_win(chart_type, spectra_conversion_type, df.columns)
+    
         # data conversion end
         if spectra_conversion_type in {LABELS["OPT"], LABELS["NORM"]}:
             baselines = pd.DataFrame(index=df.index)
@@ -162,10 +167,10 @@ def main():
                 figs.append(fig_tup)
         else:
             raise ValueError("Something unbelievable has been chosen")
-
+    
         with col_left:
             charts.show_charts(figs, plots_color, template)
-
+    
         with col_left:
             link = utils.download_button(plot_df.reset_index(), f'spectrum.csv',
                                          button_text='Download CSV')
