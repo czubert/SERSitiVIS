@@ -74,25 +74,21 @@ def main():
             # trick to better fit sliders in expander
             _, main_expander_column, _ = st.beta_columns([1, 38, 1])
             with main_expander_column:
-    
+
                 # For grouped spectra sometimes we want to shift the spectra from each other, here it is:
                 if chart_type == LABELS['GS']:
                     shift = data_customisation.separate_spectra(spectra_conversion_type)
+                elif chart_type == LABELS['SINGLE']:
+                    col = st.selectbox('spectrum to plot', df.columns)
+                    df = df[[col]]
                 else:
                     shift = None
         
-        # Every chart (or pair) gets its own columns
-        if chart_type == LABELS['SINGLE']:
-            tmp_cols = [st.beta_columns([5, 2]) for _ in df.columns]
-        else:
-            tmp_cols = [st.beta_columns([5, 2])]
-        cols_left, cols_right = zip(*tmp_cols)
-
-        cols_right = [i.beta_expander("Customize spectra", expanded=False) for i in cols_right]
-        with cols_right[0]:
+        col_left, col_right = st.beta_columns([5, 2])
+        col_right = col_right.beta_expander("Customize spectra", expanded=False)
+        with col_right:
             df = vis_utils.trim_spectra(df)
-
-        vals = data_customisation.get_deg_win(chart_type, spectra_conversion_type, cols_right, df.columns)
+            vals = data_customisation.get_deg_win(chart_type, spectra_conversion_type, df.columns)
 
         # data conversion end
         if spectra_conversion_type in {LABELS["OPT"], LABELS["NORM"]}:
@@ -154,35 +150,28 @@ def main():
             else:
                 columns = ['Average', 'Baseline', 'BL-Corrected', 'Flattened + BL-Corrected']
                 figs = []
-                plot_dfs = []
-                for col_left, col in zip(cols_left, df.columns):
-                    plot_df = pd.concat([df[col], baselines[col], baselined[col], flattened[col]], axis=1)
-                    plot_df.columns = columns
 
-                    fig1 = px.line(plot_df, x=plot_df.index, y=columns[-1],
-                                   color_discrete_sequence=plots_color[3:])  # trick for color consistency
-                    fig2 = px.line(plot_df, x=plot_df.index, y=plot_df.columns,
-                                   color_discrete_sequence=plots_color)
-                    fig_tup = (fig1, fig2)
-                    figs.append(fig_tup)
-                    plot_dfs.append(plot_df)
+                plot_df = pd.concat([df, baselines, baselined, flattened], axis=1)
+                plot_df.columns = columns
+
+                fig1 = px.line(plot_df, x=plot_df.index, y=columns[-1],
+                               color_discrete_sequence=plots_color[3:])  # trick for color consistency
+                fig2 = px.line(plot_df, x=plot_df.index, y=plot_df.columns,
+                               color_discrete_sequence=plots_color)
+                fig_tup = (fig1, fig2)
+                figs.append(fig_tup)
         else:
             raise ValueError("Something unbelievable has been chosen")
 
-        charts.show_charts(cols_left, figs, plots_color, template)
+        with col_left:
+            charts.show_charts(figs, plots_color, template)
 
-        # TODO this is just until we change SINGLE plots to one plot per site.
-        #  than we'll resign of the loop
-        if chart_type == LABELS['SINGLE'] and spectra_conversion_type != LABELS["RAW"]:
-            for col_left, plot_df in zip(cols_left, plot_dfs):
-                with col_left:
-                    link = utils.download_button(plot_df.reset_index(), f'spectrum.csv',
-                                                 button_text='Download plot as CSV file')
-                    st.markdown(link, unsafe_allow_html=True)
-        else:
+        with col_left:
             link = utils.download_button(plot_df.reset_index(), f'spectrum.csv',
                                          button_text='Download CSV')
             st.markdown(link, unsafe_allow_html=True)
+
+
 
     else:
         manual.show_manual()
