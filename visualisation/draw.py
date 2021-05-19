@@ -1,5 +1,3 @@
-import inspect
-
 import plotly.express as px
 import plotly.graph_objects as go
 import plotly.io as pio
@@ -97,15 +95,14 @@ def choose_template():
     Choose default template from the list
     :return: Str, chosen template
     """
-    template = st.radio(
+    template = st.selectbox(
         "Choose chart template",
         list(pio.templates), index=6, key='new')
 
     return template
 
 
-def choosing_colorway():
-    # Plotly express color modules that you can pick colors from
+def get_chart_vis_properties():
     palettes = {
         'qualitative': ['Alphabet', 'Antique', 'Bold', 'D3', 'Dark2', 'Dark24', 'G10', 'Light24', 'Pastel',
                         'Pastel1', 'Pastel2', 'Plotly', 'Prism', 'Safe', 'Set1', 'Set2', 'Set3', 'T10', 'Vivid',
@@ -122,20 +119,21 @@ def choosing_colorway():
                        'YlGn', 'YlGnBu', 'YlOrBr', 'YlOrRd', 'algae', 'amp', 'deep', 'dense', 'gray', 'haline', 'ice',
                        'matter', 'solar', 'speed', 'tempo', 'thermal', 'turbid',
                        ]
-        }
-
+    }
+    
     col1, col2, col3 = st.beta_columns(3)
-
+    
     with col1:
         palette_type = st.selectbox("Type of color palette", list(palettes.keys()), 0)
     with col2:
         palette = st.selectbox("Color palette", palettes[palette_type], index=0)
-    with col3:
-        st.markdown('# ')
         if st.checkbox('Reversed', False):
             palette = palette + '_r'
-
+    with col3:
+        template = choose_template()
+    # with col4:
+    
     palette_module = getattr(px.colors, palette_type)
     palette = getattr(palette_module, palette)
-
-    return palette
+    
+    return palette, template
