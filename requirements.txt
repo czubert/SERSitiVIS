@@ -83,6 +83,7 @@
 # HeapDict==1.0.1
 # html5lib==1.0.1
 # htmlmin==0.1.12
+htbuilder=0.3.0
 # hypothesis @ file:///tmp/build/80754af9/hypothesis_1600701404364/work
 # idna @ file:///tmp/build/80754af9/idna_1593446292537/work
 # imageio==2.6.0
