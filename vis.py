@@ -48,33 +48,31 @@ def main():
         if st.sidebar.checkbox("Load example data"):
             files = utils.load_example_files(spectrometer)
 
-
-
     # Check if data loaded, if yes, perform actions
     if files:
         # sidebar separating line
         sidebar.print_widgets_separator()
-    
+
         df = save_read.read_files(spectrometer, files)
-    
+
         main_expander = st.beta_expander("Customize your chart")
         # Choose plot colors and templates
         with main_expander:
             plots_color, template = vis_utils.get_chart_vis_properties()
-    
+
         # Select chart type
         chart_type = vis_opt.vis_options()
-    
+
         # sidebar separating line
         sidebar.print_widgets_separator()
-    
+
         # Select data conversion type
         spectra_conversion_type = vis_opt.convertion_opt()
-    
+
         # TODO need improvements
         # getting rid of duplicated columns
         df = df.loc[:, ~df.columns.duplicated()]
-    
+
         #
         # # data manipulation - raw / optimization / normalization
         #
@@ -145,12 +143,12 @@ def main():
             if spectra_conversion_type == LABELS["RAW"]:
                 plot_df = df
                 figs = [px.line(plot_df, x=plot_df.index, y=plot_df.columns, color_discrete_sequence=plots_color)]
-    
+
             elif spectra_conversion_type in {LABELS["OPT"]}:
                 columns = ['Average', 'Baseline', 'BL-Corrected', 'Flattened + BL-Corrected']
                 plot_df = pd.concat([df, baselines, baselined, flattened], axis=1)
                 plot_df.columns = columns
-        
+
                 fig1 = px.line(plot_df, x=plot_df.index, y=columns[-1], color_discrete_sequence=plots_color[3:])
                 fig2 = px.line(plot_df, x=plot_df.index, y=plot_df.columns, color_discrete_sequence=plots_color)
                 figs = [(fig1, fig2)]
@@ -159,10 +157,10 @@ def main():
         # 3D spectra
         elif chart_type == LABELS['P3D']:
             plot_df = flattened if spectra_conversion_type in {LABELS["OPT"]} else df
-    
+
             plot_df = plot_df.reset_index().melt('Raman Shift', plot_df.columns)
             fig = px.line_3d(plot_df, x='variable', y='Raman Shift', z='value', color='variable')
-    
+
             camera = dict(eye=dict(x=1.9, y=0.15, z=0.2))
             fig.update_layout(scene_camera=camera,
                               width=1200, height=1200,
@@ -206,7 +204,8 @@ def main():
 
     authors.show_developers()
 
-    # footer.footer()
+    from vis_helpers import footer
+    footer.footer()
 
 
 if __name__ == '__main__':
