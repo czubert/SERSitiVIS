@@ -1,11 +1,20 @@
+from dataclasses import dataclass
+
 import streamlit as st
 
 from constants import LABELS
 from processing import utils
-from vis_helpers import vis_utils
+
+@dataclass
+class CustomizationParameter:
+    """Class for spectrum customization parameters"""
+    degree: int
+    window: int
+    minimum: float
+    maximum: float
 
 
-def get_deg_win(df, chart_type, spectra_conversion_type, cols_right, df_columns):
+def get_deg_win(chart_type, spectra_conversion_type, cols_right, df_columns):
     """
     Fills in right side of webside with sliders for polynomial degree and smoothening window
 
@@ -38,27 +47,25 @@ def get_deg_win(df, chart_type, spectra_conversion_type, cols_right, df_columns)
     elif chart_type in {LABELS['GS'], LABELS['P3D']}:
         
         with cols_right[0]:
-            with st.beta_expander("Customize spectra", expanded=True):
-                adjust_plots_globally = st.radio(
-                    "Adjust all spectra or each spectrum?",
-                    ('all', 'each'), index=0)
+            # with st.beta_expander("Customize spectra", expanded=True):
+            adjust_plots_globally = st.radio(
+                "Adjust all spectra or each spectrum?",
+                ('all', 'each'), index=0)
 
-                df = vis_utils.trim_spectra(df)
-    
-                if adjust_plots_globally == 'all':
-                    deg = utils.choosing_regression_degree()
-                    window = utils.choosing_smoothening_window()
-                    vals = {col: (deg, window) for col in df_columns}
-                else:
-                    vals = {}
-                    for col in df_columns:
-                        st.write(col)
-                        vals[col] = (utils.choosing_regression_degree(None, col),
-                                     utils.choosing_smoothening_window(None, col))
+            if adjust_plots_globally == 'all':
+                deg = utils.choosing_regression_degree()
+                window = utils.choosing_smoothening_window()
+                vals = {col: (deg, window) for col in df_columns}
+            else:
+                vals = {}
+                for col in df_columns:
+                    st.write(col)
+                    vals[col] = (utils.choosing_regression_degree(None, col),
+                                 utils.choosing_smoothening_window(None, col))
     else:
         raise ValueError('Unknown chart type')
     
-    return df, vals
+    return vals
 
 
 def separate_spectra(spectra_conversion_type):

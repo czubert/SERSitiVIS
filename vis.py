@@ -6,7 +6,7 @@ import streamlit as st
 from constants import LABELS
 from processing import save_read
 from processing import utils
-from vis_helpers import manual, sidebar, data_customisation, charts, authors
+from vis_helpers import manual, sidebar, data_customisation, charts, authors, vis_utils
 from visualisation import draw
 from visualisation import visualisation_options as vis_opt
 
@@ -82,10 +82,18 @@ def main():
                     shift = None
         
         # Every chart (or pair) gets its own columns
-        tmp_cols = [st.beta_columns([5, 2]) for _ in df.columns]
+        if chart_type == LABELS['SINGLE']:
+            tmp_cols = [st.beta_columns([5, 2]) for _ in df.columns]
+        else:
+            tmp_cols = [st.beta_columns([5, 2])]
         cols_left, cols_right = zip(*tmp_cols)
-        df, vals = data_customisation.get_deg_win(df, chart_type, spectra_conversion_type, cols_right, df.columns)
-        
+
+        cols_right = [i.beta_expander("Customize spectra", expanded=False) for i in cols_right]
+        with cols_right[0]:
+            df = vis_utils.trim_spectra(df)
+
+        vals = data_customisation.get_deg_win(chart_type, spectra_conversion_type, cols_right, df.columns)
+
         # data conversion end
         if spectra_conversion_type in {LABELS["OPT"], LABELS["NORM"]}:
             baselines = pd.DataFrame(index=df.index)
