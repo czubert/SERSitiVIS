@@ -62,6 +62,13 @@ def choosing_smoothening_window(name=None, col='default'):
                      key=f'{col}_window')
 
 
+def choosing_trim_range(df):
+    min_, max_ = float(df.index.min()), float(df.index.max())
+    min_rs, max_rs = st.slider('Custom range',
+                               min_value=min_, max_value=max_, value=[min_, max_]
+                               )
+    return min_rs, max_rs
+
 # @st.cache
 def subtract_baseline(df, deg, key=None, model=None):
     """
