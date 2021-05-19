@@ -90,8 +90,14 @@ def get_chart_vis_properties():
             palette = palette + '_r'
     with col3:
         template = choose_template()
-    
+
     palette_module = getattr(px.colors, palette_type)
     palette = getattr(palette_module, palette)
-    
+
     return palette, template
+
+
+def separate_widgets():
+    st.sidebar.markdown(
+        """<hr style="height:1px;border:none;color:#fff;background-color:#999;margin-top:5px;margin-bottom:10px" /> """,
+        unsafe_allow_html=True)
