@@ -15,11 +15,7 @@ def sidebar_head():
         layout="wide",
         initial_sidebar_state="auto"
     )
-    
-    # radiobuttons in one row
-    st.write('<style>div.row-widget.stRadio > div{flex-direction:row;}</style>', unsafe_allow_html=True)
-    st.set_option('deprecation.showfileUploaderEncoding', False)
-    
+
     # SERSitivis logo
     html_code = vis_utils.show_sersitivis_logo()
     

@@ -7,7 +7,6 @@ from constants import LABELS
 from processing import save_read
 from processing import utils
 from vis_helpers import manual, sidebar, data_customisation, charts, authors, vis_utils
-from visualisation import draw
 from visualisation import visualisation_options as vis_opt
 
 
@@ -16,10 +15,14 @@ def main():
     Main is responsible for the visualisation of everything connected with streamlit.
     It is the web application itself.
     """
-
+    
+    # radiobuttons in one row
+    # st.write('<style>div.row-widget.stRadio > div{flex-direction:row;}</style>', unsafe_allow_html=True)
+    # st.set_option('deprecation.showfileUploaderEncoding', False)
+    
     # Sets header, logo and radiobuttons in a row
     sidebar.sidebar_head()
-
+    
     #
     # # Spectrometer type `- BWTek / Renishaw / Witec / Wasatch / Teledyne
     #
@@ -46,10 +49,10 @@ def main():
         main_expander = st.beta_expander("Customize your chart")
         # Choose plot colors and templates
         with main_expander:
-            plots_color, template = draw.get_chart_vis_properties()
+            plots_color, template = vis_utils.get_chart_vis_properties()
     
         # Select chart type
-        chart_type = vis_opt.vis_options(spectrometer)
+        chart_type = vis_opt.vis_options()
     
         # Select data conversion type
         spectra_conversion_type = vis_opt.convertion_opt()
