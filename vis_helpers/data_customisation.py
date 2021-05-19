@@ -1,17 +1,7 @@
-from dataclasses import dataclass
-
 import streamlit as st
 
 from constants import LABELS
 from processing import utils
-
-@dataclass
-class CustomizationParameter:
-    """Class for spectrum customization parameters"""
-    degree: int
-    window: int
-    minimum: float
-    maximum: float
 
 
 def get_deg_win(chart_type, spectra_conversion_type, df_columns):
