@@ -1,6 +1,3 @@
-import streamlit as st
-from htbuilder.units import percent, px
-
 #
 # def image(src_as_string, **style):
 #     return img(src=src_as_string, style=styles(**style))
@@ -76,8 +73,10 @@ from htbuilder.units import percent, px
 
 
 import streamlit as st
-from htbuilder import HtmlElement, div, ul, li, br, hr, a, p, img, styles, classes, fonts
+from htbuilder import HtmlElement, div, br, hr, a, p, img, styles
 from htbuilder.units import percent, px
+
+from vis_helpers import authors
 
 
 def image(src_as_string, **style):
@@ -98,7 +97,6 @@ def layout(*args):
     
     style_div = styles(
         left=0,
-        bottom=0,
         margin=px(0, 0, -1000, 0),
         width=percent(100),
         text_align="center",
@@ -125,21 +123,24 @@ def layout(*args):
 
 def footer():
     myargs = [
-        "<b>Provided by</b>: ",
+        br(), br(),
+        '<hr>'
+        "<b>Provided by</b>: <br>",
         link("https://www.sersitive.eu/",
              image('https://sersitive.eu/wp-content/uploads/logo-przyciete-przesuniete-male_na-strone-1-300x68.png',
-                   width=px(120), height=px(25), margin=px(0, 10, 0, 0))),
-        ", SERSitiVIS ",
-        link("https://share.streamlit.io/czubert/sersitivis/vis.py", image('./logos/logo.png',
-                                                                           width=px(24), height=px(25),
-                                                                           margin=px(0, 10, 0, 0))),
-        ", SERSitive Developers Squad",
-        link("https://www.docker.com/", image(
-            'https://www.docker.com/sites/default/files/d8/styles/role_icon/public/2019-07/Moby-logo.png?itok=sYH_JEaJ',
-            width=px(20), height=px(18), margin=px(0, 10, 0, 0))),
+                   width=px(140), height=px(30), margin=px(0, 0, 0, 0))),
+        ", &nbsp;&nbsp;",
+        link("https://share.streamlit.io/czubert/sersitivis/vis.py",
+             image('https://sersitive.eu/wp-content/uploads/logo-1.png',
+                   width=px(140), height=px(30),
+                   margin=px(0, 0, 0, 0))),
         br(),
+        "&nbsp;&nbsp; ",
+        "<a " + authors.authors_css + ' href="mailto:developers[at]sersitive.eu">' + "SERSitive Developers</a>",
+
     ]
     layout(*myargs)
 
-# if __name__ == "__main__":
-#     footer()
+
+if __name__ == "__main__":
+    footer()

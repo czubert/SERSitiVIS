@@ -62,7 +62,7 @@ def show_developers():
     Shows all the links and mails to developers
     :return:
     """
-    contact_developers()
+    # contact_developers()
     
     made_by()
     made_by_pawel()
