@@ -15,7 +15,7 @@ def main():
     Main is responsible for the visualisation of everything connected with streamlit.
     It is the web application itself.
     """
-    
+
     # # Radiobuttons in one row
     # st.write('<style>div.row-widget.stRadio > div{flex-direction:row;}</style>', unsafe_allow_html=True)
     # st.set_option('deprecation.showfileUploaderEncoding', False)
@@ -26,17 +26,20 @@ def main():
     #
     # # Spectrometer type `- BWTek / Renishaw / Witec / Wasatch / Teledyne
     #
-    st.sidebar.write('#### Choose spectra type', unsafe_allow_html=True)
+
+    sidebar.print_widget_labels('Choose spectra type')
+
     spectrometer = st.sidebar.selectbox(
         "",
         (LABELS['BWTEK'], LABELS['RENI'], LABELS['WITEC'], LABELS['WASATCH'], LABELS['TELEDYNE']),
         index=0)
 
     # sidebar separating line
-    vis_utils.separate_widgets()
+    sidebar.print_widgets_separator()
 
     # User data loader
-    st.sidebar.write('#### Upload your data or try with ours', unsafe_allow_html=True)
+    # st.sidebar.write('#### Upload your data or try with ours', unsafe_allow_html=True)
+    sidebar.print_widget_labels('Upload your data or try with ours', 10, 0)
 
     files = st.sidebar.file_uploader(label='', accept_multiple_files=True, type=['txt', 'csv'])
 
@@ -46,7 +49,7 @@ def main():
             files = utils.load_example_files(spectrometer)
 
     # sidebar separating line
-    vis_utils.separate_widgets()
+    sidebar.print_widgets_separator()
 
     # Check if data loaded, if yes, perform actions
     if files:
@@ -61,7 +64,7 @@ def main():
         chart_type = vis_opt.vis_options()
     
         # sidebar separating line
-        vis_utils.separate_widgets()
+        sidebar.print_widgets_separator()
     
         # Select data conversion type
         spectra_conversion_type = vis_opt.convertion_opt()

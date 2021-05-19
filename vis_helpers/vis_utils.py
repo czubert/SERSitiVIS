@@ -96,8 +96,3 @@ def get_chart_vis_properties():
 
     return palette, template
 
-
-def separate_widgets():
-    st.sidebar.markdown(
-        """<hr style="height:1px;border:none;color:#fff;background-color:#999;margin-top:5px;margin-bottom:10px" /> """,
-        unsafe_allow_html=True)
