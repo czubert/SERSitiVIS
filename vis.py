@@ -48,11 +48,13 @@ def main():
         if st.sidebar.checkbox("Load example data"):
             files = utils.load_example_files(spectrometer)
 
-    # sidebar separating line
-    sidebar.print_widgets_separator()
+
 
     # Check if data loaded, if yes, perform actions
     if files:
+        # sidebar separating line
+        sidebar.print_widgets_separator()
+    
         df = save_read.read_files(spectrometer, files)
     
         main_expander = st.beta_expander("Customize your chart")
