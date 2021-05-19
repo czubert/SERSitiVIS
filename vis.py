@@ -22,7 +22,7 @@ def main():
 
     # Sets sidebar's header and logo
     sidebar.sidebar_head()
-    
+
     #
     # # Spectrometer type `- BWTek / Renishaw / Witec / Wasatch / Teledyne
     #
@@ -31,36 +31,45 @@ def main():
         "",
         (LABELS['BWTEK'], LABELS['RENI'], LABELS['WITEC'], LABELS['WASATCH'], LABELS['TELEDYNE']),
         index=0)
-    
+
+    # sidebar separating line
+    vis_utils.separate_widgets()
+
     # User data loader
     st.sidebar.write('#### Upload your data or try with ours', unsafe_allow_html=True)
 
     files = st.sidebar.file_uploader(label='', accept_multiple_files=True, type=['txt', 'csv'])
-    
+
     # Allow example data loading when no custom data are loaded
     if not files:
         if st.sidebar.checkbox("Load example data"):
             files = utils.load_example_files(spectrometer)
-    
+
+    # sidebar separating line
+    vis_utils.separate_widgets()
+
     # Check if data loaded, if yes, perform actions
     if files:
         df = save_read.read_files(spectrometer, files)
-
+    
         main_expander = st.beta_expander("Customize your chart")
         # Choose plot colors and templates
         with main_expander:
             plots_color, template = vis_utils.get_chart_vis_properties()
-
+    
         # Select chart type
         chart_type = vis_opt.vis_options()
-
+    
+        # sidebar separating line
+        vis_utils.separate_widgets()
+    
         # Select data conversion type
         spectra_conversion_type = vis_opt.convertion_opt()
-
+    
         # TODO need improvements
         # getting rid of duplicated columns
         df = df.loc[:, ~df.columns.duplicated()]
-
+    
         #
         # # data manipulation - raw / optimization / normalization
         #
