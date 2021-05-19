@@ -73,7 +73,7 @@
 
 
 import streamlit as st
-from htbuilder import HtmlElement, div, br, hr, a, p, img, styles
+from htbuilder import HtmlElement, div, hr, a, p, img, styles
 from htbuilder.units import percent, px
 
 from vis_helpers import authors
@@ -97,14 +97,21 @@ def layout(*args):
     
     style_div = styles(
         left=0,
-        margin=px(0, 0, -1000, 0),
+        margin=px(0, 0, 0, 0),
+        padding=px(10, 0, 35, 0),
         width=percent(100),
         text_align="center",
+        bottom=0,
         height="0px",
         opacity=0.8
     )
     
     style_hr = styles(
+        height="1px",
+        border=None,
+        color="#fff",
+        margin=px(0, 0, 0, 0),
+        padding=px(100, 0, 0, 0),
     )
     
     body = p()
@@ -123,8 +130,7 @@ def layout(*args):
 
 def footer():
     myargs = [
-        br(), br(),
-        '<hr>'
+        '<hr style="height:1px;border:none;color:#fff;background-color:#999;margin-top:5px;margin-bottom:10px" />'
         "<b>Provided by</b>: <br>",
         link("https://www.sersitive.eu/",
              image('https://sersitive.eu/wp-content/uploads/logo-przyciete-przesuniete-male_na-strone-1-300x68.png',
@@ -134,7 +140,7 @@ def footer():
              image('https://sersitive.eu/wp-content/uploads/logo-1.png',
                    width=px(140), height=px(30),
                    margin=px(0, 0, 0, 0))),
-        br(),
+    
         "&nbsp;&nbsp; ",
         "<a " + authors.authors_css + ' href="mailto:developers[at]sersitive.eu">' + "SERSitive Developers</a>",
 
