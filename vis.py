@@ -53,26 +53,27 @@ def main():
     
         # Select chart type
         chart_type = vis_opt.vis_options()
-    
+
         # Select data conversion type
         spectra_conversion_type = vis_opt.convertion_opt()
-    
+
         # TODO need improvements
         # getting rid of duplicated columns
         df = df.loc[:, ~df.columns.duplicated()]
-        
+
         #
         # # data manipulation - raw / optimization / normalization
         #
-    
+
+        # TODO delete if not needed
         # Normalization
-        if spectra_conversion_type == LABELS["NORM"]:
-            df = (df - df.min()) / (df.max() - df.min())
-    
+        # if spectra_conversion_type == LABELS["NORM"]:
+        #     df = (df - df.min()) / (df.max() - df.min())
+
         # Mean Spectra
         if chart_type == LABELS['MS']:
             df = df.mean(axis=1).rename('Average').to_frame()
-    
+
         # For grouped spectra sometimes we want to shift the spectra from each other, here it is:
         with main_expander:
             # TODO the code below needed?
@@ -91,13 +92,15 @@ def main():
                     shift = None
             with trim_col:
                 df = vis_utils.trim_spectra(df)
-    
+
         col_left, col_right = st.beta_columns([5, 2])
         if spectra_conversion_type != LABELS["RAW"]:
             col_right = col_right.beta_expander("Customize spectra", expanded=False)
             with col_right:
                 vals = data_customisation.get_deg_win(chart_type, spectra_conversion_type, df.columns)
-    
+                if st.checkbox("Data Normalization"):
+                    df = (df - df.min()) / (df.max() - df.min())
+
         # data conversion end
         if spectra_conversion_type in {LABELS["OPT"], LABELS["NORM"]}:
             baselines = pd.DataFrame(index=df.index)
