@@ -20,6 +20,6 @@ def convertion_opt():
     st.sidebar.write('#### How would you like to convert the data?', unsafe_allow_html=True)
     spectra_conversion_type = st.sidebar.radio(
         "",
-        (LABELS["RAW"], LABELS["OPT"], LABELS["NORM"]), key=f'raw')
+        (LABELS["RAW"], LABELS["OPT"]), key=f'raw')
     
     return spectra_conversion_type

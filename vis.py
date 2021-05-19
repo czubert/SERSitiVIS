@@ -16,11 +16,11 @@ def main():
     It is the web application itself.
     """
     
-    # radiobuttons in one row
+    # # Radiobuttons in one row
     # st.write('<style>div.row-widget.stRadio > div{flex-direction:row;}</style>', unsafe_allow_html=True)
     # st.set_option('deprecation.showfileUploaderEncoding', False)
-    
-    # Sets header, logo and radiobuttons in a row
+
+    # Sets sidebar's header and logo
     sidebar.sidebar_head()
     
     #
@@ -34,23 +34,23 @@ def main():
     
     # User data loader
     st.sidebar.write('#### Upload your data or try with ours', unsafe_allow_html=True)
+
     files = st.sidebar.file_uploader(label='', accept_multiple_files=True, type=['txt', 'csv'])
     
     # Allow example data loading when no custom data are loaded
     if not files:
-        # st.sidebar.write('#### Or try with our', unsafe_allow_html=True)
         if st.sidebar.checkbox("Load example data"):
             files = utils.load_example_files(spectrometer)
     
     # Check if data loaded, if yes, perform actions
     if files:
         df = save_read.read_files(spectrometer, files)
-    
+
         main_expander = st.beta_expander("Customize your chart")
         # Choose plot colors and templates
         with main_expander:
             plots_color, template = vis_utils.get_chart_vis_properties()
-    
+
         # Select chart type
         chart_type = vis_opt.vis_options()
 
@@ -80,7 +80,7 @@ def main():
             # trick to better fit sliders in expander
             # _, main_expander_column, _ = st.beta_columns([1, 38, 1])
             # with main_expander_column:
-        
+
             shift_col, _, trim_col = st.beta_columns([5, 1, 5])
             with shift_col:
                 if chart_type == LABELS['GS']:
@@ -93,6 +93,7 @@ def main():
             with trim_col:
                 df = vis_utils.trim_spectra(df)
 
+        # columns in main view. Chart, expanders
         col_left, col_right = st.beta_columns([5, 2])
         if spectra_conversion_type != LABELS["RAW"]:
             col_right = col_right.beta_expander("Customize spectra", expanded=False)
@@ -100,9 +101,11 @@ def main():
                 vals = data_customisation.get_deg_win(chart_type, spectra_conversion_type, df.columns)
                 if st.checkbox("Data Normalization"):
                     df = (df - df.min()) / (df.max() - df.min())
+                # if st.sidebar.checkbox("Data Normalization"):
+                #     df = (df - df.min()) / (df.max() - df.min())
 
         # data conversion end
-        if spectra_conversion_type in {LABELS["OPT"], LABELS["NORM"]}:
+        if spectra_conversion_type in {LABELS["OPT"]}:
             baselines = pd.DataFrame(index=df.index)
             baselined = pd.DataFrame(index=df.index)
             flattened = pd.DataFrame(index=df.index)
@@ -128,12 +131,12 @@ def main():
             if spectra_conversion_type == LABELS["RAW"]:
                 plot_df = df
                 figs = [px.line(plot_df, x=plot_df.index, y=plot_df.columns, color_discrete_sequence=plots_color)]
-
-            elif spectra_conversion_type in {LABELS["OPT"], LABELS["NORM"]}:
+    
+            elif spectra_conversion_type in {LABELS["OPT"]}:
                 columns = ['Average', 'Baseline', 'BL-Corrected', 'Flattened + BL-Corrected']
                 plot_df = pd.concat([df, baselines, baselined, flattened], axis=1)
                 plot_df.columns = columns
-
+        
                 fig1 = px.line(plot_df, x=plot_df.index, y=columns[-1], color_discrete_sequence=plots_color[3:])
                 fig2 = px.line(plot_df, x=plot_df.index, y=plot_df.columns, color_discrete_sequence=plots_color)
                 figs = [(fig1, fig2)]
@@ -141,11 +144,11 @@ def main():
                 raise ValueError('Unknown conversion type for Mean spectrum chart')
         # 3D spectra
         elif chart_type == LABELS['P3D']:
-            plot_df = flattened if spectra_conversion_type in {LABELS["OPT"], LABELS["NORM"]} else df
-
+            plot_df = flattened if spectra_conversion_type in {LABELS["OPT"]} else df
+    
             plot_df = plot_df.reset_index().melt('Raman Shift', plot_df.columns)
             fig = px.line_3d(plot_df, x='variable', y='Raman Shift', z='value', color='variable')
-
+    
             camera = dict(eye=dict(x=1.9, y=0.15, z=0.2))
             fig.update_layout(scene_camera=camera,
                               width=1200, height=1200,
@@ -173,10 +176,10 @@ def main():
                 figs.append(fig_tup)
         else:
             raise ValueError("Something unbelievable has been chosen")
-    
+
         with col_left:
             charts.show_charts(figs, plots_color, template)
-    
+
         with col_left:
             link = utils.download_button(plot_df.reset_index(), f'spectrum.csv',
                                          button_text='Download CSV')
