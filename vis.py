@@ -18,7 +18,6 @@ def main():
 
     # # Radiobuttons in one row
     # st.write('<style>div.row-widget.stRadio > div{flex-direction:row;}</style>', unsafe_allow_html=True)
-    # st.set_option('deprecation.showfileUploaderEncoding', False)
 
     # Sets sidebar's header and logo
     sidebar.sidebar_head()
@@ -87,6 +86,8 @@ def main():
             df = df.mean(axis=1).rename('Average').to_frame()
 
         # columns in main view. Chart, expanders
+        # TODO rozwiązać to jakoś sprytniej
+        normalized = False
         col_left, col_right = st.beta_columns([5, 2])
         if spectra_conversion_type != LABELS["RAW"]:
             col_right = col_right.beta_expander("Customize spectra", expanded=False)
@@ -104,7 +105,7 @@ def main():
             # trick to better fit sliders in expander
             # _, main_expander_column, _ = st.beta_columns([1, 38, 1])
             # with main_expander_column:
-    
+
             shift_col, _, trim_col = st.beta_columns([5, 1, 5])
             with shift_col:
                 if chart_type == LABELS['GS']:
