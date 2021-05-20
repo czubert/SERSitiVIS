@@ -86,25 +86,6 @@ def main():
         if chart_type == LABELS['MS']:
             df = df.mean(axis=1).rename('Average').to_frame()
 
-        # For grouped spectra sometimes we want to shift the spectra from each other, here it is:
-        with main_expander:
-            # TODO the code below needed?
-            # trick to better fit sliders in expander
-            # _, main_expander_column, _ = st.beta_columns([1, 38, 1])
-            # with main_expander_column:
-
-            shift_col, _, trim_col = st.beta_columns([5, 1, 5])
-            with shift_col:
-                if chart_type == LABELS['GS']:
-                    shift = data_customisation.separate_spectra(spectra_conversion_type)
-                elif chart_type == LABELS['SINGLE']:
-                    col = st.selectbox('spectrum to plot', df.columns)
-                    df = df[[col]]
-                else:
-                    shift = None
-            with trim_col:
-                df = vis_utils.trim_spectra(df)
-
         # columns in main view. Chart, expanders
         col_left, col_right = st.beta_columns([5, 2])
         if spectra_conversion_type != LABELS["RAW"]:
@@ -112,9 +93,29 @@ def main():
             with col_right:
                 vals = data_customisation.get_deg_win(chart_type, spectra_conversion_type, df.columns)
                 if st.checkbox("Data Normalization"):
+                    normalized = True
                     df = (df - df.min()) / (df.max() - df.min())
-                # if st.sidebar.checkbox("Data Normalization"):
-                #     df = (df - df.min()) / (df.max() - df.min())
+                else:
+                    normalized = False
+
+        # For grouped spectra sometimes we want to shift the spectra from each other, here it is:
+        with main_expander:
+            # TODO the code below needed?
+            # trick to better fit sliders in expander
+            # _, main_expander_column, _ = st.beta_columns([1, 38, 1])
+            # with main_expander_column:
+    
+            shift_col, _, trim_col = st.beta_columns([5, 1, 5])
+            with shift_col:
+                if chart_type == LABELS['GS']:
+                    shift = data_customisation.separate_spectra(normalized)
+                elif chart_type == LABELS['SINGLE']:
+                    col = st.selectbox('spectrum to plot', df.columns)
+                    df = df[[col]]
+                else:
+                    shift = None
+            with trim_col:
+                df = vis_utils.trim_spectra(df)
 
         # data conversion end
         if spectra_conversion_type in {LABELS["OPT"]}:
