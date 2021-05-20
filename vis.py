@@ -193,6 +193,7 @@ def main():
             charts.show_charts(figs, plots_color, template)
 
         with col_left:
+            st.markdown('')
             link = utils.download_button(plot_df.reset_index(), f'spectrum.csv',
                                          button_text='Download CSV')
             st.markdown(link, unsafe_allow_html=True)
@@ -203,9 +204,9 @@ def main():
         manual.show_manual()
 
     authors.show_developers()
-
-    from vis_helpers import footer
-    footer.footer()
+    #
+    # from vis_helpers import footer
+    # footer.footer()
 
 
 if __name__ == '__main__':
