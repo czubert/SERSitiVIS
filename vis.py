@@ -204,7 +204,7 @@ def main():
         manual.show_manual()
 
     authors.show_developers()
-    #
+
     # from vis_helpers import footer
     # footer.footer()
 

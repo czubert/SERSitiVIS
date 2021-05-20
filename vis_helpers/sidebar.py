@@ -9,12 +9,12 @@ def sidebar_head():
     Sets position of radiobuttons (in a row or one beneath another)
     Shows logo in the sidebar
     """
-    # st.set_page_config(
-    # page_title="SERSitive.eu",
-    # page_icon="https://sersitive.eu/wp-content/uploads/cropped-icon.png",
-    # layout="wide",
-    # initial_sidebar_state="auto"
-    # )
+    st.set_page_config(
+        page_title="SERSitive.eu",
+        page_icon="https://sersitive.eu/wp-content/uploads/cropped-icon.png",
+        layout="wide",
+        initial_sidebar_state="auto"
+    )
     
     # SERSitivis logo
     html_code = vis_utils.show_sersitivis_logo()
