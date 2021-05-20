@@ -15,10 +15,11 @@ def sidebar_head():
         layout="wide",
         initial_sidebar_state="auto"
     )
-    
+
+    st.set_option('deprecation.showfileUploaderEncoding', False)
+
     # SERSitivis logo
     html_code = vis_utils.show_sersitivis_logo()
-    
     st.sidebar.markdown(html_code, unsafe_allow_html=True)
     st.sidebar.markdown('')
     st.sidebar.markdown('')
