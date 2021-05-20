@@ -52,7 +52,7 @@ def get_deg_win(chart_type, spectra_conversion_type, df_columns):
     return vals
 
 
-def separate_spectra(spectra_conversion_type):
+def separate_spectra(normalized):
     """
     Shift spectra between each other.
     Depending on the conversion type it takes different values
@@ -60,7 +60,7 @@ def separate_spectra(spectra_conversion_type):
     :return: Int or Float
     """
     # depending on conversion type we have to adjust the scale
-    if spectra_conversion_type == LABELS['NORM']:
+    if normalized:
         shift = st.slider(LABELS['SHIFT'], 0.0, 1.0, 0.0, 0.1)
     else:
         shift = st.slider(LABELS['SHIFT'], 0, 30000, 0, 250)
