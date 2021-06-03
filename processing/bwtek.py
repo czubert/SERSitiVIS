@@ -5,10 +5,10 @@ from . import utils
 
 spectra_params = {'sep': ';', 'skiprows': lambda x: x < 79, 'decimal': ',',
                   'usecols': ['Pixel', LABELS["RS"], LABELS["DS"]],
-                  'skipinitialspace': True, 'encoding': "utf-8"}
+                  'skipinitialspace': True}
 
 meta_params = {'sep': ';', 'skiprows': lambda x: x > 78, 'decimal': ',', 'index_col': 0,
-               'skipinitialspace': True, 'encoding': "utf-8", 'header': None}
+               'skipinitialspace': True, 'header': None}
 
 
 def read_bwtek(uploaded_files):

@@ -14,14 +14,13 @@ def read_wasatch(uploaded_files, separator):
     
     spectra_params = {LABELS["CSV"]: {'sep': separator, 'skiprows': lambda x: x < 34, 'decimal': '.',
                                       'usecols': ['Pixel', 'Wavenumber', col_to_show],
-                                      'skipinitialspace': True, 'encoding': "utf-8"},
+                                      'skipinitialspace': True, },
                       LABELS["TXT"]: {'delim_whitespace': True, 'decimal': '.', 'skipinitialspace': True,
-                                      'encoding': 'utf-8',
                                       'header': None},
                       }
     
     meta_params = {'sep': separator, 'skiprows': lambda x: x > 32, 'decimal': '.', 'index_col': 0,
-                   'skipinitialspace': True, 'encoding': "utf-8", 'header': None}
+                   'skipinitialspace': True, 'header': None}
     
     file_type = []
     
