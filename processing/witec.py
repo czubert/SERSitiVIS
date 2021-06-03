@@ -14,7 +14,7 @@ def read_witec(uploaded_files, separator=','):
     all_uploaded_witek_data_files = {}
     df = pd.DataFrame()
     
-    spectra_params = {'sep': separator, 'decimal': '.', 'skipinitialspace': True, 'encoding': 'utf-8', 'header': 0}
+    spectra_params = {'sep': separator, 'decimal': '.', 'skipinitialspace': True, 'header': 0}
     
     for uploaded_file in uploaded_files:
         uploaded_file.seek(0)
