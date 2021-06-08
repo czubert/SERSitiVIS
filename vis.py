@@ -10,7 +10,6 @@ from processing import utils
 from vis_helpers import manual, sidebar, data_customisation, charts, authors, vis_utils
 from visualisation import visualisation_options as vis_opt
 
-import streamlit_analytics
 
 def main():
     """
@@ -216,6 +215,13 @@ def main():
 if __name__ == '__main__':
     # analytics.count_sessions()
     # with streamlit_analytics.track(firestore_key_file="firebase-key.json", firestore_collection_name="counts"):
-    with streamlit_analytics.track():
+
+    json_file = "/Users/charzewski/Downloads/sersitivis-analytics-firebase-adminsdk-qnht7-bd4752447f.json"
+
+    try:
+        import streamlit_analytics
+        with streamlit_analytics.track(firestore_key_file=json_file, firestore_collection_name="counts"):
+            main()
+    except ImportError:
         main()
     print("Streamlit finished it's work")
