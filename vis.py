@@ -1,3 +1,5 @@
+import os
+
 import pandas as pd
 import peakutils
 import plotly.express as px
@@ -6,7 +8,6 @@ import streamlit as st
 from constants import LABELS
 from processing import save_read
 from processing import utils
-# from statistics import analytics
 from vis_helpers import manual, sidebar, data_customisation, charts, authors, vis_utils
 from visualisation import visualisation_options as vis_opt
 
@@ -213,15 +214,18 @@ def main():
 
 
 if __name__ == '__main__':
-    # analytics.count_sessions()
-    # with streamlit_analytics.track(firestore_key_file="firebase-key.json", firestore_collection_name="counts"):
-
-    json_file = "/Users/charzewski/Downloads/sersitivis-analytics-firebase-adminsdk-qnht7-bd4752447f.json"
-
     try:
         import streamlit_analytics
-        with streamlit_analytics.track(firestore_key_file=json_file, firestore_collection_name="counts"):
+
+        credential_file = 'tmp_credentials.json'
+        if not os.path.exists(credential_file):
+            with open(credential_file, 'w') as infile:
+                infile.write(st.secrets['firebase_credentials'])
+            print('credentials written')
+
+        with streamlit_analytics.track(firestore_key_file=credential_file, firestore_collection_name="counts"):
             main()
-    except ImportError:
+    except KeyError:
         main()
+
     print("Streamlit finished it's work")
