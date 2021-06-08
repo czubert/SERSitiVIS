@@ -6,6 +6,7 @@ import streamlit as st
 from constants import LABELS
 from processing import save_read
 from processing import utils
+from statistics import analytics
 from vis_helpers import manual, sidebar, data_customisation, charts, authors, vis_utils
 from visualisation import visualisation_options as vis_opt
 
@@ -212,5 +213,7 @@ def main():
 
 
 if __name__ == '__main__':
+    analytics.count_sessions()
+    
     main()
     print("Streamlit finished it's work")

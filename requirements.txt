@@ -1,5 +1,5 @@
 # htbuilder==0.3.0
-numpy==1.20.3
+numpy==1.19
 pandas==1.2.4
 PeakUtils==0.1.0
 plotly==4.14.3
