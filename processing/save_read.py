@@ -1,10 +1,9 @@
 import streamlit as st
 
-from processing.utils import download_button
-
 # TODO does this function has any occurance in the code beside this one?
 from constants import LABELS
 from processing import bwtek, renishaw, witec, wasatch
+from processing.utils import download_button
 
 
 def save_adj_spectra_to_file(df_to_save, file_name, key='default'):
@@ -14,7 +13,6 @@ def save_adj_spectra_to_file(df_to_save, file_name, key='default'):
     :param file_name: String
     :param key: String
     """
-    from processing.utils import download_button
     # User can set custom name for a file to write
     input_file_name = st.text_input(
         'Enter the name of the file to save (if not given it will be added automatically based on the name of the file)',
