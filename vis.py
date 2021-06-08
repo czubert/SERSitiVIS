@@ -6,10 +6,11 @@ import streamlit as st
 from constants import LABELS
 from processing import save_read
 from processing import utils
-from statistics import analytics
+# from statistics import analytics
 from vis_helpers import manual, sidebar, data_customisation, charts, authors, vis_utils
 from visualisation import visualisation_options as vis_opt
 
+import streamlit_analytics
 
 def main():
     """
@@ -213,7 +214,8 @@ def main():
 
 
 if __name__ == '__main__':
-    analytics.count_sessions()
-    
-    main()
+    # analytics.count_sessions()
+    # with streamlit_analytics.track(firestore_key_file="firebase-key.json", firestore_collection_name="counts"):
+    with streamlit_analytics.track():
+        main()
     print("Streamlit finished it's work")
