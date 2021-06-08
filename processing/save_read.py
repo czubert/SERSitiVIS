@@ -53,4 +53,12 @@ def read_files(spectrometer, files):
 
     else:
         raise ValueError('Unknown spectrometer type')
+
+    # fix comma separated decimals (stored as strings)
+    for col in df.columns:
+        try:
+            df.loc[:, col] = df[col].str.replace(',', '.').astype(float)
+        except (AttributeError, ValueError):
+            ...
+
     return df
