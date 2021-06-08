@@ -178,7 +178,7 @@ def download_button(object_to_download, download_filename, button_text, pickle_i
 
     else:
         if isinstance(object_to_download, bytes):
-            pass
+            ...
 
         elif isinstance(object_to_download, pd.DataFrame):
             object_to_download = object_to_download.to_csv(index=False)
