@@ -9,6 +9,7 @@ import uuid
 import pandas as pd
 import peakutils
 import streamlit as st
+from bs4 import UnicodeDammit
 
 from constants import LABELS
 
@@ -22,11 +23,18 @@ def read_spec(uploaded_file, spectra_params, meta_params=None):
     :return: DataFrame
     """
     uploaded_file.seek(0)
-    data = pd.read_csv(uploaded_file, **spectra_params)
-    
+    dammit = UnicodeDammit(uploaded_file.read(), ['utf-8', 'windows-1252', 'ascii'])
+
+    uploaded_file.seek(0)
+    data = pd.read_csv(uploaded_file,
+                       encoding=dammit.original_encoding,
+                       **spectra_params)
+
     if meta_params is not None:
         uploaded_file.seek(0)
-        metadata = pd.read_csv(uploaded_file, **meta_params)
+        metadata = pd.read_csv(uploaded_file,
+                               encoding=dammit.original_encoding,
+                               **meta_params)
         return data, metadata
 
     return data
@@ -68,6 +76,7 @@ def choosing_trim_range(df):
                                min_value=min_, max_value=max_, value=[min_, max_]
                                )
     return min_rs, max_rs
+
 
 # @st.cache
 def subtract_baseline(df, deg, key=None, model=None):

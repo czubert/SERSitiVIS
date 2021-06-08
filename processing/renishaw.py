@@ -12,7 +12,7 @@ def read_renishaw(uploaded_files, separator):
     """
     reni_data = {}
 
-    spectra_params = {'sep': separator, 'decimal': '.', 'skipinitialspace': True, 'encoding': 'utf-8',
+    spectra_params = {'sep': separator, 'decimal': '.', 'skipinitialspace': True,
                       'header': None}
 
     # Iterates through each file, converts it to DataFrame and adds to temporary dictionary
