@@ -13,7 +13,7 @@ def vis_options():
     
     # st.sidebar.write('#### Choose type of chart', unsafe_allow_html=True)
     sidebar.print_widget_labels('Choose type of chart')
-    chart_type = st.sidebar.selectbox('', options, 2)
+    chart_type = st.sidebar.selectbox('CHART_TYPE', options, 0)
     
     return chart_type
 
