@@ -202,15 +202,10 @@ def main():
                                          button_text='Download CSV')
             st.markdown(link, unsafe_allow_html=True)
 
-
-
     else:
         manual.show_manual()
 
     authors.show_developers()
-
-    # from vis_helpers import footer
-    # footer.footer()
 
 
 if __name__ == '__main__':
