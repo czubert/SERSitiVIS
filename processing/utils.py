@@ -48,11 +48,12 @@ def choosing_regression_degree(name=None, col='default'):
     :return: Int, degree for polynomial regression
     """
     label = 'Polynominal degree' if name is None else f'Polynomial degree for {name}'
-    return st.slider(label,
-                     min_value=1,
-                     max_value=20,
-                     value=5,
-                     key=f'{col}_deg')
+    val = st.slider(label,
+                    min_value=1,
+                    max_value=20,
+                    value=5,
+                    key=f'{col}_deg')
+    return int(val)
 
 
 def choosing_smoothening_window(name=None, col='default'):
@@ -63,19 +64,20 @@ def choosing_smoothening_window(name=None, col='default'):
     :return: Int, window for smoothening
     """
     label = 'Smoothing window' if name is None else f'Smoothing window for {name}'
-    return st.slider(label,
-                     min_value=1,
-                     max_value=20,
-                     value=3,
-                     key=f'{col}_window')
+    val = st.slider(label,
+                    min_value=1,
+                    max_value=20,
+                    value=3,
+                    key=f'{col}_window')
+    return int(val)
 
 
 def choosing_trim_range(df):
     min_, max_ = float(df.index.min()), float(df.index.max())
     # min_rs, max_rs = st.slider('Custom range',
     min_max = st.slider('Custom range',
-                               min_value=min_, max_value=max_, value=[min_, max_]
-                               )
+                        min_value=min_, max_value=max_, value=[min_, max_]
+                        )
     min_rs, max_rs = min_max.split('__')
     min_rs, max_rs = float(min_rs), float(max_rs)
     return min_rs, max_rs
