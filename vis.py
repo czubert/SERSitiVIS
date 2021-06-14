@@ -35,7 +35,7 @@ def main():
 
     spectrometer = st.sidebar.selectbox(
         "Choose spectra type",
-        (LABELS['BWTEK'], LABELS['RENI'], LABELS['WITEC'], LABELS['WASATCH'], LABELS['TELEDYNE']),
+        ("None", LABELS['BWTEK'], LABELS['RENI'], LABELS['WITEC'], LABELS['WASATCH'], LABELS['TELEDYNE']),
         index=0)
 
     # sidebar separating line
@@ -44,21 +44,26 @@ def main():
     # User data loader
     # sidebar.print_widget_labels('Upload your data or try with ours', 10, 0)
 
-    files = st.sidebar.file_uploader(label='Upload your data or try with ours', accept_multiple_files=True,
+    files = st.sidebar.file_uploader(label='Upload your data or try with ours',
+                                     accept_multiple_files=True,
                                      type=['txt', 'csv'])
 
     # Allow example data loading when no custom data are loaded
     if not files:
         if st.sidebar.checkbox("Load example data"):
-            files = utils.load_example_files(spectrometer)
+            if spectrometer == "None":
+                st.sidebar.error('First Choose Spectra type')
+            else:
+                files = utils.load_example_files(spectrometer)
 
     # Check if data loaded, if yes, perform actions
     if files:
+        st.spinner('Uploading data in progress')
         # sidebar separating line
         sidebar.print_widgets_separator()
 
         df = save_read.read_files(spectrometer, files)
-
+    
         main_expander = st.beta_expander("Customize your chart")
         # Choose plot colors and templates
         with main_expander:
