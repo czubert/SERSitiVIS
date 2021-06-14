@@ -1,14 +1,13 @@
 import datetime
 import os
 
-# noinspection PyUnresolvedReferences
-import str_slider
-
 import pandas as pd
 import peakutils
 import plotly.express as px
 import streamlit as st
 
+# noinspection PyUnresolvedReferences
+import str_slider
 from constants import LABELS
 from processing import save_read
 from processing import utils
@@ -88,14 +87,14 @@ def main():
         #     df = (df - df.min()) / (df.max() - df.min())
 
         # Mean Spectra
-        if chart_type == LABELS['MS']:
+        if chart_type == 'MS':
             df = df.mean(axis=1).rename('Average').to_frame()
 
         # columns in main view. Chart, expanders
         # TODO rozwiązać to jakoś sprytniej
         normalized = False
         col_left, col_right = st.beta_columns([5, 2])
-        if spectra_conversion_type != LABELS["RAW"]:
+        if spectra_conversion_type != "RAW":
             col_right = col_right.beta_expander("Customize spectra", expanded=False)
             with col_right:
                 vals = data_customisation.get_deg_win(chart_type, spectra_conversion_type, df.columns)
@@ -114,9 +113,9 @@ def main():
 
             shift_col, _, trim_col = st.beta_columns([5, 1, 5])
             with shift_col:
-                if chart_type == LABELS['GS']:
+                if chart_type == 'GS':
                     shift = data_customisation.separate_spectra(normalized)
-                elif chart_type == LABELS['SINGLE']:
+                elif chart_type == 'SINGLE':
                     col = st.selectbox('spectrum to plot', df.columns)
                     df = df[[col]]
                 else:
@@ -125,7 +124,7 @@ def main():
                 df = vis_utils.trim_spectra(df)
 
         # data conversion end
-        if spectra_conversion_type in {LABELS["OPT"]}:
+        if spectra_conversion_type in {"OPT"}:
             baselines = pd.DataFrame(index=df.index)
             baselined = pd.DataFrame(index=df.index)
             flattened = pd.DataFrame(index=df.index)
@@ -139,36 +138,36 @@ def main():
         #
 
         # Groupped spectra
-        if chart_type == LABELS['GS']:
+        if chart_type == 'GS':
             shifters = [(i + 1) * shift for i in range(len(df.columns))]
-            plot_df = df if spectra_conversion_type == LABELS["RAW"] else flattened
+            plot_df = df if spectra_conversion_type == "RAW" else flattened
             plot_df = plot_df + shifters
-
+    
             figs = [px.line(plot_df, x=plot_df.index, y=plot_df.columns, color_discrete_sequence=plots_color)]
 
         # Mean spectra
-        elif chart_type == LABELS['MS']:
-            if spectra_conversion_type == LABELS["RAW"]:
+        elif chart_type == 'MS':
+            if spectra_conversion_type == 'RAW':
                 plot_df = df
                 figs = [px.line(plot_df, x=plot_df.index, y=plot_df.columns, color_discrete_sequence=plots_color)]
-
-            elif spectra_conversion_type in {LABELS["OPT"]}:
+    
+            elif spectra_conversion_type in {'OPT'}:
                 columns = ['Average', 'Baseline', 'BL-Corrected', 'Flattened + BL-Corrected']
                 plot_df = pd.concat([df, baselines, baselined, flattened], axis=1)
                 plot_df.columns = columns
-
+        
                 fig1 = px.line(plot_df, x=plot_df.index, y=columns[-1], color_discrete_sequence=plots_color[3:])
                 fig2 = px.line(plot_df, x=plot_df.index, y=plot_df.columns, color_discrete_sequence=plots_color)
                 figs = [(fig1, fig2)]
             else:
                 raise ValueError('Unknown conversion type for Mean spectrum chart')
         # 3D spectra
-        elif chart_type == LABELS['P3D']:
-            plot_df = flattened if spectra_conversion_type in {LABELS["OPT"]} else df
-
+        elif chart_type == 'P3D':
+            plot_df = flattened if spectra_conversion_type in {"OPT"} else df
+    
             plot_df = plot_df.reset_index().melt('Raman Shift', plot_df.columns)
             fig = px.line_3d(plot_df, x='variable', y='Raman Shift', z='value', color='variable')
-
+    
             camera = dict(eye=dict(x=1.9, y=0.15, z=0.2))
             fig.update_layout(scene_camera=camera,
                               width=1200, height=1200,
@@ -177,17 +176,17 @@ def main():
             figs = [fig]
 
         # Single spectra
-        elif chart_type == LABELS['SINGLE']:
-            if spectra_conversion_type == LABELS["RAW"]:
+        elif chart_type == 'SINGLE':
+            if spectra_conversion_type == "RAW":
                 plot_df = df
                 figs = [px.line(plot_df[col], color_discrete_sequence=plots_color) for col in plot_df.columns]
             else:
                 columns = ['Average', 'Baseline', 'BL-Corrected', 'Flattened + BL-Corrected']
                 figs = []
-
+        
                 plot_df = pd.concat([df, baselines, baselined, flattened], axis=1)
                 plot_df.columns = columns
-
+        
                 fig1 = px.line(plot_df, x=plot_df.index, y=columns[-1],
                                color_discrete_sequence=plots_color[3:])  # trick for color consistency
                 fig2 = px.line(plot_df, x=plot_df.index, y=plot_df.columns,

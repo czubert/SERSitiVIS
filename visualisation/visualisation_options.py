@@ -1,7 +1,6 @@
 import streamlit as st
 
 from constants import LABELS
-from vis_helpers import sidebar
 
 
 def vis_options():
@@ -9,19 +8,22 @@ def vis_options():
     Different types of visualisation for other data types
     :return:
     """
-    options = [LABELS["SINGLE"], LABELS["MS"], LABELS["GS"], LABELS["P3D"]]
     
-    # st.sidebar.write('#### Choose type of chart', unsafe_allow_html=True)
-    sidebar.print_widget_labels('Choose type of chart')
-    chart_type = st.sidebar.selectbox('CHART_TYPE', options, 0)
+    options = ["SINGLE", "MS", "GS", "P3D"]
+    
+    chart_type = st.sidebar.selectbox('Choose type of chart', options, 0,
+                                      format_func=lambda x: LABELS[x])
     
     return chart_type
 
 
 def convertion_opt():
-    st.sidebar.write('#### Data representation', unsafe_allow_html=True)
+    options = ["RAW", "OPT"]
+    
     spectra_conversion_type = st.sidebar.radio(
-        "",
-        (LABELS["RAW"], LABELS["OPT"]), key=f'raw')
+        "Data representation",
+        options,
+        key=f'raw',
+        format_func=lambda x: LABELS[x])
     
     return spectra_conversion_type
