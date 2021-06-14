@@ -40,14 +40,14 @@ def read_spec(uploaded_file, spectra_params, meta_params=None):
     return data
 
 
-def choosing_regression_degree(name=None, col='default'):
+def choosing_regression_degree(col='default'):
     """
     Slider, choose your polynomial regression degree
     :param name: Str
     :param col: Str
     :return: Int, degree for polynomial regression
     """
-    label = 'Polynominal degree' if name is None else f'Polynomial degree for {name}'
+    label = 'Polynominal degree'
     val = st.slider(label,
                     min_value=1,
                     max_value=20,
@@ -56,14 +56,14 @@ def choosing_regression_degree(name=None, col='default'):
     return int(val)
 
 
-def choosing_smoothening_window(name=None, col='default'):
+def choosing_smoothening_window(col='default'):
     """
     Slider, choose window for rolling function for smoothing the spectra
     :param name: Str
     :param col: Str
     :return: Int, window for smoothening
     """
-    label = 'Smoothing window' if name is None else f'Smoothing window for {name}'
+    label = 'Smoothing window'
     val = st.slider(label,
                     min_value=1,
                     max_value=20,

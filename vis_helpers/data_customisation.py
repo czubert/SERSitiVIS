@@ -28,7 +28,7 @@ def get_deg_win(chart_type, spectra_conversion_type, df_columns):
         vals = {}
         for col in df_columns:
             st.write(col)
-            vals[col] = (utils.choosing_regression_degree(None, col), utils.choosing_smoothening_window(None, col))
+            vals[col] = (utils.choosing_regression_degree(col), utils.choosing_smoothening_window(col))
     
     elif chart_type in {LABELS['GS'], LABELS['P3D']}:
         # with st.beta_expander("Customize spectra", expanded=True):
@@ -43,9 +43,13 @@ def get_deg_win(chart_type, spectra_conversion_type, df_columns):
         else:
             vals = {}
             for col in df_columns:
+                st.markdown("""
+                <hr style="height:1px;border:none;color:#fff;background-color:#999;margin-top:10px;margin-bottom:10px" />
+                """,
+                            unsafe_allow_html=True)
                 st.write(col)
-                vals[col] = (utils.choosing_regression_degree(None, col),
-                             utils.choosing_smoothening_window(None, col))
+                vals[col] = (utils.choosing_regression_degree(col),
+                             utils.choosing_smoothening_window(col))
     else:
         raise ValueError('Unknown chart type')
     
@@ -56,7 +60,7 @@ def separate_spectra(normalized):
     """
     Shift spectra between each other.
     Depending on the conversion type it takes different values
-    :param spectra_conversion_type: Str, Optimisation/Normalization
+    :param normalized:
     :return: Int or Float
     """
     # depending on conversion type we have to adjust the scale
