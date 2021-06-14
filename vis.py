@@ -1,5 +1,4 @@
 import os
-import str_slider
 
 import pandas as pd
 import peakutils
@@ -220,7 +219,7 @@ if __name__ == '__main__':
             print('credentials written')
 
         with streamlit_analytics.track(firestore_key_file=credential_file,
-                                       firestore_collection_name="counts",
+                                       firestore_collection_name="visits",
                                        # verbose=True
                                        ):
             main()
