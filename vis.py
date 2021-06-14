@@ -1,4 +1,5 @@
 import os
+import str_slider
 
 import pandas as pd
 import peakutils
@@ -129,19 +130,19 @@ def main():
                 baselines[col] = peakutils.baseline(df[col], vals[col][0])
                 baselined[col] = df[col] - baselines[col]
                 flattened[col] = baselined[col].rolling(window=vals[col][1], min_periods=1, center=True).mean()
-        
+
         #
         # # Plotting
         #
-        
+
         # Groupped spectra
         if chart_type == LABELS['GS']:
             shifters = [(i + 1) * shift for i in range(len(df.columns))]
             plot_df = df if spectra_conversion_type == LABELS["RAW"] else flattened
             plot_df = plot_df + shifters
-            
+
             figs = [px.line(plot_df, x=plot_df.index, y=plot_df.columns, color_discrete_sequence=plots_color)]
-        
+
         # Mean spectra
         elif chart_type == LABELS['MS']:
             if spectra_conversion_type == LABELS["RAW"]:
@@ -171,7 +172,7 @@ def main():
                               margin=dict(l=1, r=1, t=30, b=1),
                               )
             figs = [fig]
-        
+
         # Single spectra
         elif chart_type == LABELS['SINGLE']:
             if spectra_conversion_type == LABELS["RAW"]:
@@ -218,7 +219,10 @@ if __name__ == '__main__':
                 infile.write(st.secrets['firebase_credentials'])
             print('credentials written')
 
-        with streamlit_analytics.track(firestore_key_file=credential_file, firestore_collection_name="counts"):
+        with streamlit_analytics.track(firestore_key_file=credential_file,
+                                       firestore_collection_name="counts",
+                                       # verbose=True
+                                       ):
             main()
     except KeyError:
         main()
