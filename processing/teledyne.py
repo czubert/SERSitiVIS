@@ -4,7 +4,7 @@ from constants import LABELS
 from . import utils
 
 
-def read_renishaw(uploaded_files):
+def read_teledyne(uploaded_files, separator):
     """
     Reads numeric data from file and creates DataFrame
     :param uploaded_file: Streamlit uploader file
@@ -12,7 +12,7 @@ def read_renishaw(uploaded_files):
     """
     reni_data = {}
     
-    spectra_params_uploaded = {'delim_whitespace': True, 'decimal': '.', 'skipinitialspace': True,
+    spectra_params_uploaded = {'sep': separator, 'decimal': '.', 'skipinitialspace': True,
                                'header': None}
     
     # Iterates through each file, converts it to DataFrame and adds to temporary dictionary

@@ -11,7 +11,7 @@ def vis_options():
     
     options = ["SINGLE", "MS", "GS", "P3D"]
     
-    chart_type = st.sidebar.selectbox('Choose type of chart', options, 0,
+    chart_type = st.sidebar.selectbox('Choose type of chart', options, 2,
                                       format_func=lambda x: LABELS[x])
     
     return chart_type

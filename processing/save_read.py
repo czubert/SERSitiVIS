@@ -1,6 +1,5 @@
-# TODO does this function has any occurance in the code beside this one?
 from constants import LABELS
-from processing import bwtek, renishaw, witec, wasatch
+from processing import bwtek, renishaw, witec, wasatch, teledyne
 
 
 def read_files(spectrometer, files):
@@ -10,11 +9,7 @@ def read_files(spectrometer, files):
 
     # Renishaw raw spectra
     elif spectrometer == LABELS['RENI']:
-        # TODO I don't get why the same data works differently depending on if it is on the server or uploaded
-        try:
-            df = renishaw.read_renishaw(files, " ")
-        except ValueError:
-            df = renishaw.read_renishaw(files, "\t")
+        df = renishaw.read_renishaw(files)
 
     # WITec raw spectra
     elif spectrometer == LABELS['WITEC']:
@@ -26,7 +21,7 @@ def read_files(spectrometer, files):
 
     # Teledyne raw spectra
     elif spectrometer == LABELS['TELEDYNE']:
-        df = renishaw.read_renishaw(files, ',')
+        df = teledyne.read_teledyne(files, ',')
 
     else:
         raise ValueError('Unknown spectrometer type')
