@@ -31,10 +31,10 @@ def main():
     # # Spectrometer type `- BWTek / Renishaw / Witec / Wasatch / Teledyne
     #
 
-    sidebar.print_widget_labels('Choose spectra type')
+    # sidebar.print_widget_labels('Choose spectra type')
 
     spectrometer = st.sidebar.selectbox(
-        "",
+        "Choose spectra type",
         (LABELS['BWTEK'], LABELS['RENI'], LABELS['WITEC'], LABELS['WASATCH'], LABELS['TELEDYNE']),
         index=0)
 
@@ -42,10 +42,10 @@ def main():
     sidebar.print_widgets_separator()
 
     # User data loader
-    # st.sidebar.write('#### Upload your data or try with ours', unsafe_allow_html=True)
-    sidebar.print_widget_labels('Upload your data or try with ours', 10, 0)
+    # sidebar.print_widget_labels('Upload your data or try with ours', 10, 0)
 
-    files = st.sidebar.file_uploader(label='', accept_multiple_files=True, type=['txt', 'csv'])
+    files = st.sidebar.file_uploader(label='Upload your data or try with ours', accept_multiple_files=True,
+                                     type=['txt', 'csv'])
 
     # Allow example data loading when no custom data are loaded
     if not files:

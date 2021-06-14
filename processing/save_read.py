@@ -1,9 +1,6 @@
-import streamlit as st
-
 # TODO does this function has any occurance in the code beside this one?
 from constants import LABELS
 from processing import bwtek, renishaw, witec, wasatch
-from processing.utils import download_button
 
 
 def read_files(spectrometer, files):
@@ -13,7 +10,11 @@ def read_files(spectrometer, files):
 
     # Renishaw raw spectra
     elif spectrometer == LABELS['RENI']:
-        df = renishaw.read_renishaw(files, "\t")
+        # TODO I don't get why the same data works differently depending on if it is on the server or uploaded
+        try:
+            df = renishaw.read_renishaw(files, " ")
+        except ValueError:
+            df = renishaw.read_renishaw(files, "\t")
 
     # WITec raw spectra
     elif spectrometer == LABELS['WITEC']:

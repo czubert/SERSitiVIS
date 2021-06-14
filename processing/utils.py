@@ -286,7 +286,7 @@ def load_example_files(spectrometer):
     :return: StringIO object, contains of uploaded files
     """
     examples = {
-        'BWTEK': ['./data/data_examples/bwtek/bwtek(2).txt', './data/data_examples/bwtek/bwtek(3).txt'],
+        'BWTEK': ['data/data_examples/bwtek/bwtek(2).txt', 'data/data_examples/bwtek/bwtek(3).txt'],
         'Renishaw': ['data/data_examples/renishaw/renishaw(5).txt', 'data/data_examples/renishaw/renishaw(6).txt'],
         'WITec Alpha300 R+': ['data/data_examples/witec/WITec(5).csv', 'data/data_examples/witec/WITec(7).csv'],
         'Wasatch System': ['data/data_examples/wasatch/SERSitive_next_day_1ppm-20201009-093810-270034-WP-00702.csv',
