@@ -1,6 +1,8 @@
 import datetime
 import os
 
+import str_slider
+
 import pandas as pd
 import peakutils
 import plotly.express as px
