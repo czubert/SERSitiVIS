@@ -37,7 +37,7 @@ def read_files(spectrometer, files):
 
     # Renishaw raw spectra
     elif spectrometer == LABELS['RENI']:
-        df = renishaw.read_renishaw(files, " ")
+        df = renishaw.read_renishaw(files, "\t")
 
     # WITec raw spectra
     elif spectrometer == LABELS['WITEC']:
