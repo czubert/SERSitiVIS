@@ -1,5 +1,4 @@
 import pandas as pd
-import streamlit
 
 from constants import LABELS
 from . import utils
@@ -12,20 +11,22 @@ def read_renishaw(uploaded_files, separator):
     :return: Dict of DataFrames
     """
     reni_data = {}
-
-    spectra_params = {'sep': separator, 'decimal': '.', 'skipinitialspace': True,
-                      'header': None}
-
+    
+    spectra_params_uploaded = {'sep': separator, 'decimal': '.', 'skipinitialspace': True,
+                               'header': None}
+    
     # Iterates through each file, converts it to DataFrame and adds to temporary dictionary
     for uploaded_file in uploaded_files:
-        data = utils.read_spec(uploaded_file, spectra_params)
-    
+        # TODO nie wiem, czemu nie dziala \t dla wszystkich renishawowych danych...
+        data = utils.read_spec(uploaded_file, spectra_params_uploaded)
+        
         name = uploaded_file.name[:-4]
         data.dropna(inplace=True, how='any', axis=0)
+        # streamlit.write(data)
         data.columns = [LABELS["RS"], name]
         data[LABELS["RS"]] = data[LABELS["RS"]].round(decimals=0)
         data.set_index(LABELS["RS"], inplace=True)
-    
+        
         reni_data[uploaded_file.name[:-4]] = data
     
     df = pd.concat([reni_data[data_df] for data_df in reni_data], axis=1)
