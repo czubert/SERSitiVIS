@@ -62,6 +62,8 @@ def separate_spectra(normalized):
     # depending on conversion type we have to adjust the scale
     if normalized:
         shift = st.slider(LABELS['SHIFT'], 0.0, 1.0, 0.0, 0.1)
+        shift = float(shift)
     else:
         shift = st.slider(LABELS['SHIFT'], 0, 30000, 0, 250)
+        shift = int(shift)
     return shift
