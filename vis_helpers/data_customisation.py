@@ -16,26 +16,26 @@ def get_deg_win(chart_type, spectra_conversion_type, df_columns):
     Returns:
         dict: polynomial degree and smoothening window tuple for each data series
     """
-    if spectra_conversion_type == LABELS['RAW']:
+    if spectra_conversion_type == 'RAW':
         vals = None
-    
-    elif chart_type == LABELS['MS']:
+
+    elif chart_type == 'MS':
         deg = utils.choosing_regression_degree()
         window = utils.choosing_smoothening_window()
         vals = {col: (deg, window) for col in df_columns}
-    
-    elif chart_type == LABELS['SINGLE']:
+
+    elif chart_type == 'SINGLE':
         vals = {}
         for col in df_columns:
             st.write(col)
             vals[col] = (utils.choosing_regression_degree(col), utils.choosing_smoothening_window(col))
-    
-    elif chart_type in {LABELS['GS'], LABELS['P3D']}:
+
+    elif chart_type in {'GS', 'P3D'}:
         # with st.beta_expander("Customize spectra", expanded=True):
         adjust_plots_globally = st.radio(
             "Adjust all spectra or each spectrum?",
             ('all', 'each'), index=0)
-
+    
         if adjust_plots_globally == 'all':
             deg = utils.choosing_regression_degree()
             window = utils.choosing_smoothening_window()
