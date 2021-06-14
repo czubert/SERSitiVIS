@@ -1,4 +1,5 @@
 import pandas as pd
+import streamlit
 
 from constants import LABELS
 from . import utils
@@ -20,7 +21,6 @@ def read_renishaw(uploaded_files, separator):
         data = utils.read_spec(uploaded_file, spectra_params)
     
         name = uploaded_file.name[:-4]
-    
         data.dropna(inplace=True, how='any', axis=0)
         data.columns = [LABELS["RS"], name]
         data[LABELS["RS"]] = data[LABELS["RS"]].round(decimals=0)
