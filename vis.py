@@ -62,8 +62,13 @@ def main():
         # sidebar separating line
         sidebar.print_widgets_separator()
 
-        df = save_read.read_files(spectrometer, files)
-    
+        # df = save_read.read_files(spectrometer, files)
+        try:
+            df = save_read.read_files(spectrometer, files)
+        except:
+            st.error('Try choosing another type of spectra')
+            st.stop()
+
         main_expander = st.beta_expander("Customize your chart")
         # Choose plot colors and templates
         with main_expander:

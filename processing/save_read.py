@@ -8,10 +8,11 @@ def read_files(spectrometer, files):
     if spectrometer == "None":
         streamlit.warning('Choose spectra type first')
         streamlit.stop()
+
     # BWTek raw spectra
     elif spectrometer == LABELS['BWTEK']:
         df, bwtek_metadata = bwtek.read_bwtek(files)
-    
+
     # Renishaw raw spectra
     elif spectrometer == LABELS['RENI']:
         df = renishaw.read_renishaw(files)
