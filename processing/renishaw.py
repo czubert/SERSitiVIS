@@ -22,7 +22,6 @@ def read_renishaw(uploaded_files):
         
         name = uploaded_file.name[:-4]
         data.dropna(inplace=True, how='any', axis=0)
-        # streamlit.write(data)
         data.columns = [LABELS["RS"], name]
         data[LABELS["RS"]] = data[LABELS["RS"]].round(decimals=0)
         data.set_index(LABELS["RS"], inplace=True)
