@@ -134,7 +134,7 @@ def main():
                 df = vis_utils.trim_spectra(df)
 
         # data conversion end
-        if spectra_conversion_type in {"OPT"}:
+        if spectra_conversion_type in {'OPT'}:
             baselines = pd.DataFrame(index=df.index)
             baselined = pd.DataFrame(index=df.index)
             flattened = pd.DataFrame(index=df.index)
@@ -150,7 +150,7 @@ def main():
         # Groupped spectra
         if chart_type == 'GS':
             shifters = [(i + 1) * shift for i in range(len(df.columns))]
-            plot_df = df if spectra_conversion_type == "RAW" else flattened
+            plot_df = df if spectra_conversion_type == 'RAW' else flattened
             plot_df = plot_df + shifters
     
             figs = [px.line(plot_df, x=plot_df.index, y=plot_df.columns, color_discrete_sequence=plots_color)]
@@ -187,7 +187,7 @@ def main():
 
         # Single spectra
         elif chart_type == 'SINGLE':
-            if spectra_conversion_type == "RAW":
+            if spectra_conversion_type == 'RAW':
                 plot_df = df
                 figs = [px.line(plot_df[col], color_discrete_sequence=plots_color) for col in plot_df.columns]
             else:
