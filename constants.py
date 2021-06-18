@@ -1,7 +1,7 @@
 # TODO should we split it into plural constants?
 LABELS = {
     # If no data or at the beggining of the program
-    'EMPTY': 'No Data',
+    'EMPTY': 'Choose...',
     
     # labels for spectrometers
     'UplSpec': 'Upload "*.txt" spectra',

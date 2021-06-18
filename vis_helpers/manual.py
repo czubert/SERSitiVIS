@@ -3,7 +3,6 @@ import re
 
 import streamlit as st
 
-from constants import LABELS
 from processing import utils
 from vis_helpers import vis_utils
 
@@ -14,7 +13,7 @@ def example_data_html(spectrometer):
     :param spectrometer: Str, name of the chosen spectrometer
     :return: Str
     """
-    files = utils.load_example_files(LABELS[spectrometer])
+    files = utils.load_example_files(spectrometer)
     text = files[0].read()
     files[0].seek(0)
     html = f'<div style="font-family: monospace"><p>{text}</p></div>'
