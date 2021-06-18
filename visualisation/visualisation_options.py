@@ -13,7 +13,6 @@ def vis_options():
     
     chart_type = st.sidebar.selectbox('Choose type of chart', options, 2,
                                       format_func=LABELS.get)
-    
     return chart_type
 
 

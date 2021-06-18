@@ -1,32 +1,31 @@
 import streamlit
 
-from constants import LABELS
 from processing import bwtek, renishaw, witec, wasatch, teledyne
 
 
 def read_files(spectrometer, files):
-    if spectrometer == "None":
+    if spectrometer == "EMPTY":
         streamlit.warning('Choose spectra type first')
         streamlit.stop()
 
     # BWTek raw spectra
-    elif spectrometer == LABELS['BWTEK']:
+    elif spectrometer == 'BWTEK':
         df, bwtek_metadata = bwtek.read_bwtek(files)
 
     # Renishaw raw spectra
-    elif spectrometer == LABELS['RENI']:
+    elif spectrometer == 'RENI':
         df = renishaw.read_renishaw(files)
     
     # WITec raw spectra
-    elif spectrometer == LABELS['WITEC']:
+    elif spectrometer == 'WITEC':
         df = witec.read_witec(files, ',')
 
     # WASATCH raw spectra
-    elif spectrometer == LABELS['WASATCH']:
+    elif spectrometer == 'WASATCH':
         df = wasatch.read_wasatch(files, ',')
     
     # Teledyne raw spectra
-    elif spectrometer == LABELS['TELEDYNE']:
+    elif spectrometer == 'TELEDYNE':
         df = teledyne.read_teledyne(files, ',')
     
     else:

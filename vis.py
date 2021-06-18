@@ -32,12 +32,18 @@ def main():
     #
 
     # sidebar.print_widget_labels('Choose spectra type')
+    #
+    # spectrometer = st.sidebar.selectbox(
+    #     "Choose spectra type",
+    #     ("None", LABELS['BWTEK'], LABELS['RENI'], LABELS['WITEC'], LABELS['WASATCH'], LABELS['TELEDYNE']),
+    #     index=0)
+
     spectra_types = ['EMPTY', 'BWTEK', 'RENI', 'WITEC', 'WASATCH', 'TELEDYNE']
     spectrometer = st.sidebar.selectbox(
         "Choose spectra type",
         spectra_types,
         format_func=LABELS.get,
-        index=0)
+        index=0, key='qwe')
 
     # sidebar separating line
     sidebar.print_widgets_separator()
@@ -52,7 +58,7 @@ def main():
     # Allow example data loading when no custom data are loaded
     if not files:
         if st.sidebar.checkbox("Load example data"):
-            if spectrometer == "None":
+            if spectrometer == "EMPTY":
                 st.sidebar.error('First Choose Spectra type')
             else:
                 files = utils.load_example_files(spectrometer)
