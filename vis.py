@@ -32,10 +32,11 @@ def main():
     #
 
     # sidebar.print_widget_labels('Choose spectra type')
-
+    spectra_types = ['EMPTY', 'BWTEK', 'RENI', 'WITEC', 'WASATCH', 'TELEDYNE']
     spectrometer = st.sidebar.selectbox(
         "Choose spectra type",
-        ("None", LABELS['BWTEK'], LABELS['RENI'], LABELS['WITEC'], LABELS['WASATCH'], LABELS['TELEDYNE']),
+        spectra_types,
+        format_func=LABELS.get,
         index=0)
 
     # sidebar separating line
