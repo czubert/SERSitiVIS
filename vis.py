@@ -80,7 +80,6 @@ def main():
             first_lines = '\n'.join(lines[:20])
         
             delim = detect(first_lines)
-            st.write(f'delimiter:{delim}<<<--is here')
             colnum = lines[-2].count(delim)
         
             lines = [i for i in lines if i.count(delim) == colnum]
