@@ -26,6 +26,7 @@ def read_spec(uploaded_file, spectra_params, meta_params=None):
     dammit = UnicodeDammit(uploaded_file.read(), ['utf-8', 'windows-1252', 'ascii'])
 
     uploaded_file.seek(0)
+
     data = pd.read_csv(uploaded_file,
                        encoding=dammit.original_encoding,
                        **spectra_params)

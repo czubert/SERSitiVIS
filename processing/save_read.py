@@ -3,34 +3,34 @@ import streamlit
 from processing import bwtek, renishaw, witec, wasatch, teledyne
 
 
-def read_files(spectrometer, files):
+def read_files(spectrometer, files, delim):
     if spectrometer == "EMPTY":
         streamlit.warning('Choose spectra type first')
         streamlit.stop()
-
+    
     # BWTek raw spectra
     elif spectrometer == 'BWTEK':
-        df, bwtek_metadata = bwtek.read_bwtek(files)
-
+        df, bwtek_metadata = bwtek.read_bwtek(files, delim)
+    
     # Renishaw raw spectra
     elif spectrometer == 'RENI':
-        df = renishaw.read_renishaw(files)
+        df = renishaw.read_renishaw(files, delim)
     
     # WITec raw spectra
     elif spectrometer == 'WITEC':
-        df = witec.read_witec(files, ',')
-
+        df = witec.read_witec(files, delim)
+    
     # WASATCH raw spectra
     elif spectrometer == 'WASATCH':
-        df = wasatch.read_wasatch(files, ',')
+        df = wasatch.read_wasatch(files, delim)
 
     # Teledyne raw spectra
     elif spectrometer == 'TELEDYNE':
-        df = teledyne.read_teledyne(files, ',')
+        df = teledyne.read_teledyne(files, delim)
 
     # Renishaw raw spectra
     elif spectrometer == 'JOBIN':
-        df = renishaw.read_renishaw(files)
+        df = renishaw.read_renishaw(files, delim)
 
     else:
         raise ValueError('Unknown spectrometer type')

@@ -8,25 +8,29 @@ from . import utils
 def read_wasatch(uploaded_files, separator):
     temp_data_df = {}
     temp_meta_df = {}
-    
+
     # Column to show
     col_to_show = LABELS["RAW_WASATCH"]
-    
-    spectra_params = {LABELS["CSV"]: {'sep': separator, 'skiprows': lambda x: x < 34, 'decimal': '.',
+
+    spectra_params = {LABELS["CSV"]: {'sep': separator,
+                                      # 'skiprows': lambda x: x < 34,
+                                      'decimal': '.',
                                       'usecols': ['Pixel', 'Wavenumber', col_to_show],
                                       'skipinitialspace': True, },
                       LABELS["TXT"]: {'delim_whitespace': True, 'decimal': '.', 'skipinitialspace': True,
                                       'header': None},
                       }
-    
-    meta_params = {'sep': separator, 'skiprows': lambda x: x > 32, 'decimal': '.', 'index_col': 0,
+
+    meta_params = {'sep': separator,
+                   # 'skiprows': lambda x: x > 32,
+                   'decimal': '.', 'index_col': 0,
                    'skipinitialspace': True, 'header': None}
-    
+
     file_type = []
-    
+
     for uploaded_file in uploaded_files:
         file_type.append(uploaded_file.name[-3:])
-    
+
     if len(set(file_type)) > 1:
         st.warning(f'Update ONLY one type of data - either *.{LABELS["CSV"]} or *.{LABELS["TXT"]}')
         st.stop()

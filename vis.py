@@ -1,4 +1,5 @@
 import datetime
+import io
 import os
 
 import pandas as pd
@@ -48,6 +49,7 @@ def main():
                                      accept_multiple_files=True,
                                      type=['txt', 'csv'])
 
+
     # Allow example data loading when no custom data are loaded
     if not files:
         if st.sidebar.checkbox("Load example data"):
@@ -57,26 +59,50 @@ def main():
                 files = utils.load_example_files(spectrometer)
 
     # Check if data loaded, if yes, perform actions
+    delim = None
     if files:
         st.spinner('Uploading data in progress')
         # sidebar separating line
         sidebar.print_widgets_separator()
-
-        # df = save_read.read_files(spectrometer, files)
+    
+        from detect_delimiter import detect
+        new_files = []
+        for file in files:
+            file.seek(0)
+            lines = file.readlines()
+        
+            try:
+                lines = [line.decode('utf-8') for line in lines]
+            except AttributeError:
+                pass
+        
+            # lines = str.splitlines(str(text))  # .split('\n')
+            first_lines = '\n'.join(lines[:20])
+        
+            delim = detect(first_lines)
+            st.write(f'delimiter:{delim}<<<--is here')
+            colnum = lines[-2].count(delim)
+        
+            lines = [i for i in lines if i.count(delim) == colnum]
+            text = '\n'.join(lines)
+            buffer = io.StringIO(text)
+            buffer.name = file.name
+            new_files.append(buffer)
+    
         try:
-            df = save_read.read_files(spectrometer, files)
-        except:
+            df = save_read.read_files(spectrometer, new_files, delim)
+        except (TypeError, ValueError):
             st.error('Try choosing another type of spectra')
             st.stop()
-
+    
         main_expander = st.beta_expander("Customize your chart")
         # Choose plot colors and templates
         with main_expander:
             plots_color, template = vis_utils.get_chart_vis_properties()
-
+    
         # Select chart type
         chart_type = vis_opt.vis_options()
-
+    
         # sidebar separating line
         sidebar.print_widgets_separator()
 

@@ -4,15 +4,14 @@ from constants import LABELS
 from . import utils
 
 
-def read_renishaw(uploaded_files):
+def read_renishaw(uploaded_files, delim):
     """
     Reads numeric data from file and creates DataFrame
     :param uploaded_file: Streamlit uploader file
     :return: Dict of DataFrames
     """
     reni_data = {}
-    
-    spectra_params_uploaded = {'delim_whitespace': True, 'decimal': '.', 'skipinitialspace': True,
+    spectra_params_uploaded = {'sep': delim, 'decimal': '.', 'skipinitialspace': True,
                                'header': None}
     
     # Iterates through each file, converts it to DataFrame and adds to temporary dictionary
