@@ -286,13 +286,25 @@ def load_example_files(spectrometer):
     :return: StringIO object, contains of uploaded files
     """
     examples = {
-        'BWTEK': ['data/data_examples/bwtek/bwtek(2).txt', 'data/data_examples/bwtek/bwtek(3).txt'],
-        'RENI': ['data/data_examples/renishaw/renishaw(5).txt', 'data/data_examples/renishaw/renishaw(6).txt'],
-        'WITEC': ['data/data_examples/witec/WITec(5).csv', 'data/data_examples/witec/WITec(7).csv'],
+        'BWTEK': ['data/data_examples/bwtek/bwtek(2).txt',
+                  'data/data_examples/bwtek/bwtek(3).txt'],
+    
+        'RENI': ['data/data_examples/renishaw/renishaw(5).txt',
+                 'data/data_examples/renishaw/renishaw(6).txt'],
+    
+        'WITEC': ['data/data_examples/witec/WITec(5).csv',
+                  'data/data_examples/witec/WITec(7).csv'],
+    
         'WASATCH': ['data/data_examples/wasatch/SERSitive_next_day_1ppm-20201009-093810-270034-WP-00702.csv',
                     'data/data_examples/wasatch/SERSitive_next_day_2ppm-20201009-093705-137238-WP-00702.csv'],
+    
         'TELEDYNE': ['data/data_examples/teledyne/teledyne(1).csv',
                      'data/data_examples/teledyne/teledyne(2).csv'],
+    
+        'JOBIN': ['data/data_examples/jobin_yvon/4MPBA_9B22_10s_1x.txt',
+                  'data/data_examples/jobin_yvon/5MPBA_9B22_10s_1x.txt',
+                  'data/data_examples/jobin_yvon/6MPBA_9B22_10s_3x.txt',
+                  ]
     }
 
     files = [file_to_buffer(f) for f in examples[spectrometer]]

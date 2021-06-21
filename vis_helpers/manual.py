@@ -3,6 +3,7 @@ import re
 
 import streamlit as st
 
+from constants import LABELS
 from processing import utils
 from vis_helpers import vis_utils
 
@@ -60,13 +61,18 @@ def show_manual():
                     unsafe_allow_html=True)
         html = example_data_html('RENI')
         st.components.v1.html(html, height=200, scrolling=True)
-    
+
     with st.beta_expander('Wasatch'):
         st.write('Upload raw data in *.txt or *.csv')
         html = example_data_html('WASATCH')
         st.components.v1.html(html, height=200, scrolling=True)
-    
+
     with st.beta_expander('Teledyne Princeton Instruments'):
         st.write('Upload raw data in *.txt or *.csv:')
         html = example_data_html('TELEDYNE')
+        st.components.v1.html(html, height=200, scrolling=True)
+
+    with st.beta_expander(LABELS['JOBIN']):
+        st.write('Upload raw data in *.txt or *.csv:')
+        html = example_data_html('JOBIN')
         st.components.v1.html(html, height=200, scrolling=True)
