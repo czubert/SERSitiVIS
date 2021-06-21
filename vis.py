@@ -31,19 +31,12 @@ def main():
     # # Spectrometer type `- BWTek / Renishaw / Witec / Wasatch / Teledyne
     #
 
-    # sidebar.print_widget_labels('Choose spectra type')
-    #
-    # spectrometer = st.sidebar.selectbox(
-    #     "Choose spectra type",
-    #     ("None", LABELS['BWTEK'], LABELS['RENI'], LABELS['WITEC'], LABELS['WASATCH'], LABELS['TELEDYNE']),
-    #     index=0)
-
-    spectra_types = ['EMPTY', 'BWTEK', 'RENI', 'WITEC', 'WASATCH', 'TELEDYNE']
+    spectra_types = ['EMPTY', 'BWTEK', 'RENI', 'WITEC', 'WASATCH', 'TELEDYNE', 'JOBIN']
     spectrometer = st.sidebar.selectbox(
         "Choose spectra type",
         spectra_types,
         format_func=LABELS.get,
-        index=0, key='qwe')
+        index=0)
 
     # sidebar separating line
     sidebar.print_widgets_separator()
