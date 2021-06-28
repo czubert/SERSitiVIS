@@ -1,11 +1,10 @@
-import datetime
 import io
-import os
 
 import pandas as pd
 import peakutils
 import plotly.express as px
 import streamlit as st
+from pyspectra.readers.read_spc import read_spc
 
 # noinspection PyUnresolvedReferences
 import str_slider
@@ -47,9 +46,9 @@ def main():
 
     files = st.sidebar.file_uploader(label='Upload your data or try with ours',
                                      accept_multiple_files=True,
-                                     type=['txt', 'csv'])
+                                     type=['txt', 'csv', 'spc'])
 
-
+    st.stop()
     # Allow example data loading when no custom data are loaded
     if not files:
         if st.sidebar.checkbox("Load example data"):
@@ -67,6 +66,12 @@ def main():
     
         from detect_delimiter import detect
         new_files = []
+    
+        if files[0].name[-3:] == 'spc':
+            spc = read_spc('data/data_examples/a/a.spc')
+            st.write(spc)
+            st.line_chart(spc)
+    
         for file in files:
             file.seek(0)
             lines = file.readlines()
@@ -248,20 +253,20 @@ def main():
 
 if __name__ == '__main__':
     try:
-        import streamlit_analytics
-    
-        credential_file = 'tmp_credentials.json'
-        if not os.path.exists(credential_file):
-            with open(credential_file, 'w') as infile:
-                infile.write(st.secrets['firebase_credentials'])
-            print('credentials written')
-    
-        collection = datetime.date.today().strftime("%Y-%m")
-        with streamlit_analytics.track(firestore_key_file=credential_file,
-                                       firestore_collection_name=collection,
-                                       # verbose=True
-                                       ):
-            main()
+        # import streamlit_analytics
+        #
+        # credential_file = 'tmp_credentials.json'
+        # if not os.path.exists(credential_file):
+        #     with open(credential_file, 'w') as infile:
+        #         infile.write(st.secrets['firebase_credentials'])
+        #     print('credentials written')
+        #
+        # collection = datetime.date.today().strftime("%Y-%m")
+        # with streamlit_analytics.track(firestore_key_file=credential_file,
+        #                                firestore_collection_name=collection,
+        #                                # verbose=True
+        #                                ):
+        main()
     except KeyError:
         main()
 
