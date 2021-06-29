@@ -1,12 +1,15 @@
 import streamlit
 
-from processing import bwtek, renishaw, witec, wasatch, teledyne
+from processing import bwtek, renishaw, witec, wasatch, teledyne, spc
 
 
 def read_files(spectrometer, files, delim):
     if spectrometer == "EMPTY":
         streamlit.warning('Choose spectra type first')
         streamlit.stop()
+    
+    elif spectrometer == "spc":
+        df = spc.read_spc(files)
     
     # BWTek raw spectra
     elif spectrometer == 'BWTEK':

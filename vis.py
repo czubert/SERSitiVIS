@@ -4,7 +4,6 @@ import pandas as pd
 import peakutils
 import plotly.express as px
 import streamlit as st
-from pyspectra.readers.read_spc import read_spc
 
 # noinspection PyUnresolvedReferences
 import str_slider
@@ -48,7 +47,6 @@ def main():
                                      accept_multiple_files=True,
                                      type=['txt', 'csv', 'spc'])
 
-    st.stop()
     # Allow example data loading when no custom data are loaded
     if not files:
         if st.sidebar.checkbox("Load example data"):
@@ -64,37 +62,37 @@ def main():
         # sidebar separating line
         sidebar.print_widgets_separator()
     
-        from detect_delimiter import detect
-        new_files = []
-    
-        if files[0].name[-3:] == 'spc':
-            spc = read_spc('data/data_examples/a/a.spc')
-            st.write(spc)
-            st.line_chart(spc)
-    
-        for file in files:
-            file.seek(0)
-            lines = file.readlines()
-        
-            try:
-                lines = [line.decode('utf-8') for line in lines]
-            except AttributeError:
-                pass
-        
-            # lines = str.splitlines(str(text))  # .split('\n')
-            first_lines = '\n'.join(lines[:20])
-        
-            delim = detect(first_lines)
-            colnum = lines[-2].count(delim)
-        
-            lines = [i for i in lines if i.count(delim) == colnum]
-            text = '\n'.join(lines)
-            buffer = io.StringIO(text)
-            buffer.name = file.name
-            new_files.append(buffer)
+        # TODO na pewno da się to ładniej zogarnąć
+        # TODO na pewno da się sensowniejszy warunek postawić (dopóki nie ma rozróżniania pojedynczych widm)
+        if not files[0].name[-3:] == 'spc':
+            from detect_delimiter import detect
+            new_files = []
+            for file in files:
+                file.seek(0)
+                lines = file.readlines()
+                try:
+                    lines = [line.decode('utf-8') for line in lines]
+                except AttributeError:
+                    pass
+            
+                # lines = str.splitlines(str(text))  # .split('\n')
+                first_lines = '\n'.join(lines[:20])
+            
+                delim = detect(first_lines)
+                colnum = lines[-2].count(delim)
+            
+                lines = [i for i in lines if i.count(delim) == colnum]
+                text = '\n'.join(lines)
+                buffer = io.StringIO(text)
+                buffer.name = file.name
+                new_files.append(buffer)
     
         try:
-            df = save_read.read_files(spectrometer, new_files, delim)
+            # TODO tutaj na pewno też będzie trzeba poprawić spc
+            if files[0].name[-3:] == 'spc':
+                df = save_read.read_files('spc', files, None)
+            else:
+                df = save_read.read_files(spectrometer, new_files, delim)
         except (TypeError, ValueError):
             st.error('Try choosing another type of spectra')
             st.stop()
@@ -112,8 +110,8 @@ def main():
 
         # Select data conversion type
         spectra_conversion_type = vis_opt.convertion_opt()
-
-        # TODO need improvements
+    
+        # TODO co z tym robimy? wywalamy?
         # getting rid of duplicated columns
         df = df.loc[:, ~df.columns.duplicated()]
 
