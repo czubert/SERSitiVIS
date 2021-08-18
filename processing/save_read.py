@@ -9,7 +9,7 @@ def read_files(spectrometer, files, delim):
         streamlit.stop()
     
     elif spectrometer == "spc":
-        df = spc.read_spc(files)
+        df = spc.local_read_spc(files)
     
     # BWTek raw spectra
     elif spectrometer == 'BWTEK':

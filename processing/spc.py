@@ -4,7 +4,7 @@ from pyspectra.readers.read_spc import read_spc
 from pyspectra.readers.read_spc import read_spc_dir
 
 
-def read_spc(files):
+def local_read_spc(files):
     if len(files) == 1:
         # read_spc returns array, therefore for our needs we need to make a df out of it
         df_spc = pd.DataFrame(read_spc('data/data_examples/a/a.spc'))
