@@ -9,7 +9,7 @@ import str_slider
 from constants import LABELS
 from processing import utils
 from processing.save_read import files_to_df
-from vis_helpers import manual, sidebar, data_customisation, charts, authors, vis_utils, pca
+from vis_helpers import manual, sidebar, data_customisation, charts, authors, vis_utils, pca, rmse, enhancement_factor
 from visualisation import visualisation_options as vis_opt
 
 
@@ -25,11 +25,15 @@ def main():
     # Sets sidebar's header and logo
     sidebar.sidebar_head()
 
-    analysis_type = st.sidebar.selectbox("Analysis type", ['visualisation', 'PCA'])
+    analysis_type = st.sidebar.selectbox("Analysis type", ['visualisation', 'PCA', 'EF', 'RMSE'])
     if analysis_type == 'visualisation':
         visualisation()
     elif analysis_type == 'PCA':
         pca.main()
+    elif analysis_type == 'EF':
+        enhancement_factor.main()
+    elif analysis_type == 'RMSE':
+        rmse.main()
 
     authors.show_developers()
 
