@@ -45,6 +45,7 @@ def main():
     if len(dfs) < groups_num:
         return
 
+    # TODO a concat nie ma jakiejś opcji, która dba o to, żeby się fajnie concatenowaly dfy z roznymi wartościami X?
     df = pd.concat(dfs, axis=1)
     group = [str(i) for i in range(groups_num) for _ in dfs[i].columns]
 
@@ -53,6 +54,7 @@ def main():
         rescaled_data = scaler.fit_transform(df)
         df = pd.DataFrame(rescaled_data, columns=df.columns, index=df.index)
 
+    # TODO może skorzystać z layoutu gotowego? (visualisation.draw.fig_layout)
     fig = px.line(df, x=df.index, y=df.columns, title='Uploaded spectra')
     for trace, gr in zip(fig.data, group):
         trace['line']['color'] = px.colors.qualitative.Plotly[int(gr)]
@@ -61,8 +63,13 @@ def main():
     st.write('## Uploaded Spectra')
     st.plotly_chart(fig, use_container_width=True)
 
+    # TODO pierdzieli się w przypadku kiedy po concat mamy NaN (to co poniżej w TODO),
+    # oraz pierdzieli się jak do dwóch róznych grup damy to samo widmo,
+    # bo wtedy std jest = 0 dla tyc h2 widm i wywala błąd. masz pomysł jak tego uniknąć?
     model = sklearn.decomposition.PCA(components_num)
-    trans_data = model.fit_transform(df.T)
+
+    # TODO do wywalenia fillna, trzeba zrobić interpolację
+    trans_data = model.fit_transform(df.fillna(0).T)
     trans_df = pd.DataFrame(trans_data, index=df.columns, columns=[f'PC {i}' for i in range(1, components_num + 1)])
 
     if components_num == 1:

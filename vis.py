@@ -2,7 +2,8 @@ import pandas as pd
 import peakutils
 import plotly.express as px
 import streamlit as st
-
+import os
+import datetime
 # noinspection PyUnresolvedReferences
 import str_slider
 from constants import LABELS
@@ -53,7 +54,6 @@ def visualisation():
     files = st.sidebar.file_uploader(label='Upload your data or try with ours',
                                      accept_multiple_files=True,
                                      type=['txt', 'csv'])
-
 
     # Allow example data loading when no custom data are loaded
     if not files and st.sidebar.checkbox("Load example data"):
@@ -223,13 +223,13 @@ def visualisation():
 if __name__ == '__main__':
     try:
         import streamlit_analytics
-    
+
         credential_file = 'tmp_credentials.json'
         if not os.path.exists(credential_file):
             with open(credential_file, 'w') as infile:
                 infile.write(st.secrets['firebase_credentials'])
             print('credentials written')
-    
+
         collection = datetime.date.today().strftime("%Y-%m")
         with streamlit_analytics.track(firestore_key_file=credential_file,
                                        firestore_collection_name=collection,
