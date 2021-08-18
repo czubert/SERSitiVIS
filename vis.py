@@ -1,7 +1,3 @@
-import datetime
-import io
-import os
-
 import pandas as pd
 import peakutils
 import plotly.express as px
@@ -10,9 +6,9 @@ import streamlit as st
 # noinspection PyUnresolvedReferences
 import str_slider
 from constants import LABELS
-from processing import save_read
 from processing import utils
-from vis_helpers import manual, sidebar, data_customisation, charts, authors, vis_utils
+from processing.save_read import files_to_df
+from vis_helpers import manual, sidebar, data_customisation, charts, authors, vis_utils, pca
 from visualisation import visualisation_options as vis_opt
 
 
@@ -28,10 +24,19 @@ def main():
     # Sets sidebar's header and logo
     sidebar.sidebar_head()
 
+    analysis_type = st.sidebar.selectbox("Analysis type", ['visualisation', 'PCA'])
+    if analysis_type == 'visualisation':
+        visualisation()
+    elif analysis_type == 'PCA':
+        pca.main()
+
+    authors.show_developers()
+
+
+def visualisation():
     #
     # # Spectrometer type `- BWTek / Renishaw / Witec / Wasatch / Teledyne
     #
-
     spectra_types = ['EMPTY', 'BWTEK', 'RENI', 'WITEC', 'WASATCH', 'TELEDYNE', 'JOBIN']
     spectrometer = st.sidebar.selectbox(
         "Choose spectra type",
@@ -51,57 +56,28 @@ def main():
 
 
     # Allow example data loading when no custom data are loaded
-    if not files:
-        if st.sidebar.checkbox("Load example data"):
-            if spectrometer == "EMPTY":
-                st.sidebar.error('First Choose Spectra type')
-            else:
-                files = utils.load_example_files(spectrometer)
+    if not files and st.sidebar.checkbox("Load example data"):
+        if spectrometer == "EMPTY":
+            st.sidebar.error('First Choose Spectra type')
+        else:
+            files = utils.load_example_files(spectrometer)
 
     # Check if data loaded, if yes, perform actions
-    delim = None
     if files:
         st.spinner('Uploading data in progress')
         # sidebar separating line
         sidebar.print_widgets_separator()
-    
-        from detect_delimiter import detect
-        new_files = []
-        for file in files:
-            file.seek(0)
-            lines = file.readlines()
-        
-            try:
-                lines = [line.decode('utf-8') for line in lines]
-            except AttributeError:
-                pass
-        
-            # lines = str.splitlines(str(text))  # .split('\n')
-            first_lines = '\n'.join(lines[:20])
-        
-            delim = detect(first_lines)
-            colnum = lines[-2].count(delim)
-        
-            lines = [i for i in lines if i.count(delim) == colnum]
-            text = '\n'.join(lines)
-            buffer = io.StringIO(text)
-            buffer.name = file.name
-            new_files.append(buffer)
-    
-        try:
-            df = save_read.read_files(spectrometer, new_files, delim)
-        except (TypeError, ValueError):
-            st.error('Try choosing another type of spectra')
-            st.stop()
-    
+
+        df = files_to_df(files, spectrometer)
+
         main_expander = st.beta_expander("Customize your chart")
         # Choose plot colors and templates
         with main_expander:
             plots_color, template = vis_utils.get_chart_vis_properties()
-    
+
         # Select chart type
         chart_type = vis_opt.vis_options()
-    
+
         # sidebar separating line
         sidebar.print_widgets_separator()
 
@@ -177,7 +153,7 @@ def main():
             shifters = [(i + 1) * shift for i in range(len(df.columns))]
             plot_df = df if spectra_conversion_type == 'RAW' else flattened
             plot_df = plot_df + shifters
-    
+
             figs = [px.line(plot_df, x=plot_df.index, y=plot_df.columns, color_discrete_sequence=plots_color)]
 
         # Mean spectra
@@ -185,12 +161,12 @@ def main():
             if spectra_conversion_type == 'RAW':
                 plot_df = df
                 figs = [px.line(plot_df, x=plot_df.index, y=plot_df.columns, color_discrete_sequence=plots_color)]
-    
+
             elif spectra_conversion_type in {'OPT'}:
                 columns = ['Average', 'Baseline', 'BL-Corrected', 'Flattened + BL-Corrected']
                 plot_df = pd.concat([df, baselines, baselined, flattened], axis=1)
                 plot_df.columns = columns
-        
+
                 fig1 = px.line(plot_df, x=plot_df.index, y=columns[-1], color_discrete_sequence=plots_color[3:])
                 fig2 = px.line(plot_df, x=plot_df.index, y=plot_df.columns, color_discrete_sequence=plots_color)
                 figs = [(fig1, fig2)]
@@ -199,10 +175,10 @@ def main():
         # 3D spectra
         elif chart_type == 'P3D':
             plot_df = flattened if spectra_conversion_type in {"OPT"} else df
-    
+
             plot_df = plot_df.reset_index().melt('Raman Shift', plot_df.columns)
             fig = px.line_3d(plot_df, x='variable', y='Raman Shift', z='value', color='variable')
-    
+
             camera = dict(eye=dict(x=1.9, y=0.15, z=0.2))
             fig.update_layout(scene_camera=camera,
                               width=1200, height=1200,
@@ -218,10 +194,10 @@ def main():
             else:
                 columns = ['Average', 'Baseline', 'BL-Corrected', 'Flattened + BL-Corrected']
                 figs = []
-        
+
                 plot_df = pd.concat([df, baselines, baselined, flattened], axis=1)
                 plot_df.columns = columns
-        
+
                 fig1 = px.line(plot_df, x=plot_df.index, y=columns[-1],
                                color_discrete_sequence=plots_color[3:])  # trick for color consistency
                 fig2 = px.line(plot_df, x=plot_df.index, y=plot_df.columns,
@@ -242,8 +218,6 @@ def main():
 
     else:
         manual.show_manual()
-
-    authors.show_developers()
 
 
 if __name__ == '__main__':
