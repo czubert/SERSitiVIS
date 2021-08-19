@@ -45,8 +45,8 @@ def main():
     if len(dfs) < groups_num:
         return
 
-    # TODO a concat nie ma jakiejś opcji, która dba o to, żeby się fajnie concatenowaly dfy z roznymi wartościami X?
     df = pd.concat(dfs, axis=1)
+    df = df.interpolate().bfill().ffill()
     group = [str(i) for i in range(groups_num) for _ in dfs[i].columns]
 
     if rescale:
@@ -65,7 +65,6 @@ def main():
 
     model = PCA(components_num)
 
-    # TODO do wywalenia fillna, trzeba zrobić interpolację
     trans_data = model.fit_transform(df.fillna(0).T)
     trans_df = pd.DataFrame(trans_data, index=df.columns, columns=[f'PC {i}' for i in range(1, components_num + 1)])
 
