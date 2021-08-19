@@ -1,5 +1,5 @@
 import streamlit as st
-from vis_helpers.enhancement_factor_utils import calculate_enhancement
+from . import enhancement_factor_utils
 
 
 def main():
@@ -13,4 +13,5 @@ def main():
     i_sers = 60000
     i_raman = 1000
     
-    st.write(calculate_enhancement(c, v, l_nm, na, active_area, surface_coverage, i_sers, i_raman) / 1e+8)
+    st.write(enhancement_factor_utils.calculate_enhancement(
+        c, v, l_nm, na, active_area, surface_coverage, i_sers, i_raman) / 1e+8)

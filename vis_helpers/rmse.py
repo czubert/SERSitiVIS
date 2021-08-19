@@ -1,93 +1,39 @@
 import streamlit as st
-import pandas as pd
-import numpy as np
 
+import processing
+from constants import LABELS
+from . import sidebar
+from . import rmse_utils
+
+
+# TODO rmse można chyba po prostu wrzucić gdzieś przy wizualizacji, albo tu i przy wizualizacji
+# TODO do liczenia RMSE trzeba użyć widm po korekcji baselinu i po normalizacji żeby były wiarygodne
+# TODO dodać możliwość wyboru peaku (okolic peaku i wybrać maxa)
+# TODO użyć metody findpeaks to znajdowania pików (i może przekazać listę do widgetu,
+# z któego klient ma wybrać)
+# TODO sprawdzić jak liczą w publikacjach RMSE, czy to chodzi o różnice intensywnosci miedzy widmami,
+# czy o stosunek pików, który w sumie powinien być stały... więc trochę bez sensu
 
 def main():
-    P2P = 'Calculate RSD between spectra from "Peak to Peak ratio"'
-    OneP = 'Calculate RSD between spectra based on "One Peak"'
+    spectra_types = ['EMPTY', 'BWTEK', 'RENI', 'WITEC', 'WASATCH', 'TELEDYNE', 'JOBIN']
+    spectrometer = st.sidebar.selectbox("Choose spectra type",
+                                        spectra_types,
+                                        format_func=LABELS.get,
+                                        index=0
+                                        )
+    sidebar.print_widgets_separator()
     
-    def rsd(peak1, peak2, bg):
-        st.header('Relative Standard Deviation (RSD):')
-        
-        display_options_radio = st.radio("What would you like to do?", (OneP, P2P))
-        
-        if display_options_radio == OneP:
-            rsd_one_peak(peak1)
-        
-        elif display_options_radio == P2P:
-            rsd_peak_to_peak_ratio(peak1, peak2, bg)
+    files = st.sidebar.file_uploader(label='Upload your data or try with ours',
+                                     accept_multiple_files=True,
+                                     type=['txt', 'csv'])
     
-    def rsd_one_peak(peak):
-        # WHAT which version is better?
+    if files:
+        df = processing.save_read.files_to_df(files, spectrometer)
+        # st.write(df)
         
-        # II
-        st.subheader('RSD directly from data')
-        # mean value of absolute numbers
-        mean_value = (peak.max()).mean()
-        st.write(f' Mean value: {round(mean_value)}')
+        # Calling the function with parameters
+        peak1 = df.loc[680:725, :]  # TODO to wziąć z peakfindera
+        peak2 = df.loc[990:1010, :]  # TODO to wziąć z peakfindera
+        bg = df.loc[938:941, :]  # TODO to wziąćz baseline'a
         
-        # Standard deviation of absolute numbers
-        std_value = (peak.max()).std()
-        st.write(f' Standard deviation value: {round(std_value)}')
-        
-        # Calculating RSD
-        rsd = std_value / mean_value
-        st.write(f' RSD value: {round(rsd * 100)} %')
-        
-        # I
-        st.subheader('RSD after subtraction of background')
-        # mean value of absolute numbers
-        mean_value = (peak.max() - peak.min()).mean()
-        st.write(f' Mean value: {round(mean_value)}')
-        
-        # Standard deviation of absolute numbers
-        std_value = (peak.max() - peak.min()).std()
-        st.write(f' Standard deviation value: {round(std_value)}')
-        
-        # Calculating RSD
-        rsd = std_value / mean_value
-        st.write(f' RSD value: {round(rsd * 100)} %')
-    
-    def rsd_peak_to_peak_ratio(peak1, peak2, bg):
-        round_num = 3
-        
-        st.subheader('RSD directly from data')
-        # mean value of absolute numbers
-        mean_value = (peak1.max() / peak2.max()).mean()
-        st.write(f' Mean value: {round(mean_value, round_num)}')
-        
-        # Standard deviation of absolute numbers
-        std_value = (peak1.max() / peak2.max()).std()
-        st.write(f' Standard deviation value: {round(std_value, round_num)}')
-        
-        # Calculating RSD
-        rsd = std_value / mean_value
-        st.write(f' RSD value: {round(rsd * 100)} %')
-        
-        st.subheader('RSD after subtraction of background')
-        
-        # # Show DataFrame with data
-        # dff = pd.DataFrame(np.array([bg.max(), peak1.max(), peak2.max(), peak1.max() - bg.max(), peak2.max() - bg.max()]),
-        #                    index=['Bg max', 'p1 max', 'p2 max', 'p1 obj', 'p2 obj'])
-        # dfff = dff.T
-        #
-        # st.write(dfff)
-        
-        mean_value = ((peak1.max() - bg.max()) / (peak2.max() - bg.max())).mean()
-        st.write(f' Mean value: {round(mean_value, round_num)}')
-        
-        # Standard deviation of absolute numbers
-        std_value = ((peak1.max() - bg.max()) / (peak2.max() - bg.max())).std()
-        st.write(f' Standard deviation value: {round(std_value, round_num)}')
-        
-        # Calculating RSD
-        rsd = std_value / mean_value
-        st.write(f' RSD value: {round(rsd * 100)} %')
-
-# # Calling the function with parameters
-# peak1 = df.loc[680:725, :]
-# peak2 = df.loc[990:1010, :]
-# bg = df.loc[938:941, :]
-#
-# rsd(peak1, peak2, bg)
+        rmse_utils.rsd(peak1, peak2, bg)
