@@ -1,4 +1,6 @@
 import streamlit as st
+import pandas as pd
+import sklearn.preprocessing
 
 import processing
 from constants import LABELS
@@ -29,11 +31,16 @@ def main():
     
     if files:
         df = processing.save_read.files_to_df(files, spectrometer)
-        # st.write(df)
-        
+    
+        rescale = st.sidebar.checkbox("Rescale")
+        if rescale:
+            scaler = sklearn.preprocessing.MinMaxScaler()
+            rescaled_data = scaler.fit_transform(df)
+            df = pd.DataFrame(rescaled_data, columns=df.columns, index=df.index)
+    
         # Calling the function with parameters
         peak1 = df.loc[680:725, :]  # TODO to wziąć z peakfindera
         peak2 = df.loc[990:1010, :]  # TODO to wziąć z peakfindera
         bg = df.loc[938:941, :]  # TODO to wziąćz baseline'a
-        
+    
         rmse_utils.rsd(peak1, peak2, bg)
