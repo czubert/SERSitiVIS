@@ -6,8 +6,8 @@ import streamlit as st
 
 import processing
 from constants import LABELS
-from . import sidebar
-
+from . import sidebar, vis_utils
+from visualisation.draw import fig_layout
 
 def main():
     spectra_types = ['EMPTY', 'BWTEK', 'RENI', 'WITEC', 'WASATCH', 'TELEDYNE', 'JOBIN']
@@ -19,6 +19,12 @@ def main():
     sidebar.print_widgets_separator()
 
     st.write('## PCA Analysis')
+
+    main_expander = st.beta_expander("Customize your chart")
+    # Choose plot colors and templates
+    with main_expander:
+        plot_palette, plot_template = vis_utils.get_chart_vis_properties()
+
     cols = st.beta_columns(2)
 
     with cols[0]:
@@ -54,13 +60,10 @@ def main():
         rescaled_data = scaler.fit_transform(df)
         df = pd.DataFrame(rescaled_data, columns=df.columns, index=df.index)
 
-    # TODO może skorzystać z layoutu gotowego? (visualisation.draw.fig_layout)
-    fig = px.line(df, x=df.index, y=df.columns, title='Uploaded spectra')
+    fig = px.line(df, x=df.index, y=df.columns)
+    fig_layout(plot_template, fig, plot_palette, descr='Uploaded spectra')
     for trace, gr in zip(fig.data, group):
-        trace['line']['color'] = px.colors.qualitative.Plotly[int(gr)]
-    fig.layout.legend.title = 'Uploaded file:'
-
-    st.write('## Uploaded Spectra')
+        trace['line']['color'] = plot_palette[int(gr)]
     st.plotly_chart(fig, use_container_width=True)
 
     model = PCA(components_num)
@@ -69,12 +72,15 @@ def main():
     trans_df = pd.DataFrame(trans_data, index=df.columns, columns=[f'PC {i}' for i in range(1, components_num + 1)])
 
     if components_num == 1:
-        fig = px.scatter(trans_df, x='PC 1', color=group, title="1st Principal Component")
+        fig = px.scatter(trans_df, x='PC 1', color=group, color_discrete_sequence=plot_palette)
     elif components_num == 2:
-        fig = px.scatter(trans_df, x='PC 1', y='PC 2', color=group, title="Principal Components")
+        fig = px.scatter(trans_df, x='PC 1', y='PC 2', color=group, color_discrete_sequence=plot_palette)
     elif components_num == 3:
-        fig = px.scatter_3d(trans_df, x='PC 1', y='PC 2', z='PC 3', color=group, title="Principal Components")
+        fig = px.scatter_3d(trans_df, x='PC 1', y='PC 2', z='PC 3', color=group, color_discrete_sequence=plot_palette)
 
+    fig_layout(plot_template, fig, plot_palette,
+               descr="1st Principal Component" if components_num == 1 else "Principal Components",
+               )
     fig.layout.legend.title = 'Group:'
     var_df = pd.DataFrame(model.explained_variance_ratio_,
                           index=trans_df.columns, columns=['ratio of explained variance']
@@ -93,10 +99,9 @@ def main():
         reversed_data = model.inverse_transform(trans_df)
         reversed_df = pd.DataFrame(reversed_data, columns=df.index, index=df.columns).T
 
-        fig = px.line(reversed_df, x=reversed_df.index, y=reversed_df.columns,
-                      title=f'Specra recovered from {components_num} PC')
+        fig = px.line(reversed_df, x=reversed_df.index, y=reversed_df.columns)
+        fig_layout(plot_template, fig, plot_palette, descr=f'Specra recovered from {components_num} PC')
         for trace, gr in zip(fig.data, group):
-            trace['line']['color'] = px.colors.qualitative.Plotly[int(gr)]
+            trace['line']['color'] = plot_palette[int(gr)]
 
-        fig.layout.legend.title = 'Uploaded file:'
         st.plotly_chart(fig, use_container_width=True)
