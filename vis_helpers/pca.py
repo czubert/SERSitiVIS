@@ -1,7 +1,7 @@
 import pandas as pd
 import plotly.express as px
-import sklearn.decomposition
-import sklearn.preprocessing
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import MinMaxScaler
 import streamlit as st
 
 import processing
@@ -50,7 +50,7 @@ def main():
     group = [str(i) for i in range(groups_num) for _ in dfs[i].columns]
 
     if rescale:
-        scaler = sklearn.preprocessing.MinMaxScaler()
+        scaler = MinMaxScaler()
         rescaled_data = scaler.fit_transform(df)
         df = pd.DataFrame(rescaled_data, columns=df.columns, index=df.index)
 
@@ -63,10 +63,7 @@ def main():
     st.write('## Uploaded Spectra')
     st.plotly_chart(fig, use_container_width=True)
 
-    # TODO pierdzieli się w przypadku kiedy po concat mamy NaN (to co poniżej w TODO),
-    # oraz pierdzieli się jak do dwóch róznych grup damy to samo widmo,
-    # bo wtedy std jest = 0 dla tyc h2 widm i wywala błąd. masz pomysł jak tego uniknąć?
-    model = sklearn.decomposition.PCA(components_num)
+    model = PCA(components_num)
 
     # TODO do wywalenia fillna, trzeba zrobić interpolację
     trans_data = model.fit_transform(df.fillna(0).T)
