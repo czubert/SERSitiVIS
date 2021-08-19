@@ -5,5 +5,7 @@ from . import enhancement_factor
 from . import enhancement_factor_utils
 from . import footer
 from . import manual
+from . import rmse
+from . import rmse_utils
 from . import sidebar
 from . import vis_utils
