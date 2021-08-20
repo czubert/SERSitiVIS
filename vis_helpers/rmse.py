@@ -32,7 +32,7 @@ def main():
     
     if files:
         df = processing.save_read.files_to_df(files, spectrometer)
-    
+
         rescale = st.sidebar.checkbox("Rescale")
         if rescale:
             scaler = sklearn.preprocessing.MinMaxScaler()
@@ -47,16 +47,40 @@ def main():
 
         from scipy.signal import find_peaks
         import numpy as np
-        import plotly.express as px
+
+        df3 = pd.DataFrame()
 
         for col in df.columns:
-            peaks = np.array(find_peaks(df[col], width=4))[0]
-            # st.write(peaks)
-            # df2 = df[pd.Series(peaks)]
+            # TODO dodać opcję wyświetlania peaków na wykresach z podpisami od pasm dla maximow lokalnych
+            peaks = np.array(find_peaks(df[col], width=3, distance=10, rel_height=15, height=3000))[0]
     
-            df2 = df[col].reset_index().iloc[pd.Series(peaks), :].set_index('Raman Shift')
-            st.write(df2)
-            fig = px.scatter(df2)
-            st.plotly_chart(fig, use_container_width=True)
+            df3 = pd.concat([df3, df[col].reset_index().iloc[pd.Series(peaks), :].set_index('Raman Shift')], axis=1)
+    
+            # FIX po dobraniu odpowiednich wartości usunąć wykresy poniższe
+            # # visualisation of peaks
+            # import plotly.express as px
+            # df2 = df[col].reset_index().iloc[pd.Series(peaks), :].set_index('Raman Shift')
+            # fig = px.scatter(df2)
+            # st.plotly_chart(fig, use_container_width=True)
+            # fig = px.line(df)
+            # st.plotly_chart(fig, use_container_width=True)
 
-        # st.write()
+        # Checking if I can use the peaks in further research...
+        # TODO dupa jest, bo znajduje piki z malymi przesunieciami przez co wskakują nany ;/
+        # trzebaby chyba nie likwidowac nanów, tylko brać max wartość z przediału Raman Shfita
+        # zblizonego do kazdego peaku, przez co będziemy prównywali peaki przesunięte o +-1 cm^-1
+
+        # FIX poniżej moje wypociny mające na celu splaszczenie ramanshifta i przypisanie splaszczonym
+        #  ramanshiftom srednich wartości, ale coś poszło nie do końca tak jak chciałem ; /
+
+        st.write(df3)
+        df3.reset_index(inplace=True)
+        for col in df3.columns:
+            df3[col] = df3[col].rolling(window=3, min_periods=2, center=True).mean()
+        # df3 = df3.interpolate(axis=1).bfill().ffill()
+        df3 = df3.set_index('Raman Shift')
+        st.write(df3)
+
+        import plotly.express as px
+        fig = px.scatter(df3)
+        st.plotly_chart(fig, use_container_width=True)
