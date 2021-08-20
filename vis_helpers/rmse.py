@@ -53,11 +53,12 @@ def main():
         for col in df.columns:
             # TODO dodać opcję wyświetlania peaków na wykresach z podpisami od pasm dla maximow lokalnych
             # oczywiście gdzieś w wersji wizualizacyjnej
-            peaks = np.array(find_peaks(df[col], width=3, distance=10, rel_height=15, height=3000))[0]
+            peaks = np.array(find_peaks(df[col], width=60, distance=10, rel_height=25, height=4000))[0]
     
             df3 = pd.concat([df3, df[col].reset_index().iloc[pd.Series(peaks), :].set_index('Raman Shift')], axis=1)
     
             # FIX po dobraniu odpowiednich wartości usunąć wykresy poniższe
+
             # # visualisation of peaks
             # import plotly.express as px
             # df2 = df[col].reset_index().iloc[pd.Series(peaks), :].set_index('Raman Shift')
@@ -74,14 +75,20 @@ def main():
         # FIX poniżej moje wypociny mające na celu splaszczenie ramanshifta i przypisanie splaszczonym
         #  ramanshiftom srednich wartości, ale coś poszło nie do końca tak jak chciałem ; /
 
+        # df po zestawieniu peaków używając findpeaks
         st.write(df3)
+
         df3.reset_index(inplace=True)
         for col in df3.columns:
-            df3[col] = df3[col].rolling(window=3, min_periods=1, center=True).mean()
+            df3[col] = df3[col].rolling(window=3, min_periods=1, center=True).median()
         df3 = df3.interpolate(axis=1).bfill().ffill()
         df3 = df3.set_index('Raman Shift')
+
+        # df po rollingu i interpolacji, zeby splaszczyc roznice w ramanshiftach
         st.write(df3)
 
         import plotly.express as px
         fig = px.scatter(df3)
+        st.plotly_chart(fig, use_container_width=True)
+        fig = px.line(df)
         st.plotly_chart(fig, use_container_width=True)
