@@ -78,6 +78,17 @@ def main():
         # df po rollingu i interpolacji, zeby splaszczyc roznice w ramanshiftach
         st.write(df3)
 
+        from sklearn.preprocessing import MinMaxScaler
+        scaler = MinMaxScaler()
+        rescaled_data = scaler.fit_transform(df3)
+        df3 = pd.DataFrame(rescaled_data, columns=df3.columns, index=df3.index)
+
+        # df po normalizacji
+        st.write(df3)
+
+        # df po pozbyciu sie NaN
+        st.write(df3.dropna())
+
         import plotly.express as px
         fig = px.scatter(df3.dropna())
         st.plotly_chart(fig, use_container_width=True)
