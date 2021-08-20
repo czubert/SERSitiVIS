@@ -10,7 +10,7 @@ from . import rmse_utils
 
 
 # TODO rmse można chyba po prostu wrzucić gdzieś przy wizualizacji, albo tu i przy wizualizacji
-# TODO do liczenia RMSE trzeba użyć widm po korekcji baselinu i po normalizacji żeby były wiarygodne
+# TODO do liczenia RMSE trzeba użyć widm po korekcji baselinu i po normalizacji żeby były wiarygodne !!!
 # TODO dodać możliwość wyboru peaku (okolic peaku i wybrać maxa)
 # TODO użyć metody findpeaks to znajdowania pików (i może przekazać listę do widgetu,
 # z któego klient ma wybrać)
@@ -52,6 +52,7 @@ def main():
 
         for col in df.columns:
             # TODO dodać opcję wyświetlania peaków na wykresach z podpisami od pasm dla maximow lokalnych
+            # oczywiście gdzieś w wersji wizualizacyjnej
             peaks = np.array(find_peaks(df[col], width=3, distance=10, rel_height=15, height=3000))[0]
     
             df3 = pd.concat([df3, df[col].reset_index().iloc[pd.Series(peaks), :].set_index('Raman Shift')], axis=1)
@@ -76,8 +77,8 @@ def main():
         st.write(df3)
         df3.reset_index(inplace=True)
         for col in df3.columns:
-            df3[col] = df3[col].rolling(window=3, min_periods=2, center=True).mean()
-        # df3 = df3.interpolate(axis=1).bfill().ffill()
+            df3[col] = df3[col].rolling(window=3, min_periods=1, center=True).mean()
+        df3 = df3.interpolate(axis=1).bfill().ffill()
         df3 = df3.set_index('Raman Shift')
         st.write(df3)
 
