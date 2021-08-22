@@ -1,3 +1,4 @@
+import numpy as np
 import streamlit as st
 from . import enhancement_factor_utils, ef_user_input, vis_utils
 
@@ -9,7 +10,7 @@ def main():
     # # #
     # # First step of calculations and the user input required to calculate it
     #
-    st.markdown('### First step of calculations')
+    st.markdown('## First step of calculations')
     first_step = st.beta_expander('Show description')
     with first_step:
         st.markdown('### Calculating the number of molecules ($N$) in the solution')
@@ -35,16 +36,17 @@ def main():
     # # Second step of calculations and the user input required to calculate it
     #
     st.markdown('---')
-    st.markdown('### Second step of calculations')
+    st.markdown('## Second step of calculations')
     second_step = st.beta_expander('Show description')
     
     with second_step:
         st.markdown('### Calculating the laser spot ($S_{Laser}$), '
                     'which is the function of wave length and aperture of the lens:')
-        
+
         st.markdown(
             r'### <p style="text-align: center;font-size:1.15em">$$S_{Laser}=\frac{1.22 \times \lambda}{NA}$$</p>',
             unsafe_allow_html=True)
+        st.markdown(r'$S_{Laser}$ - diameter of the laser spot $[m]$')
         st.markdown(r'$\lambda$ - Laser wavelength $[m]$')
         st.markdown(r'$NA$ - value of numerical aperture, lens dependent')
     
@@ -58,30 +60,56 @@ def main():
     
     # # Calculating the Laser spot
     laser_spot_size = enhancement_factor_utils.cal_size_of_laser_spot(laser_wave_length, lens_params)
-    st.markdown(f'The laser spot size: {round(laser_spot_size, 8)} $[m]$')
+    st.markdown(f'The laser spot size: {"{:.1e}".format(laser_spot_size)} $[m]$')
     
     # # # #
     # # #
     # # Third step of calculations and the user input required to calculate it
     #
     st.markdown('---')
-    st.markdown('### Third step of calculations')
+    st.markdown('## Third step of calculations')
     second_step = st.beta_expander('Show description')
-    
+
     with second_step:
-        st.markdown('### calculation of the surface area irradiated with the laser ($S_{0}$)')
-        
-        st.markdown(r'### <p style="text-align: center;font-size:1.15em">$$S_{0}=\pi \times \frac{S_{Laser}}{2}$$</p>',
-                    unsafe_allow_html=True)
-        st.markdown(r'$\lambda$ - Laser wavelength $[m]$')
-        st.markdown(r'$NA$ - value of numerical aperture, lens dependent')
+        st.markdown('### Calculating the surface area irradiated with the laser ($S_{0}$)')
     
+        st.markdown(
+            r'### <p style="text-align: center;font-size:1.15em">$$S_{0}=\pi \times (\frac{S_{Laser}}{2})^2$$</p>',
+            unsafe_allow_html=True)
+        st.markdown(r'$S_{0}$ - Surface area of the laser spot $[m^2]$')
+        st.markdown(r'$\pi$ - mathematical constant, approximately equal to 3.14159')
+        st.markdown(r'$S_{Laser}$ - Laser spot diameter calculated in the previous step $[m^2]$')
+    laser_spot_area = np.pi * (laser_spot_size / 2) ** 2
+    st.markdown(f'The laser spot size: {"{:.1e}".format(laser_spot_area)} $[m^2]$')
+    st.markdown('---')
+
+    # # # #
+    # # #
+    # # Fourth step of calculations and the user input required to calculate it
+    #
+    st.markdown('---')
+    st.markdown('## Fourth step of calculations')
+    second_step = st.beta_expander('Show description')
+
+    with second_step:
+        st.markdown('### Determination of the number of molecules per laser irradiated surface ($N_{SERS}$)')
+    
+        st.markdown(
+            r'### <p style="text-align: center;font-size:1.15em">$$S_{0}=\pi \times (\frac{S_{Laser}}{2})^2$$</p>',
+            unsafe_allow_html=True)
+        st.markdown(r'$S_{0}$ - Surface area of the laser spot $[m^2]$')
+        st.markdown(r'$\pi$ - mathematical constant, approximately equal to 3.14159')
+        st.markdown(r'$S_{Laser}$ - Laser spot diameter calculated in the previous step $[m^2]$')
+    laser_spot_area = np.pi * (laser_spot_size / 2) ** 2
+    st.markdown(f'The laser spot size: {"{:.1e}".format(laser_spot_area)} $[m^2]$')
+    st.markdown('---')
+
     # # The area of active surface of the SERS substrate
     active_area = ef_user_input.get_active_surface_area()
-    
+
     # # The coverage of the analyte on the surface between 10^-6 and 6*10^-6 ~=10%
     surface_coverage = ef_user_input.get_surface_coverage()
-    
+
     # # SERS intensity and Raman Intensity
     i_sers, i_raman = ef_user_input.get_laser_intensities()
     
