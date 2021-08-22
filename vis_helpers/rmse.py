@@ -43,8 +43,8 @@ def main():
         df = processing.save_read.files_to_df(files, spectrometer)
         df = df.interpolate().bfill().ffill()
 
-        plot_x_min = df.index.astype(int).min()
-        plot_x_max = df.index.astype(int).max() + 1
+        plot_x_min = int(df.index.min())
+        plot_x_max = int(df.index.max())
 
         rescale = st.sidebar.checkbox("Rescale")
         if rescale:
@@ -55,10 +55,27 @@ def main():
         else:
             sliders_params = SLIDERS_PARAMS_RAW
 
+        peak1_range = st.slider('Peak 1 range', min_value=plot_x_min, max_value=plot_x_max, value=[plot_x_min, plot_x_max])
+        peak2_range = st.slider('Peak 2 range', min_value=plot_x_min, max_value=plot_x_max, value=[plot_x_min, plot_x_max])
+        bg_range = st.slider('Backgroung range', min_value=plot_x_min, max_value=plot_x_max, value=[plot_x_min, plot_x_max])
+        peak1_range = [int(i) for i in peak1_range.split('__')]
+        peak2_range = [int(i) for i in peak2_range.split('__')]
+        bg_range = [int(i) for i in bg_range.split('__')]
+
         # Calling the function with parameters
         peak1 = df.loc[680:725, :]  # TODO to wziąć z peakfindera
         peak2 = df.loc[990:1010, :]  # TODO to wziąć z peakfindera
-        bg = df.loc[938:941, :]  # TODO to wziąćz baseline'a
+        bg = df.loc[938:941, :]  # TODO to wziąć z baseline'a
+
+        fig = px.line(df)
+        fig.update_xaxes(range=[plot_x_min, plot_x_max])
+        for ran, text in zip([peak1_range, peak2_range, bg_range], ['Peak 1', 'Peak 2', 'background']):
+            fig.add_vline(x=ran[0], line_dash="dash", annotation_text=text)
+            fig.add_vline(x=ran[1], line_dash="dash")
+
+
+        st.plotly_chart(fig, use_container_width=True)
+
         rmse_utils.rsd(peak1, peak2, bg)
 
         cols = st.beta_columns(4)
@@ -103,6 +120,4 @@ def main():
         # fig.update_xaxes(range=[plot_x_min, plot_x_max])
         # st.plotly_chart(fig, use_container_width=True)
 
-        fig = px.line(df)
-        fig.update_xaxes(range=[plot_x_min, plot_x_max])
-        st.plotly_chart(fig, use_container_width=True)
+
