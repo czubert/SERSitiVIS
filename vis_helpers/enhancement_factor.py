@@ -1,68 +1,102 @@
 import streamlit as st
-from . import enhancement_factor_utils
-from . import vis_utils
+from . import enhancement_factor_utils, ef_user_input, vis_utils
 
 
 def main():
     st.header('Enhancement Factor calculator')
     
+    # # # #
     # # #
-    # # Solution Concentration
+    # # First step of calculations and the user input required to calculate it
     #
-    vis_utils.print_widget_labels('Sample concentration. x * 10^n mol/dm3. Please provide x and n:', 5, 0)
+    st.markdown('### First step of calculations')
+    first_step = st.beta_expander('Show description')
+    with first_step:
+        st.markdown('### Calculating the number of molecules ($N$) in the solution')
+        st.markdown(r'### <p style="text-align: center;">$$N=N_A \times C \times V$$</p>', unsafe_allow_html=True)
+        st.markdown(r'$N$ - Number of particles')
+        st.markdown(r'$N_A$ - Avogadro constant $[mol^{-1}]$')
+        st.markdown(r'$C$ - Molar concentration $[\frac{mol}{dm^3}]$')
+        st.markdown(r'$V$ - Volume $[{dm^3}]$')
+    
+    # #  Concentration of analyte in solution (in mol/dm^3
+    concentration = ef_user_input.get_concentration()
+    
+    # # Volume of solution (ml)
+    volume = ef_user_input.get_volume()
+    
+    # # Calculating the number of molecules
+    num_molecules = enhancement_factor_utils.num_of_molecules(concentration, volume)
+    
+    st.markdown(f'The number of molecules: {"{:.1e}".format(num_molecules)}')
+    
+    # # # #
+    # # #
+    # # Second step of calculations and the user input required to calculate it
+    #
+    st.markdown('---')
+    st.markdown('### Second step of calculations')
+    second_step = st.beta_expander('Show description')
+    
+    with second_step:
+        st.markdown('### Calculating the laser spot ($S_{Laser}$), '
+                    'which is the function of wave length and aperture of the lens:')
+        
+        st.markdown(
+            r'### <p style="text-align: center;font-size:1.15em">$$S_{Laser}=\frac{1.22 \times \lambda}{NA}$$</p>',
+            unsafe_allow_html=True)
+        st.markdown(r'$\lambda$ - Laser wavelength $[m]$')
+        st.markdown(r'$NA$ - value of numerical aperture, lens dependent')
+    
     cols = st.beta_columns(2)
     with cols[0]:
-        x = st.number_input('Provide "x"', 1, 9, 1)
+        # # Laser wavelength in nm
+        laser_wave_length = ef_user_input.get_Laser_wave_length()
     with cols[1]:
-        c = st.number_input('Provide "n"', -15, 0, -6)
-    c = x * 10 ** (c)
+        # # Lens parameter - Numerical aperture
+        lens_params = ef_user_input.get_lens_params()
+    
+    # # Calculating the Laser spot
+    laser_spot_size = enhancement_factor_utils.cal_size_of_laser_spot(laser_wave_length, lens_params)
+    st.markdown(f'The laser spot size: {round(laser_spot_size, 8)} $[m]$')
+    
+    # # # #
+    # # #
+    # # Third step of calculations and the user input required to calculate it
+    #
+    st.markdown('---')
+    st.markdown('### Third step of calculations')
+    second_step = st.beta_expander('Show description')
+    
+    with second_step:
+        st.markdown('### calculation of the surface area irradiated with the laser ($S_{0}$)')
+        
+        st.markdown(r'### <p style="text-align: center;font-size:1.15em">$$S_{0}=\pi \times \frac{S_{Laser}}{2}$$</p>',
+                    unsafe_allow_html=True)
+        st.markdown(r'$\lambda$ - Laser wavelength $[m]$')
+        st.markdown(r'$NA$ - value of numerical aperture, lens dependent')
+    
+    # # The area of active surface of the SERS substrate
+    active_area = ef_user_input.get_active_surface_area()
+    
+    # # The coverage of the analyte on the surface between 10^-6 and 6*10^-6 ~=10%
+    surface_coverage = ef_user_input.get_surface_coverage()
+    
+    # # SERS intensity and Raman Intensity
+    i_sers, i_raman = ef_user_input.get_laser_intensities()
+    
+    # # Molecular weight
+    molecular_weight = ef_user_input.get_molecular_weight()
     
     # # #
-    # # Solution Volume
+    # # Calculating Enhancement Factor
     #
-    vis_utils.print_widget_labels('Volume of solution [ml]', 5, 0)
-    v = st.number_input('', 0, 15, 2)
     
-    # # #
-    # # Laser wavelength
-    #
-    vis_utils.print_widget_labels('Laser wavelength [nm]', 5, 0)
-    l_nm = st.number_input('', 450, 1200, 785)
+    laser_spot_area = enhancement_factor_utils.cal_laser_spot_surface_area(laser_spot_size)
     
-    # # #
-    # # Lens params
-    #
-    vis_utils.print_widget_labels('Lens parameter - Numerical aperture', 5, 0)
-    na = st.number_input('', 0.0, 10.0, 0.40, 0.1)
+    n_sers = enhancement_factor_utils.cal_n_sers(active_area, laser_spot_area, num_molecules, surface_coverage)
+    n_raman = enhancement_factor_utils.cal_n_raman(laser_spot_area)
     
-    # # #
-    # # Active surface
-    #
-    vis_utils.print_widget_labels('The area of active surface of the SERS substrate [mm]', 5, 0)
-    cols = st.beta_columns(3)
-    with cols[0]:
-        active_x = st.number_input('', 0.0, 50.0, 5.0, 0.1)
-    with cols[1]:
-        active_y = st.number_input('', 0.0, 50.0, 4.0, 0.1)
-    with cols[2]:
-        active_multi = st.number_input('', 0.0, 10.0, 2.0, 0.05)
-    active_area = active_x * active_y * active_multi
-    
-    # # #
-    # # Analyte coverage
-    #
-    vis_utils.print_widget_labels('The coverage of the analyte on the surface between 10^-6 and 6*10^-6 ~=10%', 5, 0)
-    surface_coverage = st.number_input('', 0.0, 10.0, 0.40, 0.2)
-    
-    # # #
-    # # Intensities
-    #
-    vis_utils.print_widget_labels('Intensity', 5, 0)
-    cols = st.beta_columns(2)
-    with cols[0]:
-        i_raman = st.number_input('Raman Intensity', 0, 10000, 1000, 100)
-    with cols[1]:
-        i_sers = st.number_input('SERS Intensity', 0, 500000, 60000, 1000)
-    
-    st.write(enhancement_factor_utils.calculate_enhancement(
-        c, v, l_nm, na, active_area, surface_coverage, i_sers, i_raman) / 1e+8)
+    enhancement_factor = (i_sers / n_sers) * (n_raman / i_raman)
+    st.write(enhancement_factor)
+    st.write(enhancement_factor / 1e+8)

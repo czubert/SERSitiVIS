@@ -1,37 +1,10 @@
 import numpy as np
 
-
-def calculate_enhancement(c, v, l_nm, na, active_area, surface_coverage, i_sers, i_raman):
-    """
-    Looking for parameters to formula:
-    EF = (Isers/Nsers) * (Nraman/Iraman)
-    :param c: Float, Concentration of analyte in solution (in mol/dm^3)
-    :param v: Int, Volume of solution (ml)
-    :param l_nm: Int, Laser wavelength in nm
-    :param na: Float, Lens parameter - Numerical aperture
-    :param active_area: Int, The area of active surface of the SERS substrate
-    :param surface_coverage: Float, the coverage of the analyte on the surface between 10^-6 and 6*10^-6 ~=10%
-    :return: Float, Enhancement Factor
-    """
-    num_molecules = num_of_molecules(c, v)
-    s_laser = cal_size_of_laser_spot(l_nm, na)
-    s0 = cal_laser_spot_surface_area(s_laser)
-    
-    # needed directly to calculate EF
-    n_sers = cal_n_sers(active_area, s0, num_molecules, surface_coverage)
-    n_raman = cal_n_raman(s0)
-    
-    return (i_sers / n_sers) * (n_raman / i_raman)
-
-
 def num_of_molecules(conc, vol):
     """
     Calculating number of particles contained in the solution.
-    Returns number of molecules in the solution
-    :argument conc: Must be in mol/dm**3
-    :argument vol: Must be in ml
-    :param conc: Float
-    :param vol: Float
+    :param conc: Float, Must be in mol/dm**3
+    :param vol: Float, Must be in ml
     :return: Float, Number of Molecules
     """
     n_av = 6.023 * 10 ** 23
@@ -40,18 +13,15 @@ def num_of_molecules(conc, vol):
     return n_av * conc * v_dm
 
 
-def cal_size_of_laser_spot(lnm, naa):
+def cal_size_of_laser_spot(wave_length_nm, lens_numeric_aperture):
     """
     Calculating size of laser spot.
-    Returns size in meters.
-    :argument lnm: laser wavelength given in nm
-    :argument naa: numerical aperture value
-    :param lnm: Int, Length in meters
+    :param lnm: Int, laser wavelength given in nm
     :param naa: Float, Lens parameter - Numerical aperture
-    :return: Float, Size of laser spot
+    :return: Float, Size of laser spot in meters
     """
-    lm = lnm * 10 ** (-9)  # changing nm to m as it is needed for formula
-    return (1.22 * lm) / naa
+    wave_length_m = wave_length_nm * 10 ** (-9)  # changing nm to m as it is needed for formula
+    return (1.22 * wave_length_m) / lens_numeric_aperture
 
 
 def cal_laser_spot_surface_area(size_laser_spot):
