@@ -98,3 +98,11 @@ def get_chart_vis_properties():
 
     return palette, template
 
+def print_widget_labels(widget_title, margin_top=5, margin_bottom=10):
+    """
+    Prints Widget label on the sidebar and lets adjust its margins easily
+    :param widget_title: Str
+    """
+    st.markdown(
+        f"""<p style="font-weight:500; margin-top:{margin_top}px;margin-bottom:{margin_bottom}px">{widget_title}</p>""",
+        unsafe_allow_html=True)
