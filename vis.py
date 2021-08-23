@@ -34,7 +34,6 @@ def main():
         enhancement_factor.main()
     elif analysis_type == 'RMSE':
         rmse.main()
-
     authors.show_developers()
 
 
