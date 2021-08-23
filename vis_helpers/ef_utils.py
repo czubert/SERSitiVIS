@@ -118,7 +118,13 @@ def cal_size_of_laser_spot(wave_length_nm, lens_numeric_aperture):
 
 
 def cal_n_raman(v_compound, compound_density, compound_molecular_weight):
-    import streamlit as st
+    """
+    Calculating the number of molecules of the irradiated crystal
+    :param v_compound: The volume of your chemical compound crystal subjected to laser illumination [m^3]
+    :param compound_density:density of the chemical compound g/cm^3
+    :param compound_molecular_weight: Mass of the irradiated crystal [g]
+    :return: Float, N_Raman - number of molecules of the irradiated crystal
+    """
     # calculating the mass of the irradiated crystal [g]
     m = v_compound * (compound_density * 10 ** 6)
     # calculating the number of moles of the irradiated crystal [mol]
