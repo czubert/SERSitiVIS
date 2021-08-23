@@ -24,6 +24,8 @@ def read_witec(uploaded_files, separator=','):
 
         single_uploaded_data_file[LABELS["RS"]] = data.iloc[:, 0]
 
+        # TODO da się to jakoś ładniej napisać? chciałem uzależnić samą nazwe od ilosci kolumn,
+        # TODO ale nie widzi wtedy 'col'. chyba trzebaby zrezygnować wtedy z dict comprehension i zrobic fora?
         if len(data.columns) == 2:
             cols = {f'{uploaded_file.name[:-4]}': col for col in data.columns
                     if not col.startswith('Unnamed')
