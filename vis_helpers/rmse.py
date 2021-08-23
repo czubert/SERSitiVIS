@@ -66,7 +66,8 @@ def main():
         fig.update_xaxes(range=[plot_x_min, plot_x_max])
         for ran, text in zip([peak1_range, peak2_range, bg_range], ['Peak 1', 'Peak 2', 'background']):
             fig.add_vline(x=ran[0], line_dash="dash", annotation_text=text)
-            fig.add_vline(x=ran[1], line_dash="dash")
+            fig.add_vline(x=ran[1], line_dash="dash", annotation_text=text)  # important dodałem tu też,
+            # important żeby było wiadomo dla którego  peaku to jest koniec. jak uważasz że bez sensu to usuń
 
         st.plotly_chart(fig, use_container_width=True)
 
