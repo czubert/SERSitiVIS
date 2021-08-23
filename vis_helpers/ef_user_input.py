@@ -46,27 +46,21 @@ def get_active_surface_area():
     vis_utils.print_widget_labels('The area of active surface of the SERS substrate [mm]', 5, 0)
     cols = st.beta_columns(3)
     with cols[0]:
-        active_x = st.number_input('', 0.0, 50.0, 5.0, 0.1)
+        active_x = st.number_input('First dimension (x)', 0.0, 50.0, 3.0, 0.1)
     with cols[1]:
-        active_y = st.number_input('', 0.0, 50.0, 4.0, 0.1)
+        active_y = st.number_input('Second dimension (y)', 0.0, 50.0, 3.0, 0.1)
     with cols[2]:
-        active_multi = st.number_input('', 0.0, 10.0, 2.0, 0.05)
-    return active_x * active_y * active_multi
+        dev_coeff = st.number_input('Surface area development coefficient', 0.0, 10.0, 2.0, 0.05)
+
+    return (active_x * active_y * 10 ** (-6)) * dev_coeff
 
 
 def get_surface_coverage():
     # # #
     # # Surface Coverage
     #
-    vis_utils.print_widget_labels('The coverage of the analyte on the surface. x * 10^n. Please provide x and n:', 5, 0)
-    cols = st.beta_columns(2)
-    with cols[0]:
-        multiplier = st.number_input('Provide "x"', 1, 9, 1, key='coverage')
-    with cols[1]:
-        exponent = st.number_input('Provide "n"', -15, 0, -6, key='coverage')
-    # return multiplier * 10 ** (exponent)
-    
-    return 0.1  # TODO checking if it works
+    vis_utils.print_widget_labels('The coverage of the surface by the analyte', 5, 0)
+    return st.number_input('', 0.0, 1.0, 0.1, 0.05, key='coverage')
 
 
 def get_laser_intensities():
@@ -79,9 +73,21 @@ def get_laser_intensities():
         i_raman = st.number_input('Raman Intensity', 0, 10000, 1000, 100)
     with cols[1]:
         i_sers = st.number_input('SERS Intensity', 0, 500000, 60000, 1000)
-    return i_raman, i_sers
+    return i_sers, i_raman
 
 
 def get_molecular_weight():
     vis_utils.print_widget_labels('Provide molecular weight', 5, 0)
     return st.number_input('', 0.0, 1000.0, 154.19, 0.01)
+
+
+def get_compound_density():
+    vis_utils.print_widget_labels('Provide compound density', 5, 0)
+    return st.number_input('', 0.0, 20.0, 1.3, 0.1)
+
+
+def get_penetration_depth():
+    vis_utils.print_widget_labels(
+        'Provide depth into which the laser penetrates the chemical compound in crystalline form [mm]', 5, 0)
+    penetration_depth = st.number_input('', 0.0, 10.0, 2.0, 0.1)
+    return penetration_depth * 10 ** (-3)  # mm -> m
