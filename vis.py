@@ -163,10 +163,10 @@ def main():
             baselined = pd.DataFrame(index=df.index)
             flattened = pd.DataFrame(index=df.index)
             for col in df.columns:
+                # TODO jak są 2 nierówne widma (jedno ma NaNy), to peakutils zwraca same nany dla tego widma
                 baselines[col] = peakutils.baseline(df[col], vals[col][0])
                 baselined[col] = df[col] - baselines[col]
                 flattened[col] = baselined[col].rolling(window=vals[col][1], min_periods=1, center=True).mean()
-
         #
         # # Plotting
         #
