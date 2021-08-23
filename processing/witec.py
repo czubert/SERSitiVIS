@@ -24,7 +24,7 @@ def read_witec(uploaded_files, separator=','):
     
         single_uploaded_data_file[LABELS["RS"]] = data.iloc[:, 0]
     
-        cols = {f'{uploaded_file.name[:-4]} {col}': col for col in data.columns if not col.startswith('Unnamed') if
+        cols = {f'{uploaded_file.name[:-4]} ({col})': col for col in data.columns if not col.startswith('Unnamed') if
                 not col.startswith(LABELS['RS'])}
     
         single_uploaded_data_file[list(cols.keys())] = data[list(cols.values())]
