@@ -1,6 +1,6 @@
 import numpy as np
 import streamlit as st
-from . import enhancement_factor_utils, ef_user_input, vis_utils
+from . import ef_utils
 
 
 def main():
@@ -21,13 +21,13 @@ def main():
         st.markdown(r'$V$ - Volume $[{dm^3}]$')
 
     # #  Concentration of analyte in solution (in mol/dm^3
-    concentration = ef_user_input.get_concentration()
+    concentration = ef_utils.get_concentration()
     
     # # Volume of solution (ml)
-    volume = ef_user_input.get_volume()
+    volume = ef_utils.get_volume()
     
     # # Calculating the number of molecules
-    num_molecules = enhancement_factor_utils.num_of_molecules(concentration, volume)
+    num_molecules = ef_utils.num_of_molecules(concentration, volume)
 
     st.markdown(r'$N =$' + f' {"{:.1e}".format(num_molecules)} $[m^2]$')
     
@@ -53,13 +53,13 @@ def main():
     cols = st.beta_columns(2)
     with cols[0]:
         # # Laser wavelength in nm
-        laser_wave_length = ef_user_input.get_Laser_wave_length()
+        laser_wave_length = ef_utils.get_Laser_wave_length()
     with cols[1]:
         # # Lens parameter - Numerical aperture
-        lens_params = ef_user_input.get_lens_params()
+        lens_params = ef_utils.get_lens_params()
 
     # # Calculating the Laser spot
-    s_laser = enhancement_factor_utils.cal_size_of_laser_spot(laser_wave_length, lens_params)
+    s_laser = ef_utils.cal_size_of_laser_spot(laser_wave_length, lens_params)
     st.markdown(r'$S_{Laser} =$' + f' {"{:.1e}".format(s_laser)} $[m^2]$')
 
     # # # #
@@ -126,9 +126,9 @@ def main():
                     r'$\times$ surface area development coefficient (rough surface ~= 2) $[m^2]$')
 
     # # The area of active surface of the SERS substrate
-    s_platform = ef_user_input.get_active_surface_area()
+    s_platform = ef_utils.get_active_surface_area()
     # # The coverage of the analyte on the surface between 10^-6 and 6*10^-6 ~=10%
-    surface_coverage = ef_user_input.get_surface_coverage()
+    surface_coverage = ef_utils.get_surface_coverage()
 
     # n_sers = (num_molecules * s_laser * surface_coverage) / s_platform  # formula version
     n_sers = (num_molecules * s0_spot_area * surface_coverage) / s_platform  # Szymborski use
@@ -156,7 +156,7 @@ def main():
         st.markdown(r'$h$ - Depth into which the laser penetrates the chemical compound in crystalline '
                     r'form (in the case of p-MBA we assume 2 mm)')
 
-    penetration_depth = ef_user_input.get_penetration_depth()
+    penetration_depth = ef_utils.get_penetration_depth()
     v_compound = s0_spot_area * penetration_depth
 
     st.markdown(r'$V_{compound} =$' + f' {"{:.1e}".format(v_compound)} $[m^3]$')
@@ -192,7 +192,7 @@ def main():
         st.markdown(r'$M_{compound}$ - Molecular weight of the chemical compound $[\frac{g}{mol}]$')
     
         st.markdown('---')
-    
+
         st.markdown(
             r'Lastly, The number of molecules irradiated during the recording of the Raman spectrum (&N_{Raman}&) is obtained by multiplying the number of moles by the Avogadro constant:')
         st.markdown(r'### <p style="text-align: center;">$$N_{Raman}= n_{compound}\times N_A$$</p>',
@@ -202,10 +202,10 @@ def main():
         st.markdown(r'$N_A$ - Avogadro constant $[mol^{-1}]$')
 
     # # Molecular weight
-    compound_density = ef_user_input.get_compound_density()
-    compound_molecular_weight = ef_user_input.get_molecular_weight()
+    compound_density = ef_utils.get_compound_density()
+    compound_molecular_weight = ef_utils.get_molecular_weight()
 
-    n_raman = enhancement_factor_utils.cal_n_raman(v_compound, compound_density, compound_molecular_weight)
+    n_raman = ef_utils.cal_n_raman(v_compound, compound_density, compound_molecular_weight)
 
     st.markdown(r'$N_{Raman} =$' + f' {"{:.1e}".format(n_raman)}')
 
@@ -230,7 +230,7 @@ def main():
 
     # # SERS intensity and Raman Intensity
     # TODO wykorzystać Charza pomysł na wybieranie maksa z zakresu, gdyby ktoś chciał, żeby mu automatycznie policzyło
-    i_sers, i_raman = ef_user_input.get_laser_intensities()
+    i_sers, i_raman = ef_utils.get_laser_intensities()
 
     enhancement_factor = (i_sers / n_sers) * (n_raman / i_raman)
 

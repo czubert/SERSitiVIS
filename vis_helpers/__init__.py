@@ -2,7 +2,7 @@ from . import authors
 from . import charts
 from . import data_customisation
 from . import enhancement_factor
-from . import enhancement_factor_utils
+from . import ef_utils
 from . import footer
 from . import manual
 from . import rmse
