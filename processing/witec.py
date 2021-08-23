@@ -31,6 +31,7 @@ def read_witec(uploaded_files, separator=','):
                     if not col.startswith('Unnamed')
                     if not col.startswith(LABELS['RS'])}
 
+        # If file contains more than 2 columns, name of column is added to the name of the file to distinguish
         elif len(data.columns) > 2:
             cols = {f'{uploaded_file.name[:-4]} ({col})': col for col in data.columns
                     if not col.startswith('Unnamed')
