@@ -87,7 +87,6 @@ def main():
             buffer = io.StringIO(text)
             buffer.name = file.name
             new_files.append(buffer)
-    
         try:
             df = save_read.read_files(spectrometer, new_files, delim)
         except (TypeError, ValueError):

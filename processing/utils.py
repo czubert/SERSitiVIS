@@ -37,7 +37,6 @@ def read_spec(uploaded_file, spectra_params, meta_params=None):
                                encoding=dammit.original_encoding,
                                **meta_params)
         return data, metadata
-
     return data
 
 
