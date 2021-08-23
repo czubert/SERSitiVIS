@@ -6,9 +6,9 @@ OneP = 'Calculate RSD between spectra based on "One Peak"'
 
 
 def rsd(peak1, peak2, bg):
-    st.header('Relative Standard Deviation (RSD):')
+    st.header('Relative Standard Deviation (RSD)')
     
-    display_options_radio = st.radio("What would you like to do?", (OneP, P2P))
+    display_options_radio = st.radio("RSD type:", (OneP, P2P))
     
     if display_options_radio == OneP:
         rsd_one_peak(peak1)

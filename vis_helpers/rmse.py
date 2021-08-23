@@ -22,9 +22,9 @@ SLIDERS_PARAMS_NORMALIZED = {'rel_height': dict(min_value=0.01, max_value=1., va
 # TODO do liczenia RMSE trzeba użyć widm po korekcji baselinu i po normalizacji żeby były wiarygodne !!!
 # TODO dodać możliwość wyboru peaku (okolic peaku i wybrać maxa)
 # TODO użyć metody findpeaks to znajdowania pików (i może przekazać listę do widgetu,
-# z któego klient ma wybrać)
+#  z którego klient ma wybrać)
 # TODO sprawdzić jak liczą w publikacjach RMSE, czy to chodzi o różnice intensywnosci miedzy widmami,
-# czy o stosunek pików, który w sumie powinien być stały... więc trochę bez sensu
+#  czy o stosunek pików, który w sumie powinien być stały... więc trochę bez sensu
 
 def main():
     spectra_types = ['EMPTY', 'BWTEK', 'RENI', 'WITEC', 'WASATCH', 'TELEDYNE', 'JOBIN']
@@ -46,7 +46,7 @@ def main():
         plot_x_min = int(df.index.min())
         plot_x_max = int(df.index.max())
 
-        rescale = st.sidebar.checkbox("Rescale")
+        rescale = st.sidebar.checkbox("Normalize")
         if rescale:
             scaler = MinMaxScaler()
             rescaled_data = scaler.fit_transform(df)
@@ -55,25 +55,40 @@ def main():
         else:
             sliders_params = SLIDERS_PARAMS_RAW
 
-        peak1_range = st.slider('Peak 1 range', min_value=plot_x_min, max_value=plot_x_max, value=[plot_x_min, plot_x_max])
-        peak2_range = st.slider('Peak 2 range', min_value=plot_x_min, max_value=plot_x_max, value=[plot_x_min, plot_x_max])
-        bg_range = st.slider('Backgroung range', min_value=plot_x_min, max_value=plot_x_max, value=[plot_x_min, plot_x_max])
+        bg_colors = {'Peak 1': 'yellow', 'Peak 2': 'orange', 'Background': 'gray'}
+
+        peak1_range = st.slider(f'Peak 1 range ({bg_colors["Peak 1"]})',
+                                min_value=plot_x_min, max_value=plot_x_max, value=[plot_x_min, plot_x_max])
+        peak2_range = st.slider(f'Peak 2 range ({bg_colors["Peak 2"]})',
+                                min_value=plot_x_min, max_value=plot_x_max, value=[plot_x_min, plot_x_max])
+        bg_range = st.slider(f'Background range ({bg_colors["Background"]})',
+                             min_value=plot_x_min, max_value=plot_x_max, value=[plot_x_min, plot_x_max])
+
         peak1_range = [int(i) for i in peak1_range.split('__')]
         peak2_range = [int(i) for i in peak2_range.split('__')]
         bg_range = [int(i) for i in bg_range.split('__')]
 
         fig = px.line(df)
         fig.update_xaxes(range=[plot_x_min, plot_x_max])
-        for ran, text in zip([peak1_range, peak2_range, bg_range], ['Peak 1', 'Peak 2', 'background']):
+        fig.update_layout(legend_title='spectrum')
+
+        for ran, text in zip([peak1_range, peak2_range, bg_range], ['Peak 1', 'Peak 2', 'Background']):
+            if ran == [plot_x_min, plot_x_max]: continue
+
             fig.add_vline(x=ran[0], line_dash="dash", annotation_text=text)
-            fig.add_vline(x=ran[1], line_dash="dash", annotation_text=text)  # important dodałem tu też,
-            # important żeby było wiadomo dla którego  peaku to jest koniec. jak uważasz że bez sensu to usuń
+            fig.add_vline(x=ran[1], line_dash="dash")
+            fig.add_vrect(x0=ran[0], x1=ran[1], line_width=0, fillcolor=bg_colors[text], opacity=0.2)
 
         st.plotly_chart(fig, use_container_width=True)
 
-        peak1 = df.loc[peak1_range[0]:peak1_range[1], :]
-        peak2 = df.loc[peak2_range[0]:peak2_range[1], :]
-        bg = df.loc[bg_range[0]:bg_range[1], :]  # TODO to wziąć z baseline'a
+        mask = (peak1_range[0] <= df.index) & (df.index <= peak1_range[1])
+        peak1 = df[mask]
+
+        mask = (peak2_range[0] <= df.index) & (df.index <= peak2_range[1])
+        peak2 = df[mask]
+
+        mask = (bg_range[0] <= df.index) & (df.index <= bg_range[1])
+        bg = df[mask]  # TODO to wziąć z baseline'a
 
         rmse_utils.rsd(peak1, peak2, bg)
 
@@ -91,7 +106,7 @@ def main():
         peak_df = pd.DataFrame()
         for col in df.columns:
             # TODO dodać opcję wyświetlania peaków na wykresach z podpisami od pasm dla maximow lokalnych
-            # oczywiście gdzieś w wersji wizualizacyjnej
+            #  oczywiście gdzieś w wersji wizualizacyjnej
             peaks = np.array(find_peaks(df[col], width=peak_width, distance=peak_distance,
                                         rel_height=peak_rel_height, height=peak_height)
                              )[0]
@@ -99,10 +114,10 @@ def main():
                                 axis=1)
 
         # TODO dupa jest, bo znajduje piki z malymi przesunieciami przez co wskakują nany ;/
-        # trzebaby chyba nie likwidowac nanów, tylko brać max wartość z przediału Raman Shfita
-        # zblizonego do kazdego peaku, przez co będziemy prównywali peaki przesunięte o +-1 cm^-1
-        # (to niby mi sie troche udalo zrobic, ale dalej nie wiem co tam sie pierdoli ze w dwoch miejsach sa
-        # te same wartosci, tak jakbym mial dwa rowne peaki
+        #  trzebaby chyba nie likwidowac nanów, tylko brać max wartość z przediału Raman Shfita
+        #  zblizonego do kazdego peaku, przez co będziemy prównywali peaki przesunięte o +-1 cm^-1
+        #  (to niby mi sie troche udalo zrobic, ale dalej nie wiem co tam sie pierdoli ze w dwoch miejsach sa
+        #  te same wartosci, tak jakbym mial dwa rowne peaki
 
         # FIX poniżej moje wypociny mające na celu splaszczenie ramanshifta i przypisanie splaszczonym
         #  ramanshiftom srednich wartości, ale coś poszło nie do końca tak jak chciałem ; /
