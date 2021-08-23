@@ -10,7 +10,6 @@ def rsd(peak1, peak2, bg):
     
     display_options_radio = st.radio("What would you like to do?", (OneP, P2P))
     
-    # TODO sprawdzić, dlaczego tutaj nie biorę pod uwagę bg !!
     if display_options_radio == OneP:
         rsd_one_peak(peak1)
     
@@ -25,9 +24,7 @@ def rsd_one_peak(peak):
     :param peak: DataFrame
     :return: Float, RMSE score
     """
-    # WHAT which version is better?
     
-    # II
     st.subheader('RSD directly from data')
     # mean value of absolute numbers
     mean_value = (peak.max()).mean()
@@ -41,7 +38,6 @@ def rsd_one_peak(peak):
     rsd = std_value / mean_value
     st.write(f' RSD value: {round(rsd * 100)} %')
 
-    # I
     st.subheader('RSD after subtraction of background')
 
     peak = subtract_baseline(peak, 1)
