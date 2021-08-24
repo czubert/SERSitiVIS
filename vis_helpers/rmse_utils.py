@@ -1,8 +1,8 @@
 import streamlit as st
 from processing.utils import subtract_baseline
 
-P2P = 'Calculate RSD between spectra from "Peak to Peak ratio"'
-OneP = 'Calculate RSD between spectra based on "One Peak"'
+OneP = 'Calculate RSD of "Selected Peak" between different spectra'
+P2P = 'Calculate RSD of "Peak to Peak ratio" between different different spectra'
 
 
 def rsd(peak1, peak2, bg):
