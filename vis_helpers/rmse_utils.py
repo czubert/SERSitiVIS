@@ -19,34 +19,27 @@ def rsd_one_peak(peak):
     :param peak: DataFrame
     :return: Float, RMSE score
     """
+    round_num = 3
     
-    st.subheader('RSD directly from data')
-    # mean value of absolute numbers
-    mean_value = (peak.max()).mean()
-    st.write(f' Mean value: {round(mean_value)}')
-
-    # Standard deviation of absolute numbers
-    std_value = (peak.max()).std()
-    st.write(f' Standard deviation value: {round(std_value)}')
-
-    # Calculating RSD
-    rsd = std_value / mean_value
-    st.write(f' RSD value: {round(rsd * 100)} %')
-
-    st.subheader('RSD after subtraction of background')
-
+    # Calculating mean, std and RSD
+    mean_value, std_value, rsd = calculate_OneP_rsd(peak)
+    
+    # Baseline correction
     peak = subtract_baseline(peak, 1)
-    # mean value
-    mean_value = peak.max().mean()
-    st.write(f' Mean value: {round(mean_value)}')
-
-    # Standard deviation of absolute numbers
-    std_value = peak.max().std()
-    st.write(f' Standard deviation value: {round(std_value)}')
-
-    # Calculating RSD
-    rsd = std_value / mean_value
-    st.write(f' RSD value: {round(rsd * 100)} %')
+    
+    # Calculating mean, std and RSD after baseline correction
+    mean_value_basecorr, std_value_basecorr, rsd_basecorr = calculate_OneP_rsd(peak)
+    
+    results = create_results_df(mean_value, std_value, rsd, round_num, 'RAW data')
+    
+    results_base_corr = create_results_df(mean_value_basecorr,
+                                          std_value_basecorr,
+                                          rsd_basecorr,
+                                          round_num,
+                                          'Baseline corrected',
+                                          )
+    
+    return pd.concat((results, results_base_corr), axis=1)
 
 
 def rsd_peak_to_peak_ratio(peak1, peak2, bg):
@@ -78,6 +71,19 @@ def rsd_peak_to_peak_ratio(peak1, peak2, bg):
                                           )
     
     return pd.concat((results, results_base_corr), axis=1)
+
+
+def calculate_OneP_rsd(peak):
+    # Calculating Mean value
+    mean_value = (peak.max()).mean()
+    
+    # Calculating Standard Deviation
+    std_value = (peak.max()).std()
+    
+    # Calculating RSD
+    rsd = std_value / mean_value
+    
+    return mean_value, std_value, rsd
 
 
 def calculate_p2p_rsd(peak1, peak2):
