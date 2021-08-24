@@ -28,6 +28,10 @@ SLIDERS_PARAMS_NORMALIZED = {'rel_height': dict(min_value=0.01, max_value=1., va
 
 def main():
     spectra_types = ['EMPTY', 'BWTEK', 'RENI', 'WITEC', 'WASATCH', 'TELEDYNE', 'JOBIN']
+    OneP = 'Calculate RSD of "Selected Peak" between different spectra'
+    P2P = 'Calculate RSD of "Peak to Peak ratio" between different different spectra'
+    st.header('Relative Standard Deviation (RSD)')
+
     spectrometer = st.sidebar.selectbox("Choose spectra type",
                                         spectra_types,
                                         format_func=LABELS.get,
@@ -40,12 +44,14 @@ def main():
                                      type=['txt', 'csv'])
 
     if files:
+    
+        user_selection = st.radio("RSD type:", (OneP, P2P))
         df = processing.save_read.files_to_df(files, spectrometer)
         df = df.interpolate().bfill().ffill()
-
+    
         plot_x_min = int(df.index.min())
         plot_x_max = int(df.index.max())
-
+    
         rescale = st.sidebar.checkbox("Normalize")
         if rescale:
             scaler = MinMaxScaler()
@@ -67,37 +73,45 @@ def main():
         peak1_range = [int(i) for i in peak1_range.split('__')]
         peak2_range = [int(i) for i in peak2_range.split('__')]
         bg_range = [int(i) for i in bg_range.split('__')]
-
+    
         fig = px.line(df)
         fig.update_xaxes(range=[plot_x_min, plot_x_max])
-        fig.update_layout(legend_title='spectrum')
-
+        fig.update_layout(legend_title='Spectrum')
+    
         for ran, text in zip([peak1_range, peak2_range, bg_range], ['Peak 1', 'Peak 2', 'Background']):
             if ran == [plot_x_min, plot_x_max]: continue
-
+        
             fig.add_vline(x=ran[0], line_dash="dash", annotation_text=text)
             fig.add_vline(x=ran[1], line_dash="dash")
             fig.add_vrect(x0=ran[0], x1=ran[1], line_width=0, fillcolor=bg_colors[text], opacity=0.2)
-
-        st.plotly_chart(fig, use_container_width=True)
-
+        # fig.update_layout(legend_orientation='h')
+        fig.update_layout({'margin': {'t': 5, 'l': 20}, 'legend_orientation': 'h'})
+    
+        cols = st.beta_columns((7, 3))
+    
+        with cols[0]:
+            st.plotly_chart(fig, use_container_width=True)
+    
         mask = (peak1_range[0] <= df.index) & (df.index <= peak1_range[1])
         peak1 = df[mask]
-
+    
         mask = (peak2_range[0] <= df.index) & (df.index <= peak2_range[1])
         peak2 = df[mask]
-
+    
         mask = (bg_range[0] <= df.index) & (df.index <= bg_range[1])
         bg = df[mask]  # TODO to wziąć z baseline'a
-
-        rmse_utils.rsd(peak1, peak2, bg)
-
+    
+        results = rmse_utils.rsd(peak1, peak2, bg, user_selection, OneP, P2P)
+    
+        with cols[1]:
+            st.table(results)
+    
         cols = st.beta_columns(4)
         peak_width = cols[0].slider('Min width', min_value=5, max_value=100, value=15, step=5, )
         peak_distance = cols[1].slider('Min distance', min_value=1, max_value=100, value=5, step=1, )
         peak_rel_height = cols[2].slider('Min relative height', **sliders_params['rel_height'])
         peak_height = cols[3].slider('Min absolute height', **sliders_params['height'])
-
+    
         peak_width = int(peak_width)
         peak_distance = int(peak_distance)
         peak_rel_height = float(peak_rel_height) if rescale else int(peak_rel_height)
@@ -118,12 +132,12 @@ def main():
         #  zblizonego do kazdego peaku, przez co będziemy prównywali peaki przesunięte o +-1 cm^-1
         #  (to niby mi sie troche udalo zrobic, ale dalej nie wiem co tam sie pierdoli ze w dwoch miejsach sa
         #  te same wartosci, tak jakbym mial dwa rowne peaki
-
+    
         # FIX poniżej moje wypociny mające na celu splaszczenie ramanshifta i przypisanie splaszczonym
         #  ramanshiftom srednich wartości, ale coś poszło nie do końca tak jak chciałem ; /
-
-
+    
         fig = px.scatter(peak_df, x=peak_df.index, y=peak_df.columns, title='Peak positions')
         fig.update_xaxes(range=[plot_x_min, plot_x_max])
         st.plotly_chart(fig, use_container_width=True)
-
+    if not files:
+        st.warning("Upload data for calculatios")
