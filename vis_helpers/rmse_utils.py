@@ -33,7 +33,7 @@ def rsd_one_peak(peak):
     return pd.concat((results, results_base_corr), axis=1)
 
 
-def rsd_peak_to_peak_ratio(peak1, peak2, bg):
+def rsd_peak_to_peak_ratio(peak1, peak2):
     """
     This function takes proportions between two peaks from each spectrum,
     and calculates RMSE
