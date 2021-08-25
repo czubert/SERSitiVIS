@@ -41,19 +41,19 @@ def rsd_peak_to_peak_ratio(peak1, peak2):
     :return: Float, RMSE score
     """
     round_num = 3
-    
+
     # Calculating mean, std and RSD
     mean_value, std_value, rsd = calculate_p2p_rsd(peak1, peak2)
-    
+
     # Baseline correction
-    peak1 = subtract_baseline(peak1, 1)
-    peak2 = subtract_baseline(peak2, 1)
-    
+    peak1 = subtract_baseline(peak1, 3)
+    peak2 = subtract_baseline(peak2, 3)
+
     # Calculating mean, std and RSD after baseline correction
     mean_value_basecorr, std_value_basecorr, rsd_basecorr = calculate_p2p_rsd(peak1, peak2)
-    
+
     results = create_results_df(mean_value, std_value, rsd, round_num, 'RAW data')
-    
+
     results_base_corr = create_results_df(mean_value_basecorr,
                                           std_value_basecorr,
                                           rsd_basecorr,
@@ -78,6 +78,7 @@ def calculate_OneP_rsd(peak):
 
 
 def calculate_p2p_rsd(peak1, peak2):
+    import plotly.express as px
     mean_value = (peak1.max() / peak2.max()).mean()
     
     # Standard deviation of absolute numbers

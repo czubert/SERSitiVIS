@@ -17,7 +17,7 @@ def fig_layout(template, fig, plots_colorscale, descr=None):
                       paper_bgcolor='rgba(255,255,255,255)',
                       plot_bgcolor='rgba(255,255,255,255)',
                       width=900,
-                      height=470,
+                      height=550,
                       xaxis=dict(
                           title=f"{LABELS['RS']} [cm<sup>-1</sup>]",
                           linecolor="#777",  # Sets color of X-axis line
@@ -37,11 +37,12 @@ def fig_layout(template, fig, plots_colorscale, descr=None):
                       title=go.layout.Title(text=descr,
                                             font=go.layout.title.Font(size=30)),
 
-                      legend=go.layout.Legend(x=0.5, y=0 - .3, traceorder="normal",
+                      legend=go.layout.Legend(x=0.5, y=0 - .4, traceorder="normal",
                                               font=dict(
                                                   family="sans-serif",
-                                                  size=16,
-                                                  color="black"
+                                                  size=14,
+                                                  color="black",
+
                                               ),
                                               bgcolor="#fff",
                                               bordercolor="#ccc",
