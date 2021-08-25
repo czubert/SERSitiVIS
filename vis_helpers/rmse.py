@@ -17,12 +17,6 @@ SLIDERS_PARAMS_NORMALIZED = {'rel_height': dict(min_value=0.01, max_value=1., va
                              'height': dict(min_value=0.001, max_value=1., value=0.1, step=0.001),
                              }
 
-
-# TODO rmse można chyba po prostu wrzucić gdzieś przy wizualizacji, albo tu i przy wizualizacji
-# TODO do liczenia RMSE trzeba użyć widm po korekcji baselinu i po normalizacji żeby były wiarygodne !!!
-# TODO dodać możliwość wyboru peaku (okolic peaku i wybrać maxa)
-# TODO użyć metody findpeaks to znajdowania pików (i może przekazać listę do widgetu,
-#  z którego klient ma wybrać)
 # TODO sprawdzić jak liczą w publikacjach RMSE, czy to chodzi o różnice intensywnosci miedzy widmami,
 #  czy o stosunek pików, który w sumie powinien być stały... więc trochę bez sensu
 
@@ -73,17 +67,20 @@ def main():
     bg_colors = {'Peak 1': 'yellow', 'Peak 2': 'orange'}
 
     cols = st.beta_columns((4, 1, 4))
-    with cols[0]:
-        peak1_range = st.slider(f'Peak 1 range ({bg_colors["Peak 1"]})',
-                                min_value=plot_x_min,
-                                max_value=plot_x_max,
-                                value=[plot_x_min, plot_x_max])
-        peak1_range = [int(i) for i in peak1_range.split('__')]
+    # with cols[0]:
+    peak1_range = st.slider(f'Peak 1 range ({bg_colors["Peak 1"]})',
+                            min_value=plot_x_min,
+                            max_value=plot_x_max,
+                            value=[plot_x_min, plot_x_max])
+    peak1_range = [int(i) for i in peak1_range.split('__')]
 
     with cols[0]:
         if rmse_type == 'P2P':
-            peak2_range = st.slider(f'Peak 2 range ({bg_colors["Peak 2"]})', min_value=plot_x_min, max_value=plot_x_max,
+            peak2_range = st.slider(f'Peak 2 range ({bg_colors["Peak 2"]})',
+                                    min_value=plot_x_min,
+                                    max_value=plot_x_max,
                                     value=[plot_x_min, plot_x_max])
+        
             peak2_range = [int(i) for i in peak2_range.split('__')]
 
     fig = px.line(df)
@@ -91,11 +88,11 @@ def main():
     fig.update_xaxes(range=[plot_x_min, plot_x_max])
 
     peaks = zip([peak1_range], ['Peak 1'])
+
     if rmse_type == 'P2P':
         peaks = zip([peak1_range, peak2_range], ['Peak 1', 'Peak 2'])
 
     for ran, text in peaks:
-    
         if ran == [plot_x_min, plot_x_max]: continue
     
         fig.add_vline(x=ran[0], line_dash="dash", annotation_text=text)
@@ -114,6 +111,8 @@ def main():
         peak2 = df[mask]
 
     with cols[1]:
+        st.header('RSD scores')
+        st.write(' ')
         if rmse_type == 'OneP':
             st.table(rmse_utils.rsd_one_peak(peak1))
         elif rmse_type == 'P2P':
@@ -141,13 +140,8 @@ def main():
         peak_df = pd.concat([peak_df, df[col].reset_index().iloc[pd.Series(peaks), :].set_index('Raman Shift')],
                             axis=1)
 
-    # TODO dupa jest, bo znajduje piki z malymi przesunieciami przez co wskakują nany ;/
-    #  trzebaby chyba nie likwidowac nanów, tylko brać max wartość z przediału Raman Shfita
-    #  zblizonego do kazdego peaku, przez co będziemy prównywali peaki przesunięte o +-1 cm^-1
-    #  (to niby mi sie troche udalo zrobic, ale dalej nie wiem co tam sie pierdoli ze w dwoch miejsach sa
-    #  te same wartosci, tak jakbym mial dwa rowne peaki
-
-    # FIX poniżej moje wypociny mające na celu splaszczenie ramanshifta i przypisanie splaszczonym
+    # FIX
+    #  poniżej moje wypociny mające na celu splaszczenie ramanshifta i przypisanie splaszczonym
     #  ramanshiftom srednich wartości, ale coś poszło nie do końca tak jak chciałem ; /
 
     fig = px.scatter(peak_df, x=peak_df.index, y=peak_df.columns, title='Peak positions')
