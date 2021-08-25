@@ -64,15 +64,15 @@ def main():
     else:
         sliders_params = SLIDERS_PARAMS_RAW
 
-    bg_colors = {'Peak 1': 'yellow', 'Peak 2': 'orange'}
+    bg_colors = {'Peak 1': 'yellow', 'Peak 2': 'green'}
 
     cols = st.beta_columns((4, 1, 4))
-    # with cols[0]:
-    peak1_range = st.slider(f'Peak 1 range ({bg_colors["Peak 1"]})',
-                            min_value=plot_x_min,
-                            max_value=plot_x_max,
-                            value=[plot_x_min, plot_x_max])
-    peak1_range = [int(i) for i in peak1_range.split('__')]
+    with cols[0]:
+        peak1_range = st.slider(f'Peak 1 range ({bg_colors["Peak 1"]})',
+                                min_value=plot_x_min,
+                                max_value=plot_x_max,
+                                value=[plot_x_min, plot_x_max])
+        peak1_range = [int(i) for i in peak1_range.split('__')]
 
     with cols[0]:
         if rmse_type == 'P2P':
@@ -97,6 +97,7 @@ def main():
     
         fig.add_vline(x=ran[0], line_dash="dash", annotation_text=text)
         fig.add_vline(x=ran[1], line_dash="dash")
+        fig.add_vrect(x0=ran[0], x1=ran[1], line_width=0, fillcolor=bg_colors[text], opacity=0.2)
 
     cols = st.beta_columns((7, 3))
 
