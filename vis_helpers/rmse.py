@@ -28,8 +28,7 @@ SLIDERS_PARAMS_NORMALIZED = {'rel_height': dict(min_value=0.01, max_value=1., va
 
 def main():
     spectra_types = ['EMPTY', 'BWTEK', 'RENI', 'WITEC', 'WASATCH', 'TELEDYNE', 'JOBIN']
-    OneP = 'Calculate RSD of "Selected Peak" between different spectra'
-    P2P = 'Calculate RSD of "Peak to Peak ratio" between different different spectra'
+    rmse_types = ['OneP', 'P2P']
     st.header('Relative Standard Deviation (RSD)')
 
     spectrometer = st.sidebar.selectbox("Choose spectra type",
@@ -45,7 +44,11 @@ def main():
 
     if files:
     
-        user_selection = st.radio("RSD type:", (OneP, P2P))
+        rmse_type = st.radio("RSD type:",
+                             rmse_types,
+                             format_func=LABELS.get,
+                             index=0)
+    
         df = processing.save_read.files_to_df(files, spectrometer)
         df = df.interpolate().bfill().ffill()
     
@@ -60,16 +63,16 @@ def main():
             sliders_params = SLIDERS_PARAMS_NORMALIZED
         else:
             sliders_params = SLIDERS_PARAMS_RAW
-
+    
         bg_colors = {'Peak 1': 'yellow', 'Peak 2': 'orange', 'Background': 'gray'}
-
+    
         peak1_range = st.slider(f'Peak 1 range ({bg_colors["Peak 1"]})',
                                 min_value=plot_x_min, max_value=plot_x_max, value=[plot_x_min, plot_x_max])
         peak2_range = st.slider(f'Peak 2 range ({bg_colors["Peak 2"]})',
                                 min_value=plot_x_min, max_value=plot_x_max, value=[plot_x_min, plot_x_max])
         bg_range = st.slider(f'Background range ({bg_colors["Background"]})',
                              min_value=plot_x_min, max_value=plot_x_max, value=[plot_x_min, plot_x_max])
-
+    
         peak1_range = [int(i) for i in peak1_range.split('__')]
         peak2_range = [int(i) for i in peak2_range.split('__')]
         bg_range = [int(i) for i in bg_range.split('__')]
@@ -84,7 +87,10 @@ def main():
             fig.add_vline(x=ran[0], line_dash="dash", annotation_text=text)
             fig.add_vline(x=ran[1], line_dash="dash")
             fig.add_vrect(x0=ran[0], x1=ran[1], line_width=0, fillcolor=bg_colors[text], opacity=0.2)
-        # fig.update_layout(legend_orientation='h')
+    
+        # TODO trzebaby to jeszcze jakoś ładnie wizalnie poprawić, bo 'spectrum' wisi wpowietrzu,
+        #  legenda nachodzi na opis osi
+        # Moves legend below the chart
         fig.update_layout({'margin': {'t': 5, 'l': 20}, 'legend_orientation': 'h'})
     
         cols = st.beta_columns((7, 3))
@@ -101,11 +107,15 @@ def main():
         mask = (bg_range[0] <= df.index) & (df.index <= bg_range[1])
         bg = df[mask]  # TODO to wziąć z baseline'a
     
-        results = rmse_utils.rsd(peak1, peak2, bg, user_selection, OneP, P2P)
+        # results = rmse_utils.rsd(peak1, peak2, bg, user_selection)
     
         with cols[1]:
-            st.table(results)
+            if rmse_type == 'OneP':
+                st.table(rmse_utils.rsd_one_peak(peak1))
+            elif rmse_type == 'P2P':
+                st.table(rmse_utils.rsd_peak_to_peak_ratio(peak1, peak2, bg))
     
+        # TODO to bym przerzucił do wizualizacji i jakoś zaaplikował możliwość dodania peaków do widma
         cols = st.beta_columns(4)
         peak_width = cols[0].slider('Min width', min_value=5, max_value=100, value=15, step=5, )
         peak_distance = cols[1].slider('Min distance', min_value=1, max_value=100, value=5, step=1, )
@@ -116,7 +126,7 @@ def main():
         peak_distance = int(peak_distance)
         peak_rel_height = float(peak_rel_height) if rescale else int(peak_rel_height)
         peak_height = float(peak_height) if rescale else int(peak_height)
-
+    
         peak_df = pd.DataFrame()
         for col in df.columns:
             # TODO dodać opcję wyświetlania peaków na wykresach z podpisami od pasm dla maximow lokalnych
@@ -126,7 +136,7 @@ def main():
                              )[0]
             peak_df = pd.concat([peak_df, df[col].reset_index().iloc[pd.Series(peaks), :].set_index('Raman Shift')],
                                 axis=1)
-
+    
         # TODO dupa jest, bo znajduje piki z malymi przesunieciami przez co wskakują nany ;/
         #  trzebaby chyba nie likwidowac nanów, tylko brać max wartość z przediału Raman Shfita
         #  zblizonego do kazdego peaku, przez co będziemy prównywali peaki przesunięte o +-1 cm^-1
