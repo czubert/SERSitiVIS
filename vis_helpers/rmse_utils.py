@@ -3,15 +3,6 @@ import streamlit as st
 from processing.utils import subtract_baseline
 
 
-def rsd(peak1, peak2, bg, selection, OneP, P2P):
-    if selection == OneP:
-        results = rsd_one_peak(peak1)
-    
-    elif selection == P2P:
-        results = rsd_peak_to_peak_ratio(peak1, peak2, bg)
-    
-    return results
-
 def rsd_one_peak(peak):
     """
     This function takes one particular peak from each spectrum,
