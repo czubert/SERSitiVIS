@@ -97,7 +97,7 @@ def main():
     
         fig.add_vline(x=ran[0], line_dash="dash", annotation_text=text)
         fig.add_vline(x=ran[1], line_dash="dash")
-        fig.add_vrect(x0=ran[0], x1=ran[1], line_width=0, fillcolor=bg_colors[text], opacity=0.2)
+        fig.add_vrect(x0=ran[0], x1=ran[1], line_width=0, fillcolor=bg_colors[text], opacity=0.15)
 
     cols = st.beta_columns((7, 3))
 
