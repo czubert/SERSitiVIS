@@ -70,23 +70,32 @@ def main():
     else:
         sliders_params = SLIDERS_PARAMS_RAW
 
-    bg_colors = {'Peak 1': 'yellow', 'Peak 2': 'orange', 'Background': 'gray'}
+    bg_colors = {'Peak 1': 'yellow', 'Peak 2': 'orange'}
+
     cols = st.beta_columns((4, 1, 4))
     with cols[0]:
-        peak1_range = st.slider(f'Peak 1 range ({bg_colors["Peak 1"]})', min_value=plot_x_min, max_value=plot_x_max,
+        peak1_range = st.slider(f'Peak 1 range ({bg_colors["Peak 1"]})',
+                                min_value=plot_x_min,
+                                max_value=plot_x_max,
                                 value=[plot_x_min, plot_x_max])
-    with cols[2]:
-        peak2_range = st.slider(f'Peak 2 range ({bg_colors["Peak 2"]})', min_value=plot_x_min, max_value=plot_x_max,
-                                value=[plot_x_min, plot_x_max])
+        peak1_range = [int(i) for i in peak1_range.split('__')]
 
-    peak1_range = [int(i) for i in peak1_range.split('__')]
-    peak2_range = [int(i) for i in peak2_range.split('__')]
+    with cols[0]:
+        if rmse_type == 'P2P':
+            peak2_range = st.slider(f'Peak 2 range ({bg_colors["Peak 2"]})', min_value=plot_x_min, max_value=plot_x_max,
+                                    value=[plot_x_min, plot_x_max])
+            peak2_range = [int(i) for i in peak2_range.split('__')]
 
     fig = px.line(df)
+    fig_layout(plot_template, fig, plot_palette)
     fig.update_xaxes(range=[plot_x_min, plot_x_max])
-    fig.update_layout({'legend_orientation': 'h'}, legend_title='Spectrum')
 
-    for ran, text in zip([peak1_range, peak2_range], ['Peak 1', 'Peak 2']):
+    peaks = zip([peak1_range], ['Peak 1'])
+    if rmse_type == 'P2P':
+        peaks = zip([peak1_range, peak2_range], ['Peak 1', 'Peak 2'])
+
+    for ran, text in peaks:
+    
         if ran == [plot_x_min, plot_x_max]: continue
     
         fig.add_vline(x=ran[0], line_dash="dash", annotation_text=text)
@@ -95,14 +104,14 @@ def main():
     cols = st.beta_columns((7, 3))
 
     with cols[0]:
-        fig_layout(plot_template, fig, plot_palette)
         st.plotly_chart(fig, use_container_width=True)
 
     mask = (peak1_range[0] <= df.index) & (df.index <= peak1_range[1])
     peak1 = df[mask]
 
-    mask = (peak2_range[0] <= df.index) & (df.index <= peak2_range[1])
-    peak2 = df[mask]
+    if rmse_type == 'P2P':
+        mask = (peak2_range[0] <= df.index) & (df.index <= peak2_range[1])
+        peak2 = df[mask]
 
     with cols[1]:
         if rmse_type == 'OneP':
