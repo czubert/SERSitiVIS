@@ -264,7 +264,7 @@ def main():
         with main_expander:
             plot_palette, plot_template = vis_utils.get_chart_vis_properties()
 
-        #
+        # TODO need to add it one day
         # rescale = st.sidebar.checkbox("Normalize")
         # if rescale:
         #     scaler = MinMaxScaler()
@@ -337,9 +337,6 @@ def main():
         with cols[1]:
             st.plotly_chart(sers_fig, use_container_width=True)
 
-        # TODO to zadziała w momencie jak w zaznaczonym spektrum peaki, które chcemy porównać będą najwyższymi
-        #  w innym wypadku, weźmie pod uwage inne pasmo. Jakiś pomysł jak to uodpornić na debili?
-        #  Możnaby zrobić 2 suwaki, ale tak jest bardziej 'zautomatyzowane'
         raman_mask = (peak_range[0] <= raman_df.index) & (raman_df.index <= peak_range[1])
         sers_mask = (peak_range[0] <= sers_df.index) & (sers_df.index <= peak_range[1])
         raman_peak = raman_df[raman_mask]
