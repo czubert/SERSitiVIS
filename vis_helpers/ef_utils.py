@@ -19,8 +19,8 @@ def get_volume():
     # # #
     # # Solution Volume
     #
-    vis_utils.print_widget_labels('Volume of solution [ml]', 5, 0)
-    return st.number_input('', 0, 15, 2)
+    vis_utils.print_widget_labels('Volume of solution [ul]', 5, 0)
+    return st.number_input('', 0.0, 10000.0, 2000.0, 10.0) / 1000
 
 
 def get_Laser_wave_length():
@@ -36,7 +36,7 @@ def get_lens_params():
     # # Lens params
     #
     vis_utils.print_widget_labels('Lens parameter - Numerical Aperture (NA)', 5, 0)
-    return st.number_input('', 0.0, 10.0, 0.40, 0.1)
+    return st.number_input('', 0.0, 10.0, 0.22, 0.01)
 
 
 def get_active_surface_area():
@@ -46,9 +46,9 @@ def get_active_surface_area():
     vis_utils.print_widget_labels('The area of active surface of the SERS substrate [mm]', 5, 0)
     cols = st.beta_columns(3)
     with cols[0]:
-        active_x = st.number_input('First dimension (x)', 0.0, 50.0, 3.0, 0.1)
+        active_x = st.number_input('First dimension (x)', 0.0, 50.0, 5.0, 0.1)
     with cols[1]:
-        active_y = st.number_input('Second dimension (y)', 0.0, 50.0, 3.0, 0.1)
+        active_y = st.number_input('Second dimension (y)', 0.0, 50.0, 4.0, 0.1)
     with cols[2]:
         dev_coeff = st.number_input('Surface area development coefficient', 0.0, 10.0, 2.0, 0.05)
 

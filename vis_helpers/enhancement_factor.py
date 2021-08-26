@@ -11,9 +11,9 @@ def main():
     # # First step of calculations and the user input required to calculate it
     #
     st.markdown('## First step of calculations')
+    st.markdown('### Calculating the number of molecules ($N$) in the solution')
     step = st.beta_expander('Show description')
     with step:
-        st.markdown('### Calculating the number of molecules ($N$) in the solution')
         st.markdown(r'### <p style="text-align: center;">$$N=N_A \times C \times V$$</p>', unsafe_allow_html=True)
         st.markdown(r'$N$ - Number of particles')
         st.markdown(r'$N_A$ - Avogadro constant $[mol^{-1}]$')
@@ -30,19 +30,18 @@ def main():
     num_molecules = ef_utils.num_of_molecules(concentration, volume)
 
     st.markdown(r'$N =$' + f' {"{:.1e}".format(num_molecules)} $[m^2]$')
-    
+
     # # # #
     # # #
     # # Second step of calculations and the user input required to calculate it
     #
     st.markdown('---')
     st.markdown('## Second step of calculations')
+    st.markdown('### Calculating the laser spot ($S_{Laser}$), '
+                'which is the function of wave length and aperture of the lens:')
     step = st.beta_expander('Show description')
 
     with step:
-        st.markdown('### Calculating the laser spot ($S_{Laser}$), '
-                    'which is the function of wave length and aperture of the lens:')
-
         st.markdown(
             r'### <p style="text-align: center;font-size:1.15em">$$S_{Laser}=\frac{1.22 \times \lambda}{NA}$$</p>',
             unsafe_allow_html=True)
@@ -68,11 +67,10 @@ def main():
     #
     st.markdown('---')
     st.markdown('## Third step of calculations')
+    st.markdown('### Calculating the surface area irradiated with the laser ($S_{0}$)')
     step = st.beta_expander('Show description')
 
     with step:
-        st.markdown('### Calculating the surface area irradiated with the laser ($S_{0}$)')
-
         st.markdown(
             r'### <p style="text-align: center;font-size:1.15em">$$S_{0}=\pi \times (\frac{S_{Laser}}{2})^2$$</p>',
             unsafe_allow_html=True)
@@ -89,11 +87,10 @@ def main():
     #
     st.markdown('---')
     st.markdown('## Fourth step of calculations')
+    st.markdown('### Determination of the number of molecules per laser irradiated surface ($N_{SERS}$)')
     step = st.beta_expander('Show description')
 
     with step:
-        st.markdown('### Determination of the number of molecules per laser irradiated surface ($N_{SERS}$)')
-
         # # Basic formula for N_SERS
         st.markdown(
             r'### <p style="text-align: center;font-size:1.15em">$$N_{SERS} = N_{Laser} \times coverage$$</p>',
@@ -116,7 +113,7 @@ def main():
             r'### <p style="text-align: center;font-size:1.15em; margin-top:-35px">$$N_{SERS} = '
             r'\frac {N \times S_{Laser} \times coverage}{S_{Platform}}$$</p>',
             unsafe_allow_html=True)
-
+    
         st.markdown(r'$N_{SERS}$ - The number of molecules per laser irradiated surface')
         st.markdown(r'$N_{Laser}$ - $$\frac {N \times S_{Laser}}{S_{Platform}}$$')
         st.markdown(r'$coverage$ - Surface coverage with the particles (e.g. for p-MBA $10^{-6} M$ ~= 10%')
@@ -147,9 +144,9 @@ def main():
     # # Fifth step of calculations and the user input required to calculate it
     #
     st.markdown('## Fifth step of calculations')
+    st.markdown('### Calculation of the volume from which the Raman signal for your compound in solids is recorded')
     step = st.beta_expander('Show description')
     with step:
-        st.markdown('### Calculation of the volume from which the Raman signal for your compound in solids is recorded')
         st.markdown(r'### <p style="text-align: center;">$$V_{compound}=S_0 \times h$$</p>', unsafe_allow_html=True)
         st.markdown(r'$V_{compound}$ - The volume of your chemical compound crystal subjected to laser illumination')
         st.markdown(r'$S_0$ - Surface area of the laser spot $[m^2]$')
@@ -168,12 +165,11 @@ def main():
     # # Sixth step of calculations and the user input required to calculate it
     #
     st.markdown('## Sixth step of calculations')
+    st.markdown(r'### Determining the number of p-MBA molecules from which the Raman signal ($N_{Raman}$) comes')
     step = st.beta_expander('Show description')
     with step:
-        st.markdown(r'#### Determining the number of p-MBA molecules from which the Raman signal ($N_{Raman}$) comes')
-
         st.markdown('---')
-
+    
         st.markdown(r'Firstly, the mass of the irradiated crystal is determined from the compound density:')
         st.markdown(r'### <p style="text-align: center;">$$m_{compound}=d_{compound} \times V_{compound}$$</p>',
                     unsafe_allow_html=True)
@@ -181,18 +177,18 @@ def main():
         st.markdown(r'$d_{compound}$ - density of the chemical compound$[\frac{g}{cm^3}]$')
         st.markdown(
             r'$V_{compound}$ - The volume of your chemical compound crystal subjected to laser illumination $[m^3]$')
-
+    
         st.markdown('---')
-
+    
         st.markdown(r'Secondly, from the molar mass, the number of moles is calculated:')
         st.markdown(r'### <p style="text-align: center;">$$n_{compound}= \frac{m_{compound}}{M_{compound}}$$</p>',
                     unsafe_allow_html=True)
         st.markdown(r'$n_{compound}$ - Number of moles of the irradiated crystal $[mol]$')
         st.markdown(r'$m_{compound}$ - Mass of the irradiated crystal $[g]$')
         st.markdown(r'$M_{compound}$ - Molecular weight of the chemical compound $[\frac{g}{mol}]$')
-
+    
         st.markdown('---')
-
+    
         st.markdown(
             r'Lastly, The number of molecules irradiated during the recording of the Raman spectrum (&N_{Raman}&) is obtained by multiplying the number of moles by the Avogadro constant:')
         st.markdown(r'### <p style="text-align: center;">$$N_{Raman}= n_{compound}\times N_A$$</p>',
@@ -215,10 +211,10 @@ def main():
     # # #
     # # Final, seventh, step of calculations and the user input required to calculate it
     #
-    st.markdown('## seventh step of calculations')
+    st.markdown('## Seventh step of calculations')
+    st.markdown('### Calculating the Enhancement Factor')
     step = st.beta_expander('Show description')
     with step:
-        st.markdown('### Calculating the Enhancement Factor')
         st.markdown(
             r'### <p style="text-align: center;">$$EF=\frac{I_{SERS}}{N_{SERS}} \times \frac{N_{Raman}}{I_{Raman}}$$</p>',
             unsafe_allow_html=True)
@@ -238,4 +234,5 @@ def main():
 
     st.markdown('---')
 
+    # TODO, to zapobiega pojawianiu się błędu, ale trzeba to poprawić
     st.stop()
