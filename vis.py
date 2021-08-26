@@ -163,8 +163,10 @@ def main():
             baselined = pd.DataFrame(index=df.index)
             flattened = pd.DataFrame(index=df.index)
             for col in df.columns:
-                # TODO jak są 2 nierówne widma (jedno ma NaNy), to peakutils zwraca same nany dla tego widma
-                baselines[col] = peakutils.baseline(df[col], vals[col][0])
+                tmp_spectrum = df[col].dropna()  # trick for data with NaNs
+                tmp_spectrum = pd.Series(peakutils.baseline(tmp_spectrum, vals[col][0]), index=tmp_spectrum.index)
+                baselines[col] = tmp_spectrum
+
                 baselined[col] = df[col] - baselines[col]
                 flattened[col] = baselined[col].rolling(window=vals[col][1], min_periods=1, center=True).mean()
         #
@@ -246,22 +248,22 @@ def main():
 
 
 if __name__ == '__main__':
-    try:
-        import streamlit_analytics
-    
-        credential_file = 'tmp_credentials.json'
-        if not os.path.exists(credential_file):
-            with open(credential_file, 'w') as infile:
-                infile.write(st.secrets['firebase_credentials'])
-            print('credentials written')
-    
-        collection = datetime.date.today().strftime("%Y-%m")
-        with streamlit_analytics.track(firestore_key_file=credential_file,
-                                       firestore_collection_name=collection,
-                                       # verbose=True
-                                       ):
-            main()
-    except KeyError:
-        main()
+    # try:
+    #     import streamlit_analytics
+    #
+    #     credential_file = 'tmp_credentials.json'
+    #     if not os.path.exists(credential_file):
+    #         with open(credential_file, 'w') as infile:
+    #             infile.write(st.secrets['firebase_credentials'])
+    #         print('credentials written')
+    #
+    #     collection = datetime.date.today().strftime("%Y-%m")
+    #     with streamlit_analytics.track(firestore_key_file=credential_file,
+    #                                    firestore_collection_name=collection,
+    #                                    # verbose=True
+    #                                    ):
+    #         main()
+    # except KeyError:
+    main()
 
     print("Streamlit finished it's work")
