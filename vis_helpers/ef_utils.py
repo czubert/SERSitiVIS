@@ -23,7 +23,7 @@ def get_volume():
     return st.number_input('', 0.0, 10000.0, 2000.0, 10.0) / 1000
 
 
-def get_Laser_wave_length():
+def get_laser_wave_length():
     # # #
     # # Laser wavelength
     #
