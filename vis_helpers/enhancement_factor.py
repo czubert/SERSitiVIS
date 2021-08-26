@@ -230,7 +230,39 @@ def main():
     i_sers, i_raman = ef_utils.get_laser_intensities()
 
     import plotly.express as px
-    df = pd.DataFrame()
+
+    files = st.sidebar.file_uploader(label='Upload your data or try with ours',
+                                     accept_multiple_files=True,
+                                     type=['txt', 'csv'])
+
+    if not files:
+        return st.warning("Upload data for calculatios")
+
+    main_expander = st.beta_expander("Customize your chart")
+    # Choose plot colors and templates
+    with main_expander:
+        plot_palette, plot_template = vis_utils.get_chart_vis_properties()
+
+    rmse_type = st.radio("RSD type:",
+                         rmse_types,
+                         format_func=LABELS.get,
+                         index=0)
+
+    df = processing.save_read.files_to_df(files, spectrometer)
+    df = df.interpolate().bfill().ffill()
+
+    plot_x_min = int(df.index.min())
+    plot_x_max = int(df.index.max())
+
+    rescale = st.sidebar.checkbox("Normalize")
+    if rescale:
+        scaler = MinMaxScaler()
+        rescaled_data = scaler.fit_transform(df)
+        df = pd.DataFrame(rescaled_data, columns=df.columns, index=df.index)
+        sliders_params = SLIDERS_PARAMS_NORMALIZED
+    else:
+        sliders_params = SLIDERS_PARAMS_RAW
+
     bg_colors = {'Peak 1': 'yellow', 'Peak 2': 'green'}
 
     peak1_range = st.slider(f'Peak 1 range ({bg_colors["Peak 1"]})',
