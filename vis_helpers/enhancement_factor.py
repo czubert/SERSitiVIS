@@ -11,6 +11,15 @@ from . import rmse_utils, sidebar, vis_utils
 from visualisation.draw import fig_layout
 from . import ef_utils
 
+SLIDERS_PARAMS_RAW = {'rel_height': dict(min_value=1, max_value=100, value=20, step=1),
+                      'height': dict(min_value=1000, max_value=100000, value=10000, step=1000),
+                      }
+SLIDERS_PARAMS_NORMALIZED = {'rel_height': dict(min_value=0.01, max_value=1., value=0.5, step=0.01),
+                             'height': dict(min_value=0.001, max_value=1., value=0.1, step=0.001),
+                             }
+
+spectra_types = ['EMPTY', 'BWTEK', 'RENI', 'WITEC', 'WASATCH', 'TELEDYNE', 'JOBIN']
+
 
 def main():
     st.title('Enhancement Factor calculator')
@@ -234,72 +243,119 @@ def main():
         st.markdown(r'$N_{Raman}$ - The number of molecules irradiated during the recording of the Raman spectrum')
     
     # # SERS intensity and Raman Intensity
-    # TODO wykorzystać Charza pomysł na wybieranie maksa z zakresu, gdyby ktoś chciał, żeby mu automatycznie policzyło
-    i_sers, i_raman = ef_utils.get_laser_intensities()
     
-    SLIDERS_PARAMS_RAW = {'rel_height': dict(min_value=1, max_value=100, value=20, step=1),
-                          'height': dict(min_value=1000, max_value=100000, value=10000, step=1000),
-                          }
-    SLIDERS_PARAMS_NORMALIZED = {'rel_height': dict(min_value=0.01, max_value=1., value=0.5, step=0.01),
-                                 'height': dict(min_value=0.001, max_value=1., value=0.1, step=0.001),
-                                 }
-    files = st.sidebar.file_uploader(label='Upload your data or try with ours',
-                                     accept_multiple_files=True,
-                                     type=['txt', 'csv'])
+    intensities_options = {'input': 'Input the intensities for Raman and SERS',
+                           'from_spec': 'Get Raman and SERS intensities from their spectra'}
     
-    if not files:
-        return st.warning("Upload data for calculatios")
+    intensities_radio = st.radio('Choose whether you want to input intensities or get the values from spectra',
+                                 ['input', 'from_spec'],
+                                 format_func=intensities_options.get
+                                 )
+    if intensities_radio == 'input':
+        i_sers, i_raman = ef_utils.get_laser_intensities()
     
-    main_expander = st.beta_expander("Customize your chart")
-    # Choose plot colors and templates
-    with main_expander:
-        plot_palette, plot_template = vis_utils.get_chart_vis_properties()
-
-
-    df = processing.save_read.files_to_df(files, spectrometer)
-    df = df.interpolate().bfill().ffill()
-
-    plot_x_min = int(df.index.min())
-    plot_x_max = int(df.index.max())
-
-    rescale = st.sidebar.checkbox("Normalize")
-    if rescale:
-        scaler = MinMaxScaler()
-        rescaled_data = scaler.fit_transform(df)
-        df = pd.DataFrame(rescaled_data, columns=df.columns, index=df.index)
-        sliders_params = SLIDERS_PARAMS_NORMALIZED
-    else:
-        sliders_params = SLIDERS_PARAMS_RAW
-
-    bg_colors = {'Peak 1': 'yellow', 'Peak 2': 'green'}
-
-    peak1_range = st.slider(f'Peak 1 range ({bg_colors["Peak 1"]})',
-                            min_value=plot_x_min,
-                            max_value=plot_x_max,
-                            value=[plot_x_min, plot_x_max])
-
-    peak1_range = [int(i) for i in peak1_range.split('__')]
-
-    fig = px.line(df)
-    fig_layout(plot_template, fig, plot_palette)
-    fig.update_xaxes(range=[plot_x_min, plot_x_max])
-
-    peaks = zip([peak1_range], ['Peak 1'])
-
-    for ran, text in peaks:
-        if ran == [plot_x_min, plot_x_max]: continue
-    
-        fig.add_vline(x=ran[0], line_dash="dash", annotation_text=text)
-        fig.add_vline(x=ran[1], line_dash="dash")
-        fig.add_vrect(x0=ran[0], x1=ran[1], line_width=0, fillcolor=bg_colors[text], opacity=0.15)
-
-    cols = st.beta_columns((7, 3))
-
-    with cols[0]:
-        st.plotly_chart(fig, use_container_width=True)
-
-    mask = (peak1_range[0] <= df.index) & (df.index <= peak1_range[1])
-    peak1 = df[mask]
+    if intensities_radio == 'from_spec':
+        spectrometer = st.sidebar.selectbox("Choose spectra type",
+                                            spectra_types,
+                                            format_func=LABELS.get,
+                                            index=0
+                                            )
+        
+        main_expander = st.beta_expander("Customize your chart")
+        # Choose plot colors and templates
+        with main_expander:
+            plot_palette, plot_template = vis_utils.get_chart_vis_properties()
+        
+        #
+        # rescale = st.sidebar.checkbox("Normalize")
+        # if rescale:
+        #     scaler = MinMaxScaler()
+        #     rescaled_data = scaler.fit_transform(sers_df)
+        #     df = pd.DataFrame(rescaled_data, columns=sers_df.columns, index=sers_df.index)
+        #     sliders_params = SLIDERS_PARAMS_NORMALIZED
+        # else:
+        #     sliders_params = SLIDERS_PARAMS_RAW
+        
+        bg_colors = {'Peak 1': 'yellow', 'Peak 2': 'green'}
+        
+        cols = st.beta_columns(2)
+        
+        with cols[0]:
+            raman_file = st.file_uploader(label='Upload Raman Spectrum',
+                                          accept_multiple_files=True,
+                                          type=['txt', 'csv'])
+            
+            if not raman_file:
+                st.warning("Upload Raman spectra")
+            if raman_file:
+                raman_df = processing.save_read.files_to_df(raman_file, spectrometer)
+                raman_df = raman_df.interpolate().bfill().ffill()
+                
+                plot_x_min = int(raman_df.index.min())
+                plot_x_max = int(raman_df.index.max())
+                
+                raman_fig = px.line(raman_df)
+                fig_layout(plot_template, raman_fig, plot_palette)
+                raman_fig.update_xaxes(range=[plot_x_min, plot_x_max])
+        
+        with cols[1]:
+            sers_file = st.file_uploader(label='Upload SERS Spectrum',
+                                         accept_multiple_files=True,
+                                         type=['txt', 'csv'])
+            
+            if not sers_file:
+                return st.warning("Upload Raman spectra")
+            
+            if sers_file:
+                sers_df = processing.save_read.files_to_df(sers_file, spectrometer)
+                sers_df = sers_df.interpolate().bfill().ffill()
+                
+                plot_x_min = int(sers_df.index.min())
+                plot_x_max = int(sers_df.index.max())
+                
+                sers_fig = px.line(sers_df)
+                fig_layout(plot_template, sers_fig, plot_palette)
+                sers_fig.update_xaxes(range=[plot_x_min, plot_x_max])
+        
+        peak1_range = st.slider(f'Peak range ({bg_colors["Peak 1"]})',
+                                min_value=plot_x_min,
+                                max_value=plot_x_max,
+                                value=[plot_x_min, plot_x_max])
+        
+        peak1_range = [int(i) for i in peak1_range.split('__')]
+        peaks = zip([peak1_range], ['Peak 1'])
+        
+        for ran, text in peaks:
+            if ran == [plot_x_min, plot_x_max]: continue
+            
+            raman_fig.add_vline(x=ran[0], line_dash="dash", annotation_text=text)
+            raman_fig.add_vline(x=ran[1], line_dash="dash")
+            raman_fig.add_vrect(x0=ran[0], x1=ran[1], line_width=0, fillcolor=bg_colors[text], opacity=0.15)
+            
+            sers_fig.add_vline(x=ran[0], line_dash="dash", annotation_text=text)
+            sers_fig.add_vline(x=ran[1], line_dash="dash")
+            sers_fig.add_vrect(x0=ran[0], x1=ran[1], line_width=0, fillcolor=bg_colors[text], opacity=0.15)
+        cols = st.beta_columns(2)
+        with cols[0]:
+            st.plotly_chart(raman_fig, use_container_width=True)
+        with cols[1]:
+            st.plotly_chart(sers_fig, use_container_width=True)
+        
+        # TODO to zadziała w momencie jak w zaznaczonym spektrum peaki, które chcemy porównać będą najwyższymi
+        #  w innym wypadku, weźmie pod uwage inne pasmo. Jakiś pomysł jak to uodpornić na debili?
+        #  Możnaby zrobić 2 suwaki, ale tak jest bardziej 'zautomatyzowane'
+        raman_mask = (peak1_range[0] <= raman_df.index) & (raman_df.index <= peak1_range[1])
+        sers_mask = (peak1_range[0] <= sers_df.index) & (sers_df.index <= peak1_range[1])
+        raman_peak = raman_df[raman_mask]
+        sers_peak = sers_df[sers_mask]
+        
+        i_raman = raman_peak.max()
+        i_sers = sers_peak.max()
+        
+        with cols[0]:
+            st.write(i_raman)
+        with cols[1]:
+            st.write(i_sers)
 
     enhancement_factor = (i_sers / n_sers) * (n_raman / i_raman)
 
