@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 import streamlit as st
 from . import ef_utils
 
@@ -227,6 +228,38 @@ def main():
     # # SERS intensity and Raman Intensity
     # TODO wykorzystać Charza pomysł na wybieranie maksa z zakresu, gdyby ktoś chciał, żeby mu automatycznie policzyło
     i_sers, i_raman = ef_utils.get_laser_intensities()
+
+    import plotly.express as px
+    df = pd.DataFrame()
+    bg_colors = {'Peak 1': 'yellow', 'Peak 2': 'green'}
+
+    peak1_range = st.slider(f'Peak 1 range ({bg_colors["Peak 1"]})',
+                            min_value=plot_x_min,
+                            max_value=plot_x_max,
+                            value=[plot_x_min, plot_x_max])
+
+    peak1_range = [int(i) for i in peak1_range.split('__')]
+
+    fig = px.line(df)
+    # fig_layout(plot_template, fig, plot_palette)
+    fig.update_xaxes(range=[plot_x_min, plot_x_max])
+
+    peaks = zip([peak1_range], ['Peak 1'])
+
+    for ran, text in peaks:
+        if ran == [plot_x_min, plot_x_max]: continue
+    
+        fig.add_vline(x=ran[0], line_dash="dash", annotation_text=text)
+        fig.add_vline(x=ran[1], line_dash="dash")
+        fig.add_vrect(x0=ran[0], x1=ran[1], line_width=0, fillcolor=bg_colors[text], opacity=0.15)
+
+    cols = st.beta_columns((7, 3))
+
+    with cols[0]:
+        st.plotly_chart(fig, use_container_width=True)
+
+    mask = (peak1_range[0] <= df.index) & (df.index <= peak1_range[1])
+    peak1 = df[mask]
 
     enhancement_factor = (i_sers / n_sers) * (n_raman / i_raman)
 
