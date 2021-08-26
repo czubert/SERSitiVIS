@@ -1,12 +1,20 @@
 import numpy as np
 import pandas as pd
 import streamlit as st
+
+import plotly.express as px
+from sklearn.preprocessing import MinMaxScaler
+
+import processing
+from constants import LABELS
+from . import rmse_utils, sidebar, vis_utils
+from visualisation.draw import fig_layout
 from . import ef_utils
 
 
 def main():
     st.title('Enhancement Factor calculator')
-
+    
     # # # #
     # # #
     # # First step of calculations and the user input required to calculate it
@@ -224,29 +232,29 @@ def main():
         st.markdown(r'$N_{SERS}$ - The number of molecules irradiated during the recording of the SERS spectrum')
         st.markdown(r'$I_{Raman}$ - Raman signal (particular peak) of you compound')
         st.markdown(r'$N_{Raman}$ - The number of molecules irradiated during the recording of the Raman spectrum')
-
+    
     # # SERS intensity and Raman Intensity
     # TODO wykorzystać Charza pomysł na wybieranie maksa z zakresu, gdyby ktoś chciał, żeby mu automatycznie policzyło
     i_sers, i_raman = ef_utils.get_laser_intensities()
-
-    import plotly.express as px
-
+    
+    SLIDERS_PARAMS_RAW = {'rel_height': dict(min_value=1, max_value=100, value=20, step=1),
+                          'height': dict(min_value=1000, max_value=100000, value=10000, step=1000),
+                          }
+    SLIDERS_PARAMS_NORMALIZED = {'rel_height': dict(min_value=0.01, max_value=1., value=0.5, step=0.01),
+                                 'height': dict(min_value=0.001, max_value=1., value=0.1, step=0.001),
+                                 }
     files = st.sidebar.file_uploader(label='Upload your data or try with ours',
                                      accept_multiple_files=True,
                                      type=['txt', 'csv'])
-
+    
     if not files:
         return st.warning("Upload data for calculatios")
-
+    
     main_expander = st.beta_expander("Customize your chart")
     # Choose plot colors and templates
     with main_expander:
         plot_palette, plot_template = vis_utils.get_chart_vis_properties()
 
-    rmse_type = st.radio("RSD type:",
-                         rmse_types,
-                         format_func=LABELS.get,
-                         index=0)
 
     df = processing.save_read.files_to_df(files, spectrometer)
     df = df.interpolate().bfill().ffill()
@@ -273,7 +281,7 @@ def main():
     peak1_range = [int(i) for i in peak1_range.split('__')]
 
     fig = px.line(df)
-    # fig_layout(plot_template, fig, plot_palette)
+    fig_layout(plot_template, fig, plot_palette)
     fig.update_xaxes(range=[plot_x_min, plot_x_max])
 
     peaks = zip([peak1_range], ['Peak 1'])
