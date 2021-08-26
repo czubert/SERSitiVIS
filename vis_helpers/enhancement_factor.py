@@ -131,7 +131,7 @@ def main():
             r'### <p style="text-align: center;font-size:1.15em; margin-top:-35px">$$N_{SERS} = '
             r'\frac {N \times S_{Laser} \times coverage}{S_{Platform}}$$</p>',
             unsafe_allow_html=True)
-    
+
         st.markdown(r'$N_{SERS}$ - The number of molecules per laser irradiated surface')
         st.markdown(r'$N_{Laser}$ - $$\frac {N \times S_{Laser}}{S_{Platform}}$$')
         st.markdown(r'$coverage$ - Surface coverage with the particles (e.g. for p-MBA $10^{-6} M$ ~= 10%')
@@ -187,7 +187,7 @@ def main():
     step = st.beta_expander('Show description')
     with step:
         st.markdown('---')
-    
+
         st.markdown(r'Firstly, the mass of the irradiated crystal is determined from the compound density:')
         st.markdown(r'### <p style="text-align: center;">$$m_{compound}=d_{compound} \times V_{compound}$$</p>',
                     unsafe_allow_html=True)
@@ -195,18 +195,18 @@ def main():
         st.markdown(r'$d_{compound}$ - density of the chemical compound$[\frac{g}{cm^3}]$')
         st.markdown(
             r'$V_{compound}$ - The volume of your chemical compound crystal subjected to laser illumination $[m^3]$')
-    
+
         st.markdown('---')
-    
+
         st.markdown(r'Secondly, from the molar mass, the number of moles is calculated:')
         st.markdown(r'### <p style="text-align: center;">$$n_{compound}= \frac{m_{compound}}{M_{compound}}$$</p>',
                     unsafe_allow_html=True)
         st.markdown(r'$n_{compound}$ - Number of moles of the irradiated crystal $[mol]$')
         st.markdown(r'$m_{compound}$ - Mass of the irradiated crystal $[g]$')
         st.markdown(r'$M_{compound}$ - Molecular weight of the chemical compound $[\frac{g}{mol}]$')
-    
+
         st.markdown('---')
-    
+
         st.markdown(
             r'Lastly, The number of molecules irradiated during the recording of the Raman spectrum (&N_{Raman}&) is obtained by multiplying the number of moles by the Avogadro constant:')
         st.markdown(r'### <p style="text-align: center;">$$N_{Raman}= n_{compound}\times N_A$$</p>',
@@ -241,26 +241,27 @@ def main():
         st.markdown(r'$N_{SERS}$ - The number of molecules irradiated during the recording of the SERS spectrum')
         st.markdown(r'$I_{Raman}$ - Raman signal (particular peak) of you compound')
         st.markdown(r'$N_{Raman}$ - The number of molecules irradiated during the recording of the Raman spectrum')
-    
+
     # # SERS intensity and Raman Intensity
-    
+
     intensities_options = {'input': 'Input the intensities for Raman and SERS',
                            'from_spec': 'Get Raman and SERS intensities from their spectra'}
-    
+
     intensities_radio = st.radio('Choose whether you want to input intensities or get the values from spectra',
                                  ['input', 'from_spec'],
                                  format_func=intensities_options.get
                                  )
+
+    spectrometer = st.sidebar.selectbox("Choose spectra type",
+                                        spectra_types,
+                                        format_func=LABELS.get,
+                                        index=0
+                                        )
     if intensities_radio == 'input':
         i_sers, i_raman = ef_utils.get_laser_intensities()
-    
+
     if intensities_radio == 'from_spec':
-        spectrometer = st.sidebar.selectbox("Choose spectra type",
-                                            spectra_types,
-                                            format_func=LABELS.get,
-                                            index=0
-                                            )
-        
+    
         main_expander = st.beta_expander("Customize your chart")
         # Choose plot colors and templates
         with main_expander:
@@ -340,7 +341,7 @@ def main():
             st.plotly_chart(raman_fig, use_container_width=True)
         with cols[1]:
             st.plotly_chart(sers_fig, use_container_width=True)
-        
+    
         # TODO to zadziała w momencie jak w zaznaczonym spektrum peaki, które chcemy porównać będą najwyższymi
         #  w innym wypadku, weźmie pod uwage inne pasmo. Jakiś pomysł jak to uodpornić na debili?
         #  Możnaby zrobić 2 suwaki, ale tak jest bardziej 'zautomatyzowane'
@@ -348,14 +349,9 @@ def main():
         sers_mask = (peak1_range[0] <= sers_df.index) & (sers_df.index <= peak1_range[1])
         raman_peak = raman_df[raman_mask]
         sers_peak = sers_df[sers_mask]
-        
-        i_raman = raman_peak.max()
-        i_sers = sers_peak.max()
-        
-        with cols[0]:
-            st.write(i_raman)
-        with cols[1]:
-            st.write(i_sers)
+    
+        i_raman = raman_peak.max()[0]
+        i_sers = sers_peak.max()[0]
 
     enhancement_factor = (i_sers / n_sers) * (n_raman / i_raman)
 
