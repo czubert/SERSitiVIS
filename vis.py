@@ -264,6 +264,6 @@ if __name__ == '__main__':
                                        ):
             main()
     except KeyError:
-    # main()
+        main()
     
     print("Streamlit finished it's work")
