@@ -224,22 +224,24 @@ def visualisation():
 
 
 if __name__ == '__main__':
-    try:
-        import streamlit_analytics
-
-        credential_file = 'tmp_credentials.json'
-        if not os.path.exists(credential_file):
-            with open(credential_file, 'w') as infile:
-                infile.write(st.secrets['firebase_credentials'])
-            print('credentials written')
-
-        collection = datetime.date.today().strftime("%Y-%m")
-        with streamlit_analytics.track(firestore_key_file=credential_file,
-                                       firestore_collection_name=collection,
-                                       # verbose=True
-                                       ):
-            main()
-    except KeyError:
-        main()
-
+    # try:
+    #     import streamlit_analytics
+    #
+    #     credential_file = 'tmp_credentials.json'
+    #     if not os.path.exists(credential_file):
+    #         with open(credential_file, 'w') as infile:
+    #             infile.write(st.secrets['firebase_credentials'])
+    #         print('credentials written')
+    #
+    #     collection = datetime.date.today().strftime("%Y-%m")
+    #     with streamlit_analytics.track(firestore_key_file=credential_file,
+    #                                    firestore_collection_name=collection,
+    #                                    # verbose=True
+    #                                    ):
+    #         main()
+    # except KeyError:
+    #     main()
+    
+    main()
+    
     print("Streamlit finished it's work")
