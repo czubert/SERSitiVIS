@@ -11,3 +11,4 @@ streamlit==0.82.0
 BeautifulSoup4==4.9.3
 streamlit-analytics
 detect_delimiter
+scikit-learn
