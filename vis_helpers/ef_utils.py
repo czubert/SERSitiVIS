@@ -6,7 +6,10 @@ def get_concentration():
     # # #
     # # Solution Concentration
     #
-    vis_utils.print_widget_labels('Sample concentration. x * 10^n mol/dm3. Please provide x and n:', 5, 0)
+    st.markdown(
+        r'### <p style="font-weight:500; margin-top:{5}px;margin-bottom:{0}px">Sample concentration. '
+        r'$$x * 10^n \frac{mol}{dm^3}$$. Please provide x and n:</p>',
+        unsafe_allow_html=True)
     cols = st.beta_columns(2)
     with cols[0]:
         multiplier = st.number_input('Provide "x"', 1, 9, 1)
