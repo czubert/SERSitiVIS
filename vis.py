@@ -97,10 +97,10 @@ def main():
         # Choose plot colors and templates
         with main_expander:
             plots_color, template = vis_utils.get_chart_vis_properties()
-    
+
         # Select chart type
         chart_type = vis_opt.vis_options()
-    
+
         # sidebar separating line
         sidebar.print_widgets_separator()
 
@@ -128,6 +128,12 @@ def main():
         # TODO rozwiązać to jakoś sprytniej
         normalized = False
         col_left, col_right = st.beta_columns([5, 2])
+
+        if chart_type == 'SINGLE':
+            with col_left:
+                col = st.selectbox('', df.columns)
+                df = df[[col]]
+
         if spectra_conversion_type != "RAW":
             col_right = col_right.beta_expander("Customize spectra", expanded=False)
             with col_right:
@@ -149,9 +155,6 @@ def main():
             with shift_col:
                 if chart_type == 'GS':
                     shift = data_customisation.separate_spectra(normalized)
-                elif chart_type == 'SINGLE':
-                    col = st.selectbox('spectrum to plot', df.columns)
-                    df = df[[col]]
                 else:
                     shift = None
             with trim_col:
