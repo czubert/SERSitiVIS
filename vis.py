@@ -92,11 +92,7 @@ def main():
         except (TypeError, ValueError):
             st.error('Try choosing another type of spectra')
             st.stop()
-    
-        main_expander = st.beta_expander("Customize your chart")
-        # Choose plot colors and templates
-        with main_expander:
-            plots_color, template = vis_utils.get_chart_vis_properties()
+
 
         # Select chart type
         chart_type = vis_opt.vis_options()
@@ -126,7 +122,7 @@ def main():
 
         # columns in main view. Chart, expanders
         # TODO rozwiązać to jakoś sprytniej
-        normalized = False
+
         col_left, col_right = st.beta_columns([5, 2])
 
         if chart_type == 'SINGLE':
@@ -134,31 +130,38 @@ def main():
                 col = st.selectbox('', df.columns)
                 df = df[[col]]
 
-        if spectra_conversion_type != "RAW":
-            col_right = col_right.beta_expander("Customize spectra", expanded=False)
-            with col_right:
-                vals = data_customisation.get_deg_win(chart_type, spectra_conversion_type, df.columns)
-                if st.checkbox("Data Normalization"):
-                    normalized = True
-                    df = (df - df.min()) / (df.max() - df.min())
-                else:
-                    normalized = False
-
-        # For grouped spectra sometimes we want to shift the spectra from each other, here it is:
-        with main_expander:
-            # TODO the code below needed?
-            # trick to better fit sliders in expander
-            # _, main_expander_column, _ = st.beta_columns([1, 38, 1])
-            # with main_expander_column:
-
-            shift_col, _, trim_col = st.beta_columns([5, 1, 5])
-            with shift_col:
-                if chart_type == 'GS':
-                    shift = data_customisation.separate_spectra(normalized)
-                else:
-                    shift = None
-            with trim_col:
+        with col_right:
+            normalized = False
+    
+            # # Plot settings
+            plot_settings = st.beta_expander("Plot settings", expanded=False)
+    
+            # # Choose plot colors and templates
+            with plot_settings:
+                plots_color, template = vis_utils.get_chart_vis_properties_vis()
+                xaxis = st.text_input('Specify X axis name', r'Raman Shift $[cm^{-1}]$')
+                st.write(f'Preview: {xaxis}')
+                yaxis = st.text_input('Specify Y axis name', r'Intensity [au]')
+                st.write(f'Preview: {yaxis}')
+                title = st.text_input('Specify title', r'')
+                st.write(f'Preview: {title}')
+    
+            # # Slicing and shifting
+            slicing = st.beta_expander("Slicing and shifting", expanded=False)
+            with slicing:
                 df = vis_utils.trim_spectra(df)
+    
+            if spectra_conversion_type != "RAW":
+        
+                # # Data Manipulation
+                data_manipulation = st.beta_expander("Data Manipulation", expanded=False)
+                with data_manipulation:
+                    vals = data_customisation.get_deg_win(chart_type, spectra_conversion_type, df.columns)
+                    if st.checkbox("Data Normalization"):
+                        normalized = True
+                        df = (df - df.min()) / (df.max() - df.min())
+                    else:
+                        normalized = False
 
         # data conversion end
         if spectra_conversion_type in {'OPT'}:
@@ -175,16 +178,17 @@ def main():
         #
         # # Plotting
         #
-
-        # Groupped spectra
         if chart_type == 'GS':
-            shifters = [(i + 1) * shift for i in range(len(df.columns))]
-            plot_df = df if spectra_conversion_type == 'RAW' else flattened
-            plot_df = plot_df + shifters
-    
-            figs = [px.line(plot_df, x=plot_df.index, y=plot_df.columns, color_discrete_sequence=plots_color)]
+            with col_right:
+        
+                with slicing:
+                    shift = data_customisation.separate_spectra(normalized)
+            
+                    shifters = [(i + 1) * shift for i in range(len(df.columns))]
+                    plot_df = df if spectra_conversion_type == 'RAW' else flattened
+                    plot_df = plot_df + shifters
+                    figs = [px.line(plot_df, x=plot_df.index, y=plot_df.columns, color_discrete_sequence=plots_color)]
 
-        # Mean spectra
         elif chart_type == 'MS':
             if spectra_conversion_type == 'RAW':
                 plot_df = df
