@@ -24,7 +24,6 @@ def sidebar_head():
     st.sidebar.markdown('')
     st.sidebar.markdown('')
 
-
 def print_widgets_separator():
     """
     Prints customized separation line on sidebar
