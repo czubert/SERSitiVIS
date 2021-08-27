@@ -64,8 +64,6 @@ def main():
         # sidebar separating line
         sidebar.print_widgets_separator()
     
-        # TODO na pewno da się to ładniej zogarnąć
-        # TODO na pewno da się sensowniejszy warunek postawić (dopóki nie ma rozróżniania pojedynczych widm)
         if not files[0].name[-3:] == 'spc':
             from detect_delimiter import detect
             new_files = []
@@ -93,6 +91,7 @@ def main():
             # TODO tutaj na pewno też będzie trzeba poprawić spc
             if files[0].name[-3:] == 'spc':
                 df = save_read.read_files('spc', files, None)
+                st.write('spc')
             else:
                 df = save_read.read_files(spectrometer, new_files, delim)
         except (TypeError, ValueError):
