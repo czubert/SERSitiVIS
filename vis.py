@@ -49,7 +49,6 @@ def main():
                                      accept_multiple_files=True,
                                      type=['txt', 'csv'])
 
-
     # Allow example data loading when no custom data are loaded
     if not files:
         if st.sidebar.checkbox("Load example data"):
@@ -64,24 +63,24 @@ def main():
         st.spinner('Uploading data in progress')
         # sidebar separating line
         sidebar.print_widgets_separator()
-    
+
         from detect_delimiter import detect
         new_files = []
         for file in files:
             file.seek(0)
             lines = file.readlines()
-        
+
             try:
                 lines = [line.decode('utf-8') for line in lines]
             except AttributeError:
                 pass
-        
+
             # lines = str.splitlines(str(text))  # .split('\n')
             first_lines = '\n'.join(lines[:20])
-        
+
             delim = detect(first_lines)
             colnum = lines[-2].count(delim)
-        
+
             lines = [i for i in lines if i.count(delim) == colnum]
             text = '\n'.join(lines)
             buffer = io.StringIO(text)
@@ -92,7 +91,6 @@ def main():
         except (TypeError, ValueError):
             st.error('Try choosing another type of spectra')
             st.stop()
-
 
         # Select chart type
         chart_type = vis_opt.vis_options()
@@ -132,28 +130,30 @@ def main():
 
         with col_right:
             normalized = False
-    
+
             # # Plot settings
             plot_settings = st.beta_expander("Plot settings", expanded=False)
-    
+
             # # Choose plot colors and templates
             with plot_settings:
                 plots_color, template = vis_utils.get_chart_vis_properties_vis()
-                xaxis = st.text_input('Specify X axis name (Markdown)', r'Raman Shift cm <sup>-1</sup>')
-                st.write(f'Preview: {xaxis}')
-                yaxis = st.text_input('Specify Y axis name (Markdown)', r'Intensity [au]')
-                st.write(f'Preview: {yaxis}')
+                vis_utils.print_widget_labels('Labels')
+                xaxis = st.text_input('Specify X axis name', r'Raman Shift cm <sup>-1</sup>')
+                yaxis = st.text_input('Specify Y axis name', r'Intensity [au]')
                 title = st.text_input('Specify title', r'')
-                st.write(f'Preview: {title}')
                 chart_titles = {'x': xaxis, 'y': yaxis, 'title': title}
-    
+
             # # Slicing and shifting
-            slicing = st.beta_expander("Slicing and shifting", expanded=False)
+            slicing_widget_name = 'Slicing and shifting'
+            if chart_type == 'SINGLE':
+                slicing_widget_name = 'Slicing'
+
+            slicing = st.beta_expander(f"{slicing_widget_name}", expanded=False)
             with slicing:
                 df = vis_utils.trim_spectra(df)
-    
+
             if spectra_conversion_type != "RAW":
-        
+    
                 # # Data Manipulation
                 data_manipulation = st.beta_expander("Data Manipulation", expanded=False)
                 with data_manipulation:
@@ -181,10 +181,10 @@ def main():
         #
         if chart_type == 'GS':
             with col_right:
-        
+    
                 with slicing:
                     shift = data_customisation.separate_spectra(normalized)
-            
+
                     shifters = [(i + 1) * shift for i in range(len(df.columns))]
                     plot_df = df if spectra_conversion_type == 'RAW' else flattened
                     plot_df = plot_df + shifters
@@ -194,12 +194,12 @@ def main():
             if spectra_conversion_type == 'RAW':
                 plot_df = df
                 figs = [px.line(plot_df, x=plot_df.index, y=plot_df.columns, color_discrete_sequence=plots_color)]
-    
+
             elif spectra_conversion_type in {'OPT'}:
                 columns = ['Average', 'Baseline', 'BL-Corrected', 'Flattened + BL-Corrected']
                 plot_df = pd.concat([df, baselines, baselined, flattened], axis=1)
                 plot_df.columns = columns
-        
+
                 fig1 = px.line(plot_df, x=plot_df.index, y=columns[-1], color_discrete_sequence=plots_color[3:])
                 fig2 = px.line(plot_df, x=plot_df.index, y=plot_df.columns, color_discrete_sequence=plots_color)
                 figs = [(fig1, fig2)]
@@ -208,10 +208,10 @@ def main():
         # 3D spectra
         elif chart_type == 'P3D':
             plot_df = flattened if spectra_conversion_type in {"OPT"} else df
-    
+
             plot_df = plot_df.reset_index().melt('Raman Shift', plot_df.columns)
             fig = px.line_3d(plot_df, x='variable', y='Raman Shift', z='value', color='variable')
-    
+
             camera = dict(eye=dict(x=1.9, y=0.15, z=0.2))
             fig.update_layout(scene_camera=camera,
                               width=1200, height=1200,
@@ -227,10 +227,10 @@ def main():
             else:
                 columns = ['Average', 'Baseline', 'BL-Corrected', 'Flattened + BL-Corrected']
                 figs = []
-        
+
                 plot_df = pd.concat([df, baselines, baselined, flattened], axis=1)
                 plot_df.columns = columns
-        
+
                 fig1 = px.line(plot_df, x=plot_df.index, y=columns[-1],
                                color_discrete_sequence=plots_color[3:])  # trick for color consistency
                 fig2 = px.line(plot_df, x=plot_df.index, y=plot_df.columns,

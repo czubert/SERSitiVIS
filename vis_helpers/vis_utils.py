@@ -9,7 +9,7 @@ def trim_spectra(df):
     # trim raman shift range
     min_, max_ = float(df.index.min()), float(df.index.max())
     min_max = st.slider('Custom range',
-                               min_value=min_, max_value=max_, value=[min_, max_])
+                        min_value=min_, max_value=max_, value=[min_, max_])
     min_rs, max_rs = min_max.split('__')
     min_rs, max_rs = float(min_rs), float(max_rs)
     mask = (min_rs <= df.index) & (df.index <= max_rs)
@@ -117,14 +117,38 @@ def get_chart_vis_properties_vis():
                        'matter', 'solar', 'speed', 'tempo', 'thermal', 'turbid',
                        ]
     }
-    
+    print_widget_labels('Colors')
     palette_type = st.selectbox("Type of color palette", list(palettes.keys()), 0)
     palette = st.selectbox("Color palette", palettes[palette_type], index=0)
     if st.checkbox('Reversed', False):
         palette = palette + '_r'
+    print_widgets_separator()
+    print_widgets_separator()
+    print_widget_labels('Template')
     template = choose_template()
-    
+    print_widgets_separator()
+    print_widgets_separator()
+
     palette_module = getattr(px.colors, palette_type)
     palette = getattr(palette_module, palette)
-    
+
     return palette, template
+
+
+def print_widgets_separator():
+    """
+    Prints customized separation line on sidebar
+    """
+    st.markdown(
+        """<hr style="height:1px;border:none;color:#fff;background-color:#999;margin-top:5px;margin-bottom:10px" /> """,
+        unsafe_allow_html=True)
+
+
+def print_widget_labels(widget_title, margin_top=5, margin_bottom=10):
+    """
+    Prints Widget label on the sidebar and lets adjust its margins easily
+    :param widget_title: Str
+    """
+    st.markdown(
+        f"""<p style="font-weight:500; margin-top:{margin_top}px;margin-bottom:{margin_bottom}px">{widget_title}</p>""",
+        unsafe_allow_html=True)
