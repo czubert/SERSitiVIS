@@ -1,4 +1,6 @@
+import datetime
 import io
+import os
 
 import pandas as pd
 import peakutils
@@ -101,17 +103,17 @@ def main():
         # Choose plot colors and templates
         with main_expander:
             plots_color, template = vis_utils.get_chart_vis_properties()
-    
+
         # Select chart type
         chart_type = vis_opt.vis_options()
-    
+
         # sidebar separating line
         sidebar.print_widgets_separator()
 
         # Select data conversion type
         spectra_conversion_type = vis_opt.convertion_opt()
-    
-        # TODO co z tym robimy? wywalamy?
+
+        # TODO need improvements
         # getting rid of duplicated columns
         df = df.loc[:, ~df.columns.duplicated()]
 
@@ -132,6 +134,12 @@ def main():
         # TODO rozwiązać to jakoś sprytniej
         normalized = False
         col_left, col_right = st.beta_columns([5, 2])
+
+        if chart_type == 'SINGLE':
+            with col_left:
+                col = st.selectbox('', df.columns)
+                df = df[[col]]
+
         if spectra_conversion_type != "RAW":
             col_right = col_right.beta_expander("Customize spectra", expanded=False)
             with col_right:
@@ -153,9 +161,6 @@ def main():
             with shift_col:
                 if chart_type == 'GS':
                     shift = data_customisation.separate_spectra(normalized)
-                elif chart_type == 'SINGLE':
-                    col = st.selectbox('spectrum to plot', df.columns)
-                    df = df[[col]]
                 else:
                     shift = None
             with trim_col:
@@ -167,10 +172,12 @@ def main():
             baselined = pd.DataFrame(index=df.index)
             flattened = pd.DataFrame(index=df.index)
             for col in df.columns:
-                baselines[col] = peakutils.baseline(df[col], vals[col][0])
+                tmp_spectrum = df[col].dropna()  # trick for data with NaNs
+                tmp_spectrum = pd.Series(peakutils.baseline(tmp_spectrum, vals[col][0]), index=tmp_spectrum.index)
+                baselines[col] = tmp_spectrum
+
                 baselined[col] = df[col] - baselines[col]
                 flattened[col] = baselined[col].rolling(window=vals[col][1], min_periods=1, center=True).mean()
-
         #
         # # Plotting
         #
@@ -250,10 +257,24 @@ def main():
 
 
 if __name__ == '__main__':
-    try:
+    # try:
+    #     import streamlit_analytics
+    #
+    #     credential_file = 'tmp_credentials.json'
+    #     if not os.path.exists(credential_file):
+    #         with open(credential_file, 'w') as infile:
+    #             infile.write(st.secrets['firebase_credentials'])
+    #         print('credentials written')
+    #
+    #     collection = datetime.date.today().strftime("%Y-%m")
+    #     with streamlit_analytics.track(firestore_key_file=credential_file,
+    #                                    firestore_collection_name=collection,
+    #                                    # verbose=True
+    #                                    ):
+    #         main()
+    # except KeyError:
+    #     main()
     
-        main()
-    except KeyError:
-        main()
-
+    main()
+    
     print("Streamlit finished it's work")
