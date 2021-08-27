@@ -3,7 +3,7 @@ import plotly.graph_objects as go
 from constants import LABELS
 
 
-def fig_layout(template, fig, plots_colorscale, descr=None):
+def fig_layout(template, fig, chart_titles, plots_colorscale):
     """
     Changing layout and styles
     :param template: Str, Plotly template
@@ -19,7 +19,8 @@ def fig_layout(template, fig, plots_colorscale, descr=None):
                       width=900,
                       height=470,
                       xaxis=dict(
-                          title=f"{LABELS['RS']} [cm<sup>-1</sup>]",
+                          # title=f"{LABELS['RS']} [cm<sup>-1</sup>]",
+                          title=f"{chart_titles['x']}",
                           linecolor="#777",  # Sets color of X-axis line
                           showgrid=False,  # Removes X-axis grid lines
                           linewidth=2.5,
@@ -27,16 +28,18 @@ def fig_layout(template, fig, plots_colorscale, descr=None):
                           showticklabels=True,
                           ticks='outside',
                       ),
-
+    
                       yaxis=dict(
-                          title="Intensity [au]",
+                          # title="Intensity [au]",
+                          # title="Intensity [au]",
+                          title=f"{chart_titles['y']}",
                           linecolor="#777",  # Sets color of Y-axis line
                           showgrid=True,  # Removes Y-axis grid lines
                           linewidth=2.5,
                       ),
-                      title=go.layout.Title(text=descr,
+                      title=go.layout.Title(text=chart_titles['title'],
                                             font=go.layout.title.Font(size=30)),
-
+    
                       legend=go.layout.Legend(x=0.5, y=0 - .3, traceorder="normal",
                                               font=dict(
                                                   family="sans-serif",

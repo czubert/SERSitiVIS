@@ -139,12 +139,13 @@ def main():
             # # Choose plot colors and templates
             with plot_settings:
                 plots_color, template = vis_utils.get_chart_vis_properties_vis()
-                xaxis = st.text_input('Specify X axis name', r'Raman Shift $[cm^{-1}]$')
+                xaxis = st.text_input('Specify X axis name (Markdown)', r'Raman Shift cm <sup>-1</sup>')
                 st.write(f'Preview: {xaxis}')
-                yaxis = st.text_input('Specify Y axis name', r'Intensity [au]')
+                yaxis = st.text_input('Specify Y axis name (Markdown)', r'Intensity [au]')
                 st.write(f'Preview: {yaxis}')
                 title = st.text_input('Specify title', r'')
                 st.write(f'Preview: {title}')
+                chart_titles = {'x': xaxis, 'y': yaxis, 'title': title}
     
             # # Slicing and shifting
             slicing = st.beta_expander("Slicing and shifting", expanded=False)
@@ -240,7 +241,7 @@ def main():
             raise ValueError("Something unbelievable has been chosen")
 
         with col_left:
-            charts.show_charts(figs, plots_color, template)
+            charts.show_charts(figs, plots_color, chart_titles, template)
 
         with col_left:
             st.markdown('')
