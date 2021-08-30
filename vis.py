@@ -144,29 +144,25 @@ def main():
                 title = st.text_input('Specify title', r'')
                 chart_titles = {'x': xaxis, 'y': yaxis, 'title': title}
 
-            # # Slicing and shifting
-            slicing_widget_name = 'Slicing and shifting'
-            if chart_type == 'SINGLE':
-                slicing_widget_name = 'Slicing'
+            # # Range and separation
+            range_expander_name = 'Range' if chart_type in {'SINGLE', 'MS'} else 'Range and separation'
+            range_expander = st.beta_expander(range_expander_name, expanded=False)
 
-            slicing = st.beta_expander(f"{slicing_widget_name}", expanded=False)
-            with slicing:
+            with range_expander:
                 df = vis_utils.trim_spectra(df)
 
             if spectra_conversion_type != "RAW":
     
                 # # Data Manipulation
-                data_manipulation = st.beta_expander("Data Manipulation", expanded=False)
-                with data_manipulation:
+                with st.beta_expander("Data Manipulation", expanded=False):
                     vals = data_customisation.get_deg_win(chart_type, spectra_conversion_type, df.columns)
-                    if st.checkbox("Data Normalization"):
-                        normalized = True
+
+                    normalized = st.checkbox("Normalize")
+                    if normalized:
                         df = (df - df.min()) / (df.max() - df.min())
-                    else:
-                        normalized = False
 
         # data conversion end
-        if spectra_conversion_type in {'OPT'}:
+        if spectra_conversion_type == 'OPT':
             baselines = pd.DataFrame(index=df.index)
             baselined = pd.DataFrame(index=df.index)
             flattened = pd.DataFrame(index=df.index)
@@ -181,22 +177,20 @@ def main():
         # # Plotting
         #
         if chart_type == 'GS':
-            with col_right:
-    
-                with slicing:
-                    shift = data_customisation.separate_spectra(normalized)
+            with range_expander:
+                shift = data_customisation.separate_spectra(normalized)
 
-                    shifters = [(i + 1) * shift for i in range(len(df.columns))]
-                    plot_df = df if spectra_conversion_type == 'RAW' else flattened
-                    plot_df = plot_df + shifters
-                    figs = [px.line(plot_df, x=plot_df.index, y=plot_df.columns, color_discrete_sequence=plots_color)]
+                shifters = [(i + 1) * shift for i in range(len(df.columns))]
+                plot_df = df if spectra_conversion_type == 'RAW' else flattened
+                plot_df = plot_df + shifters
+                figs = [px.line(plot_df, x=plot_df.index, y=plot_df.columns, color_discrete_sequence=plots_color)]
 
         elif chart_type == 'MS':
             if spectra_conversion_type == 'RAW':
                 plot_df = df
                 figs = [px.line(plot_df, x=plot_df.index, y=plot_df.columns, color_discrete_sequence=plots_color)]
 
-            elif spectra_conversion_type in {'OPT'}:
+            elif spectra_conversion_type == 'OPT':
                 columns = ['Average', 'Baseline', 'BL-Corrected', 'Flattened + BL-Corrected']
                 plot_df = pd.concat([df, baselines, baselined, flattened], axis=1)
                 plot_df.columns = columns
