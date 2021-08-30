@@ -133,19 +133,22 @@ def get_chart_vis_properties_vis():
     return palette, template
 
 
-def print_widgets_separator(n=1):
+def print_widgets_separator(n=1, sidebar=False):
     """
     Prints customized separation line on sidebar
     """
-    for _ in range(n):
-        st.markdown("""<hr style="height:1px;
+    html = """<hr style="height:1px;
             border:none;color:#fff;
             background-color:#999;
             margin-top:5px;
             margin-bottom:10px" 
-            />""",
-                    unsafe_allow_html=True)
+            />"""
 
+    for _ in range(n):
+        if sidebar:
+            st.sidebar.markdown(html, unsafe_allow_html=True)
+        else:
+            st.markdown(html, unsafe_allow_html=True)
 
 def print_widget_labels(widget_title, margin_top=5, margin_bottom=10):
     """

@@ -24,14 +24,6 @@ def sidebar_head():
     st.sidebar.markdown('')
     st.sidebar.markdown('')
 
-def print_widgets_separator():
-    """
-    Prints customized separation line on sidebar
-    """
-    st.sidebar.markdown(
-        """<hr style="height:1px;border:none;color:#fff;background-color:#999;margin-top:5px;margin-bottom:10px" /> """,
-        unsafe_allow_html=True)
-
 
 def print_widget_labels(widget_title, margin_top=5, margin_bottom=10):
     """
