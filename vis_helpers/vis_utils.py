@@ -20,7 +20,7 @@ def trim_spectra(df):
 def show_logo():
     with open('logos/logo.png', 'rb') as f:
         data = f.read()
-    
+
     bin_str = base64.b64encode(data).decode()
     html_code = f'''
                     <img src="data:image/png;base64,{bin_str}"
@@ -37,7 +37,7 @@ def show_logo():
 @st.cache
 def show_sersitivis_logo():
     link = 'http://sersitive.eu'
-    
+
     with open('logos/sersitivis_no_background.png', 'rb') as f:
         data = f.read()
 
@@ -59,7 +59,7 @@ def choose_template():
     template = st.selectbox(
         "Choose chart template",
         list(pio.templates), index=6, key='new')
-    
+
     return template
 
 
@@ -81,9 +81,9 @@ def get_chart_vis_properties():
                        'matter', 'solar', 'speed', 'tempo', 'thermal', 'turbid',
                        ]
     }
-    
+
     col1, col2, col3 = st.beta_columns(3)
-    
+
     with col1:
         palette_type = st.selectbox("Type of color palette", list(palettes.keys()), 0)
     with col2:
@@ -122,12 +122,10 @@ def get_chart_vis_properties_vis():
     palette = st.selectbox("Color palette", palettes[palette_type], index=0)
     if st.checkbox('Reversed', False):
         palette = palette + '_r'
-    print_widgets_separator()
-    print_widgets_separator()
+    print_widgets_separator(2)
     print_widget_labels('Template')
     template = choose_template()
-    print_widgets_separator()
-    print_widgets_separator()
+    print_widgets_separator(2)
 
     palette_module = getattr(px.colors, palette_type)
     palette = getattr(palette_module, palette)
@@ -135,13 +133,18 @@ def get_chart_vis_properties_vis():
     return palette, template
 
 
-def print_widgets_separator():
+def print_widgets_separator(n=1):
     """
     Prints customized separation line on sidebar
     """
-    st.markdown(
-        """<hr style="height:1px;border:none;color:#fff;background-color:#999;margin-top:5px;margin-bottom:10px" /> """,
-        unsafe_allow_html=True)
+    for _ in range(n):
+        st.markdown("""<hr style="height:1px;
+            border:none;color:#fff;
+            background-color:#999;
+            margin-top:5px;
+            margin-bottom:10px" 
+            />""",
+                    unsafe_allow_html=True)
 
 
 def print_widget_labels(widget_title, margin_top=5, margin_bottom=10):
