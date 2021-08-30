@@ -27,7 +27,7 @@ def get_deg_win(chart_type, spectra_conversion_type, df_columns):
     elif chart_type == 'SINGLE':
         vals = {}
         for col in df_columns:
-            st.write(col)
+            # st.write(col)
             vals[col] = (utils.choosing_regression_degree(col), utils.choosing_smoothening_window(col))
 
     elif chart_type in {'GS', 'P3D'}:
