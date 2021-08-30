@@ -39,7 +39,7 @@ LABELS = {
     'RAW': "Raw Data",
     'OPT': "Optimised Data",
     'NORM': "Normalized",
-    'SHIFT': 'Shift spectra from each other',
+    'SHIFT': 'Separate spectra from each other',
     'OPT_S': "Optimised Spectrum",
     
     # for wasatch spectrometer
