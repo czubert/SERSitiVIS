@@ -291,7 +291,7 @@ def main():
                 plot_x_max = int(raman_df.index.max())
 
                 raman_fig = px.line(raman_df, color_discrete_sequence=plot_palette)
-                fig_layout(plot_template, raman_fig, plot_palette)
+                fig_layout(plot_template, raman_fig, plots_colorscale=plot_palette)
                 raman_fig.update_xaxes(range=[plot_x_min, plot_x_max])
 
         with cols[1]:
@@ -308,7 +308,7 @@ def main():
                 plot_x_max = int(sers_df.index.max())
 
                 sers_fig = px.line(sers_df, color_discrete_sequence=plot_palette)
-                fig_layout(plot_template, sers_fig, plot_palette)
+                fig_layout(plot_template, sers_fig, plots_colorscale=plot_palette)
                 sers_fig.update_xaxes(range=[plot_x_min, plot_x_max])
 
         if not raman_file or not sers_file:

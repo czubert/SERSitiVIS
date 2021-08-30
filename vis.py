@@ -1,18 +1,15 @@
-import io
-
 import pandas as pd
 import peakutils
 import plotly.express as px
 import streamlit as st
-import os
-import datetime
 # noinspection PyUnresolvedReferences
 import str_slider
 from constants import LABELS
-from processing import utils
+from processing import utils, save_read
 from vis_helpers import manual, sidebar, data_customisation, charts, authors, vis_utils
 from vis_helpers.vis_utils import print_widgets_separator
 from visualisation import visualisation_options as vis_opt
+from vis_helpers import pca, rmse, enhancement_factor
 
 
 def main():
@@ -72,7 +69,7 @@ def visualisation():
         st.spinner('Uploading data in progress')
         # sidebar separating line
         print_widgets_separator(1, sidebar=True)
-        df = files_to_df(files, spectrometer)
+        df = save_read.files_to_df(files, spectrometer)
         # Select chart type
         chart_type = vis_opt.vis_options()
 
@@ -132,7 +129,7 @@ def visualisation():
                 df = vis_utils.trim_spectra(df)
 
             if spectra_conversion_type != "RAW":
-
+    
                 # # Data Manipulation
                 with st.beta_expander("Data Manipulation", expanded=False):
                     vals = data_customisation.get_deg_win(chart_type, spectra_conversion_type, df.columns)
@@ -229,8 +226,6 @@ def visualisation():
 
     else:
         manual.show_manual()
-
-    authors.show_developers()
 
 
 if __name__ == '__main__':
