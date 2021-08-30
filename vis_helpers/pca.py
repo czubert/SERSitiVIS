@@ -16,7 +16,6 @@ def main():
                                         format_func=LABELS.get,
                                         index=0
                                         )
-    sidebar.print_widgets_separator()
 
     st.write('## PCA Analysis')
 
