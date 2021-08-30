@@ -57,7 +57,7 @@ def choose_template():
     :return: Str, chosen template
     """
     template = st.selectbox(
-        "Choose chart template",
+        "Chart template",
         list(pio.templates), index=6, key='new')
 
     return template

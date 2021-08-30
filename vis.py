@@ -35,7 +35,7 @@ def main():
 
     spectra_types = ['EMPTY', 'BWTEK', 'RENI', 'WITEC', 'WASATCH', 'TELEDYNE', 'JOBIN']
     spectrometer = st.sidebar.selectbox(
-        "Choose spectra type",
+        "Spectra type",
         spectra_types,
         format_func=LABELS.get,
         index=0)
@@ -54,7 +54,7 @@ def main():
     if not files:
         if st.sidebar.checkbox("Load example data"):
             if spectrometer == "EMPTY":
-                st.sidebar.error('First Choose Spectra type')
+                st.sidebar.error('First choose spectra type')
             else:
                 files = utils.load_example_files(spectrometer)
 
@@ -76,7 +76,6 @@ def main():
             except AttributeError:
                 pass
 
-            # lines = str.splitlines(str(text))  # .split('\n')
             first_lines = '\n'.join(lines[:20])
 
             delim = detect(first_lines)
@@ -139,9 +138,9 @@ def main():
             with plot_settings:
                 plots_color, template = vis_utils.get_chart_vis_properties_vis()
                 vis_utils.print_widget_labels('Labels')
-                xaxis = st.text_input('Specify X axis name', r'Raman Shift cm <sup>-1</sup>')
-                yaxis = st.text_input('Specify Y axis name', r'Intensity [au]')
-                title = st.text_input('Specify title', r'')
+                xaxis = st.text_input('X axis name', r'Raman Shift cm <sup>-1</sup>')
+                yaxis = st.text_input('Y axis name', r'Intensity [au]')
+                title = st.text_input('Title', r'')
                 chart_titles = {'x': xaxis, 'y': yaxis, 'title': title}
 
             # # Range and separation
