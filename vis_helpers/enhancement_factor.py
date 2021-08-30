@@ -315,10 +315,11 @@ def main():
             return
 
         bg_color = 'yellow'
-        peak_range = st.slider(f'Peak range ({bg_color})',
-                               min_value=plot_x_min,
-                               max_value=plot_x_max,
-                               value=[plot_x_min, plot_x_max])
+        with st.beta_columns([1, 7, 10])[1]:
+            peak_range = st.slider(f'Peak range ({bg_color})',
+                                   min_value=plot_x_min,
+                                   max_value=plot_x_max,
+                                   value=[plot_x_min, plot_x_max])
 
         peak_range = [int(i) for i in peak_range.split('__')]
 
