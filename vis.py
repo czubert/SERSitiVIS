@@ -13,6 +13,7 @@ from constants import LABELS
 from processing import save_read
 from processing import utils
 from vis_helpers import manual, sidebar, data_customisation, charts, authors, vis_utils
+from vis_helpers.vis_utils import print_widgets_separator
 from visualisation import visualisation_options as vis_opt
 
 
@@ -40,7 +41,7 @@ def main():
         index=0)
 
     # sidebar separating line
-    sidebar.print_widgets_separator()
+    print_widgets_separator(1, sidebar=True)
 
     # User data loader
     # sidebar.print_widget_labels('Upload your data or try with ours', 10, 0)
@@ -62,7 +63,7 @@ def main():
     if files:
         st.spinner('Uploading data in progress')
         # sidebar separating line
-        sidebar.print_widgets_separator()
+        print_widgets_separator(1, sidebar=True)
 
         from detect_delimiter import detect
         new_files = []
@@ -96,7 +97,7 @@ def main():
         chart_type = vis_opt.vis_options()
 
         # sidebar separating line
-        sidebar.print_widgets_separator()
+        print_widgets_separator(1, sidebar=True)
 
         # Select data conversion type
         spectra_conversion_type = vis_opt.convertion_opt()
