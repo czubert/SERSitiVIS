@@ -7,7 +7,7 @@ import streamlit as st
 
 def trim_spectra(df):
     # trim raman shift range
-    min_, max_ = float(df.index.min()), float(df.index.max())
+    min_, max_ = int(float(df.index.min())), int(float(df.index.max())) + 1
     min_max = st.slider('Custom range',
                         min_value=min_, max_value=max_, value=[min_, max_])
     min_rs, max_rs = min_max.split('__')
