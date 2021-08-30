@@ -29,7 +29,6 @@ def rsd_one_peak(peak):
                                           round_num,
                                           'Baseline corrected',
                                           )
-    
     return pd.concat((results, results_base_corr), axis=1)
 
 
@@ -73,7 +72,7 @@ def calculate_OneP_rsd(peak):
     
     # Calculating RSD
     rsd = std_value / mean_value
-    
+
     return mean_value, std_value, rsd
 
 
