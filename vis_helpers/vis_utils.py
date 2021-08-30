@@ -118,17 +118,22 @@ def get_chart_vis_properties_vis():
                        ]
     }
     print_widget_labels('Colors')
-    palette_type = st.selectbox("Type of color palette", list(palettes.keys()), 0)
-    palette = st.selectbox("Color palette", palettes[palette_type], index=0)
+    palette_type = st.selectbox("Type of color palette", list(palettes.keys()) + ['custom'], 0)
+    if palette_type == 'custom':
+        palette = st.text_area('Hexadecimal colors', '#DB0457 #520185 #780A34 #49BD02 #B25AE8')
+        palette = palette.split()
+    else:
+        palette = st.selectbox("Color palette", palettes[palette_type], index=0)
+        palette_module = getattr(px.colors, palette_type)
+        palette = getattr(palette_module, palette)
+
     if st.checkbox('Reversed', False):
-        palette = palette + '_r'
+        palette = palette[::-1]
+
     print_widgets_separator(2)
     print_widget_labels('Template')
     template = choose_template()
     print_widgets_separator(2)
-
-    palette_module = getattr(px.colors, palette_type)
-    palette = getattr(palette_module, palette)
 
     return palette, template
 
