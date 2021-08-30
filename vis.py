@@ -1,3 +1,5 @@
+import io
+
 import pandas as pd
 import peakutils
 import plotly.express as px
@@ -8,8 +10,8 @@ import datetime
 import str_slider
 from constants import LABELS
 from processing import utils
-from processing.save_read import files_to_df
-from vis_helpers import manual, sidebar, data_customisation, charts, authors, vis_utils, pca, rmse, enhancement_factor
+from vis_helpers import manual, sidebar, data_customisation, charts, authors, vis_utils
+from vis_helpers.vis_utils import print_widgets_separator
 from visualisation import visualisation_options as vis_opt
 
 
@@ -43,13 +45,13 @@ def visualisation():
     #
     spectra_types = ['EMPTY', 'BWTEK', 'RENI', 'WITEC', 'WASATCH', 'TELEDYNE', 'JOBIN']
     spectrometer = st.sidebar.selectbox(
-        "Choose spectra type",
+        "Spectra type",
         spectra_types,
         format_func=LABELS.get,
         index=0)
 
     # sidebar separating line
-    sidebar.print_widgets_separator()
+    print_widgets_separator(1, sidebar=True)
 
     # User data loader
     # sidebar.print_widget_labels('Upload your data or try with ours', 10, 0)
@@ -69,20 +71,13 @@ def visualisation():
     if files:
         st.spinner('Uploading data in progress')
         # sidebar separating line
-        sidebar.print_widgets_separator()
-
+        print_widgets_separator(1, sidebar=True)
         df = files_to_df(files, spectrometer)
-
-        main_expander = st.beta_expander("Customize your chart")
-        # Choose plot colors and templates
-        with main_expander:
-            plots_color, template = vis_utils.get_chart_vis_properties()
-
         # Select chart type
         chart_type = vis_opt.vis_options()
 
         # sidebar separating line
-        sidebar.print_widgets_separator()
+        print_widgets_separator(1, sidebar=True)
 
         # Select data conversion type
         spectra_conversion_type = vis_opt.convertion_opt()
@@ -106,7 +101,7 @@ def visualisation():
 
         # columns in main view. Chart, expanders
         # TODO rozwiązać to jakoś sprytniej
-        normalized = False
+
         col_left, col_right = st.beta_columns([5, 2])
 
         if chart_type == 'SINGLE':
@@ -114,34 +109,40 @@ def visualisation():
                 col = st.selectbox('', df.columns)
                 df = df[[col]]
 
-        if spectra_conversion_type != "RAW":
-            col_right = col_right.beta_expander("Customize spectra", expanded=False)
-            with col_right:
-                vals = data_customisation.get_deg_win(chart_type, spectra_conversion_type, df.columns)
-                if st.checkbox("Data Normalization"):
-                    normalized = True
-                    df = (df - df.min()) / (df.max() - df.min())
-                else:
-                    normalized = False
+        with col_right:
+            normalized = False
 
-        # For grouped spectra sometimes we want to shift the spectra from each other, here it is:
-        with main_expander:
-            # TODO the code below needed?
-            # trick to better fit sliders in expander
-            # _, main_expander_column, _ = st.beta_columns([1, 38, 1])
-            # with main_expander_column:
+            # # Plot settings
+            plot_settings = st.beta_expander("Plot settings", expanded=False)
 
-            shift_col, _, trim_col = st.beta_columns([5, 1, 5])
-            with shift_col:
-                if chart_type == 'GS':
-                    shift = data_customisation.separate_spectra(normalized)
-                else:
-                    shift = None
-            with trim_col:
+            # # Choose plot colors and templates
+            with plot_settings:
+                plots_color, template = vis_utils.get_chart_vis_properties_vis()
+                vis_utils.print_widget_labels('Labels')
+                xaxis = st.text_input('X axis name', r'Raman Shift cm <sup>-1</sup>')
+                yaxis = st.text_input('Y axis name', r'Intensity [au]')
+                title = st.text_input('Title', r'')
+                chart_titles = {'x': xaxis, 'y': yaxis, 'title': title}
+
+            # # Range and separation
+            range_expander_name = 'Range' if chart_type in {'SINGLE', 'MS'} else 'Range and separation'
+            range_expander = st.beta_expander(range_expander_name, expanded=False)
+
+            with range_expander:
                 df = vis_utils.trim_spectra(df)
 
+            if spectra_conversion_type != "RAW":
+
+                # # Data Manipulation
+                with st.beta_expander("Data Manipulation", expanded=False):
+                    vals = data_customisation.get_deg_win(chart_type, spectra_conversion_type, df.columns)
+
+                    normalized = st.checkbox("Normalize")
+                    if normalized:
+                        df = (df - df.min()) / (df.max() - df.min())
+
         # data conversion end
-        if spectra_conversion_type in {'OPT'}:
+        if spectra_conversion_type == 'OPT':
             baselines = pd.DataFrame(index=df.index)
             baselined = pd.DataFrame(index=df.index)
             flattened = pd.DataFrame(index=df.index)
@@ -158,11 +159,13 @@ def visualisation():
 
         # Groupped spectra
         if chart_type == 'GS':
-            shifters = [(i + 1) * shift for i in range(len(df.columns))]
-            plot_df = df if spectra_conversion_type == 'RAW' else flattened
-            plot_df = plot_df + shifters
+            with range_expander:
+                shift = data_customisation.separate_spectra(normalized)
 
-            figs = [px.line(plot_df, x=plot_df.index, y=plot_df.columns, color_discrete_sequence=plots_color)]
+                shifters = [(i + 1) * shift for i in range(len(df.columns))]
+                plot_df = df if spectra_conversion_type == 'RAW' else flattened
+                plot_df = plot_df + shifters
+                figs = [px.line(plot_df, x=plot_df.index, y=plot_df.columns, color_discrete_sequence=plots_color)]
 
         # Mean spectra
         elif chart_type == 'MS':
@@ -170,7 +173,7 @@ def visualisation():
                 plot_df = df
                 figs = [px.line(plot_df, x=plot_df.index, y=plot_df.columns, color_discrete_sequence=plots_color)]
 
-            elif spectra_conversion_type in {'OPT'}:
+            elif spectra_conversion_type == 'OPT':
                 columns = ['Average', 'Baseline', 'BL-Corrected', 'Flattened + BL-Corrected']
                 plot_df = pd.concat([df, baselines, baselined, flattened], axis=1)
                 plot_df.columns = columns
@@ -216,7 +219,7 @@ def visualisation():
             raise ValueError("Something unbelievable has been chosen")
 
         with col_left:
-            charts.show_charts(figs, plots_color, template)
+            charts.show_charts(figs, plots_color, chart_titles, template)
 
         with col_left:
             st.markdown('')
@@ -226,6 +229,8 @@ def visualisation():
 
     else:
         manual.show_manual()
+
+    authors.show_developers()
 
 
 if __name__ == '__main__':
@@ -246,7 +251,7 @@ if __name__ == '__main__':
     #         main()
     # except KeyError:
     #     main()
-    
+
     main()
-    
+
     print("Streamlit finished it's work")
