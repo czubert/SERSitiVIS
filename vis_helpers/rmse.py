@@ -30,7 +30,7 @@ def main():
                                         format_func=LABELS.get,
                                         index=0
                                         )
-    sidebar.print_widgets_separator()
+    vis_utils.print_widgets_separator(sidebar=True)
 
     files = st.sidebar.file_uploader(label='Upload your data or try with ours',
                                      accept_multiple_files=True,
@@ -48,7 +48,8 @@ def main():
                          rmse_types,
                          format_func=LABELS.get,
                          index=0)
-
+    if len(files) == 1:
+        return st.warning('Upload more than one spectrum')
     df = processing.save_read.files_to_df(files, spectrometer)
     df = df.interpolate().bfill().ffill()
 
@@ -84,7 +85,7 @@ def main():
             peak2_range = [int(i) for i in peak2_range.split('__')]
 
     fig = px.line(df)
-    fig_layout(plot_template, fig, plot_palette)
+    fig_layout(plot_template, fig, plots_colorscale=plot_palette)
     fig.update_xaxes(range=[plot_x_min, plot_x_max])
 
     peaks = zip([peak1_range], ['Peak 1'])
@@ -105,6 +106,7 @@ def main():
         st.plotly_chart(fig, use_container_width=True)
 
     mask = (peak1_range[0] <= df.index) & (df.index <= peak1_range[1])
+
     peak1 = df[mask]
 
     if rmse_type == 'P2P':
@@ -120,31 +122,31 @@ def main():
             st.table(rmse_utils.rsd_peak_to_peak_ratio(peak1, peak2))
 
     # TODO to bym przerzucił do wizualizacji i jakoś zaaplikował możliwość dodania peaków do widma
-    cols = st.beta_columns(4)
-    peak_width = cols[0].slider('Min width', min_value=5, max_value=100, value=15, step=5, )
-    peak_distance = cols[1].slider('Min distance', min_value=1, max_value=100, value=5, step=1, )
-    peak_rel_height = cols[2].slider('Min relative height', **sliders_params['rel_height'])
-    peak_height = cols[3].slider('Min absolute height', **sliders_params['height'])
-
-    peak_width = int(peak_width)
-    peak_distance = int(peak_distance)
-    peak_rel_height = float(peak_rel_height) if rescale else int(peak_rel_height)
-    peak_height = float(peak_height) if rescale else int(peak_height)
-
-    peak_df = pd.DataFrame()
-    for col in df.columns:
-        # TODO dodać opcję wyświetlania peaków na wykresach z podpisami od pasm dla maximow lokalnych
-        #  oczywiście gdzieś w wersji wizualizacyjnej
-        peaks = np.array(find_peaks(df[col], width=peak_width, distance=peak_distance,
-                                    rel_height=peak_rel_height, height=peak_height)
-                         )[0]
-        peak_df = pd.concat([peak_df, df[col].reset_index().iloc[pd.Series(peaks), :].set_index('Raman Shift')],
-                            axis=1)
-
-    # FIX
-    #  poniżej moje wypociny mające na celu splaszczenie ramanshifta i przypisanie splaszczonym
-    #  ramanshiftom srednich wartości, ale coś poszło nie do końca tak jak chciałem ; /
-
-    fig = px.scatter(peak_df, x=peak_df.index, y=peak_df.columns, title='Peak positions')
-    fig.update_xaxes(range=[plot_x_min, plot_x_max])
-    st.plotly_chart(fig, use_container_width=True)
+    # cols = st.beta_columns(4)
+    # peak_width = cols[0].slider('Min width', min_value=5, max_value=100, value=15, step=5, )
+    # peak_distance = cols[1].slider('Min distance', min_value=1, max_value=100, value=5, step=1, )
+    # peak_rel_height = cols[2].slider('Min relative height', **sliders_params['rel_height'])
+    # peak_height = cols[3].slider('Min absolute height', **sliders_params['height'])
+    #
+    # peak_width = int(peak_width)
+    # peak_distance = int(peak_distance)
+    # peak_rel_height = float(peak_rel_height) if rescale else int(peak_rel_height)
+    # peak_height = float(peak_height) if rescale else int(peak_height)
+    #
+    # peak_df = pd.DataFrame()
+    # for col in df.columns:
+    #     # TODO dodać opcję wyświetlania peaków na wykresach z podpisami od pasm dla maximow lokalnych
+    #     #  oczywiście gdzieś w wersji wizualizacyjnej
+    #     peaks = np.array(find_peaks(df[col], width=peak_width, distance=peak_distance,
+    #                                 rel_height=peak_rel_height, height=peak_height)
+    #                      )[0]
+    #     peak_df = pd.concat([peak_df, df[col].reset_index().iloc[pd.Series(peaks), :].set_index('Raman Shift')],
+    #                         axis=1)
+    #
+    # # FIX
+    # #  poniżej moje wypociny mające na celu splaszczenie ramanshifta i przypisanie splaszczonym
+    # #  ramanshiftom srednich wartości, ale coś poszło nie do końca tak jak chciałem ; /
+    #
+    # fig = px.scatter(peak_df, x=peak_df.index, y=peak_df.columns, title='Peak positions')
+    # fig.update_xaxes(range=[plot_x_min, plot_x_max])
+    # st.plotly_chart(fig, use_container_width=True)
