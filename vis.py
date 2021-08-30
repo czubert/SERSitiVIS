@@ -1,6 +1,4 @@
-import datetime
 import io
-import os
 
 import pandas as pd
 import peakutils
@@ -151,7 +149,7 @@ def main():
                 df = vis_utils.trim_spectra(df)
 
             if spectra_conversion_type != "RAW":
-    
+
                 # # Data Manipulation
                 with st.beta_expander("Data Manipulation", expanded=False):
                     vals = data_customisation.get_deg_win(chart_type, spectra_conversion_type, df.columns)
@@ -267,7 +265,7 @@ if __name__ == '__main__':
     #         main()
     # except KeyError:
     #     main()
-    
+
     main()
-    
+
     print("Streamlit finished it's work")
