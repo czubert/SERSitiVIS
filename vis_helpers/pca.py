@@ -60,7 +60,7 @@ def main():
         df = pd.DataFrame(rescaled_data, columns=df.columns, index=df.index)
 
     fig = px.line(df, x=df.index, y=df.columns)
-    fig_layout(plot_template, fig, plot_palette, descr='Uploaded spectra')
+    fig_layout(plot_template, fig, plots_colorscale=plot_palette)
     for trace, gr in zip(fig.data, group):
         trace['line']['color'] = plot_palette[int(gr)]
     st.plotly_chart(fig, use_container_width=True)
@@ -77,9 +77,8 @@ def main():
     elif components_num == 3:
         fig = px.scatter_3d(trans_df, x='PC 1', y='PC 2', z='PC 3', color=group, color_discrete_sequence=plot_palette)
 
-    fig_layout(plot_template, fig, plot_palette,
-               descr="1st Principal Component" if components_num == 1 else "Principal Components",
-               )
+    # todo podmienic opis poniżej na descr="1st Principal Component" if components_num == 1 else "Principal Components"'
+    fig_layout(plot_template, fig, plots_colorscale=plot_palette)
     fig.layout.legend.title = 'Group:'
     var_df = pd.DataFrame(model.explained_variance_ratio_,
                           index=trans_df.columns, columns=['ratio of explained variance']
@@ -97,10 +96,11 @@ def main():
     with st.beta_expander("Inverse-transformed spectra"):
         reversed_data = model.inverse_transform(trans_df)
         reversed_df = pd.DataFrame(reversed_data, columns=df.index, index=df.columns).T
-
+    
         fig = px.line(reversed_df, x=reversed_df.index, y=reversed_df.columns)
-        fig_layout(plot_template, fig, plot_palette, descr=f'Specra recovered from {components_num} PC')
+        # todo podmienic opis poniżej na descr=f'Specra recovered from {components_num} PC'
+        fig_layout(plot_template, fig, plots_colorscale=plot_palette)
         for trace, gr in zip(fig.data, group):
             trace['line']['color'] = plot_palette[int(gr)]
-
+    
         st.plotly_chart(fig, use_container_width=True)
