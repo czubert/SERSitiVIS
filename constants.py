@@ -49,6 +49,10 @@ LABELS = {
     'IT': 'Integration Time',
     'LP': 'Laser Power',
     'PAT': '-20201009-093705-137238-WP-00702.txt',
-    'RAW_WASATCH': 'Raw'
+    'RAW_WASATCH': 'Raw',
+    
+    # RMSE types
+    'OneP': 'Calculate RSD of "Selected Peak" between different spectra',
+    'P2P': 'Calculate RSD of "Peak to Peak ratio" between different different spectra',
     
 }

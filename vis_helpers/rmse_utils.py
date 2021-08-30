@@ -1,19 +1,6 @@
+import pandas as pd
 import streamlit as st
-
-P2P = 'Calculate RSD between spectra from "Peak to Peak ratio"'
-OneP = 'Calculate RSD between spectra based on "One Peak"'
-
-
-def rsd(peak1, peak2, bg):
-    st.header('Relative Standard Deviation (RSD):')
-    
-    display_options_radio = st.radio("What would you like to do?", (OneP, P2P))
-    
-    if display_options_radio == OneP:
-        rsd_one_peak(peak1)
-    
-    elif display_options_radio == P2P:
-        rsd_peak_to_peak_ratio(peak1, peak2, bg)
+from processing.utils import subtract_baseline
 
 
 def rsd_one_peak(peak):
@@ -23,38 +10,30 @@ def rsd_one_peak(peak):
     :param peak: DataFrame
     :return: Float, RMSE score
     """
-    # WHAT which version is better?
+    round_num = 3
     
-    # II
-    st.subheader('RSD directly from data')
-    # mean value of absolute numbers
-    mean_value = (peak.max()).mean()
-    st.write(f' Mean value: {round(mean_value)}')
+    # Calculating mean, std and RSD
+    mean_value, std_value, rsd = calculate_OneP_rsd(peak)
     
-    # Standard deviation of absolute numbers
-    std_value = (peak.max()).std()
-    st.write(f' Standard deviation value: {round(std_value)}')
+    # Baseline correction
+    peak = subtract_baseline(peak, 1)
     
-    # Calculating RSD
-    rsd = std_value / mean_value
-    st.write(f' RSD value: {round(rsd * 100)} %')
+    # Calculating mean, std and RSD after baseline correction
+    mean_value_basecorr, std_value_basecorr, rsd_basecorr = calculate_OneP_rsd(peak)
     
-    # I
-    st.subheader('RSD after subtraction of background')
-    # mean value of absolute numbers
-    mean_value = (peak.max() - peak.min()).mean()
-    st.write(f' Mean value: {round(mean_value)}')
+    results = create_results_df(mean_value, std_value, rsd, round_num, 'RAW data')
     
-    # Standard deviation of absolute numbers
-    std_value = (peak.max() - peak.min()).std()
-    st.write(f' Standard deviation value: {round(std_value)}')
+    results_base_corr = create_results_df(mean_value_basecorr,
+                                          std_value_basecorr,
+                                          rsd_basecorr,
+                                          round_num,
+                                          'Baseline corrected',
+                                          )
     
-    # Calculating RSD
-    rsd = std_value / mean_value
-    st.write(f' RSD value: {round(rsd * 100)} %')
+    return pd.concat((results, results_base_corr), axis=1)
 
 
-def rsd_peak_to_peak_ratio(peak1, peak2, bg):
+def rsd_peak_to_peak_ratio(peak1, peak2):
     """
     This function takes proportions between two peaks from each spectrum,
     and calculates RMSE
@@ -62,38 +41,59 @@ def rsd_peak_to_peak_ratio(peak1, peak2, bg):
     :return: Float, RMSE score
     """
     round_num = 3
+
+    # Calculating mean, std and RSD
+    mean_value, std_value, rsd = calculate_p2p_rsd(peak1, peak2)
+
+    # Baseline correction
+    peak1 = subtract_baseline(peak1, 3)
+    peak2 = subtract_baseline(peak2, 3)
+
+    # Calculating mean, std and RSD after baseline correction
+    mean_value_basecorr, std_value_basecorr, rsd_basecorr = calculate_p2p_rsd(peak1, peak2)
+
+    results = create_results_df(mean_value, std_value, rsd, round_num, 'RAW data')
+
+    results_base_corr = create_results_df(mean_value_basecorr,
+                                          std_value_basecorr,
+                                          rsd_basecorr,
+                                          round_num,
+                                          'Baseline corrected',
+                                          )
     
-    st.subheader('RSD directly from data')
-    # mean value of absolute numbers
+    return pd.concat((results, results_base_corr), axis=1)
+
+
+def calculate_OneP_rsd(peak):
+    # Calculating Mean value
+    mean_value = (peak.max()).mean()
+    
+    # Calculating Standard Deviation
+    std_value = (peak.max()).std()
+    
+    # Calculating RSD
+    rsd = std_value / mean_value
+    
+    return mean_value, std_value, rsd
+
+
+def calculate_p2p_rsd(peak1, peak2):
+    import plotly.express as px
     mean_value = (peak1.max() / peak2.max()).mean()
-    st.write(f' Mean value: {round(mean_value, round_num)}')
     
     # Standard deviation of absolute numbers
     std_value = (peak1.max() / peak2.max()).std()
-    st.write(f' Standard deviation value: {round(std_value, round_num)}')
     
     # Calculating RSD
     rsd = std_value / mean_value
-    st.write(f' RSD value: {round(rsd * 100)} %')
     
-    st.subheader('RSD after subtraction of background')
+    return mean_value, std_value, rsd
+
+
+def create_results_df(mean_value, std_value, rsd, round_num, col_name):
+    results = {'Mean': round(mean_value, round_num),
+               'Standard deviation': round(std_value, round_num),
+               'RSD': str(round(rsd * 100)) + ' %'
+               }
     
-    # # Show DataFrame with data
-    # import pandas as pd
-    # import numpy as np
-    # dff = pd.DataFrame(np.array([bg.max(), peak1.max(), peak2.max(), peak1.max() - bg.max(), peak2.max() - bg.max()]),
-    #                    index=['Bg max', 'p1 max', 'p2 max', 'p1 obj', 'p2 obj'])
-    # dfff = dff.T
-    #
-    # st.write(dfff)
-    
-    mean_value = ((peak1.max() - bg.max()) / (peak2.max() - bg.max())).mean()
-    st.write(f' Mean value: {round(mean_value, round_num)}')
-    
-    # Standard deviation of absolute numbers
-    std_value = ((peak1.max() - bg.max()) / (peak2.max() - bg.max())).std()
-    st.write(f' Standard deviation value: {round(std_value, round_num)}')
-    
-    # Calculating RSD
-    rsd = std_value / mean_value
-    st.write(f' RSD value: {round(rsd * 100)} %')
+    return pd.DataFrame.from_dict(results, orient='index', columns=[f'{col_name}'])
