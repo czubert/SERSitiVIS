@@ -1,9 +1,7 @@
 import plotly.graph_objects as go
 
-from constants import LABELS
 
-
-def fig_layout(template, fig, chart_titles, plots_colorscale):
+def fig_layout(template, fig, chart_titles=None, plots_colorscale=None):
     """
     Changing layout and styles
     :param template: Str, Plotly template
@@ -11,6 +9,12 @@ def fig_layout(template, fig, chart_titles, plots_colorscale):
     :param descr: Str
     :return: plotly.graph_objs._figure.Figure
     """
+    if chart_titles == None:
+        xaxis = (r'Raman Shift cm <sup>-1</sup>')
+        yaxis = (r'Intensity [au]')
+        title = (r'')
+        chart_titles = {'x': xaxis, 'y': yaxis, 'title': title}
+    
     fig.update_layout(showlegend=True,
                       template=template,
                       colorway=plots_colorscale,
