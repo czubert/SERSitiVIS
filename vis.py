@@ -9,7 +9,7 @@ from processing import utils, save_read
 from vis_helpers import manual, sidebar, data_customisation, charts, authors, vis_utils
 from vis_helpers.vis_utils import print_widgets_separator
 from visualisation import visualisation_options as vis_opt
-from vis_helpers import pca, rmse, enhancement_factor
+from vis_helpers import pca, rsd, enhancement_factor
 
 
 def main():
@@ -24,15 +24,15 @@ def main():
     # Sets sidebar's header and logo
     sidebar.sidebar_head()
 
-    analysis_type = st.sidebar.selectbox("Analysis type", ['visualisation', 'PCA', 'EF', 'RMSE'])
+    analysis_type = st.sidebar.selectbox("Analysis type", ['visualisation', 'PCA', 'EF', 'RSD'])
     if analysis_type == 'visualisation':
         visualisation()
     elif analysis_type == 'PCA':
         pca.main()
     elif analysis_type == 'EF':
         enhancement_factor.main()
-    elif analysis_type == 'RMSE':
-        rmse.main()
+    elif analysis_type == 'RSD':
+        rsd.main()
     authors.show_developers()
 
 
