@@ -22,24 +22,20 @@ SLIDERS_PARAMS_NORMALIZED = {'rel_height': dict(min_value=0.01, max_value=1., va
 #  czy o stosunek pików, który w sumie powinien być stały... więc trochę bez sensu
 
 def main():
-    spectra_types = ['EMPTY', 'BWTEK', 'RENI', 'WITEC', 'WASATCH', 'TELEDYNE', 'JOBIN']
     rsd_types = ['OneP', 'P2P']
     st.header('Relative Standard Deviation (RSD)')
 
-    spectrometer = st.sidebar.selectbox("Choose spectra type",
-                                        spectra_types,
-                                        format_func=LABELS.get,
-                                        index=0
-                                        )
+    spectrometer = sidebar.choose_spectra_type()
+
     vis_utils.print_widgets_separator(sidebar=True)
 
     files = st.sidebar.file_uploader(label='Upload your data or try with ours',
                                      accept_multiple_files=True,
                                      type=['txt', 'csv'])
-    
+
     if not files:
         return st.warning("Upload data for calculatios")
-    
+
     main_expander = st.beta_expander("Customize your chart")
     # Choose plot colors and templates
     with main_expander:
