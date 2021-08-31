@@ -1,6 +1,7 @@
 import streamlit as st
 
 from vis_helpers import vis_utils
+from constants import LABELS
 
 
 def sidebar_head():
@@ -33,3 +34,13 @@ def print_widget_labels(widget_title, margin_top=5, margin_bottom=10):
     st.sidebar.markdown(
         f"""<p style="font-weight:500; margin-top:{margin_top}px;margin-bottom:{margin_bottom}px">{widget_title}</p>""",
         unsafe_allow_html=True)
+
+
+def choose_spectra_type():
+    spectra_types = ['EMPTY', 'BWTEK', 'RENI', 'WITEC', 'WASATCH', 'TELEDYNE', 'JOBIN']
+    spectrometer = st.sidebar.selectbox(
+        "Spectra type",
+        spectra_types,
+        format_func=LABELS.get,
+        index=0)
+    return spectrometer

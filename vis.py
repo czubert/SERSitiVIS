@@ -4,7 +4,6 @@ import plotly.express as px
 import streamlit as st
 # noinspection PyUnresolvedReferences
 import str_slider
-from constants import LABELS
 from processing import utils, save_read
 from vis_helpers import manual, sidebar, data_customisation, charts, authors, vis_utils
 from vis_helpers.vis_utils import print_widgets_separator
@@ -40,12 +39,7 @@ def visualisation():
     #
     # # Spectrometer type `- BWTek / Renishaw / Witec / Wasatch / Teledyne
     #
-    spectra_types = ['EMPTY', 'BWTEK', 'RENI', 'WITEC', 'WASATCH', 'TELEDYNE', 'JOBIN']
-    spectrometer = st.sidebar.selectbox(
-        "Spectra type",
-        spectra_types,
-        format_func=LABELS.get,
-        index=0)
+    spectrometer = sidebar.choose_spectra_type()
 
     # sidebar separating line
     print_widgets_separator(1, sidebar=True)
