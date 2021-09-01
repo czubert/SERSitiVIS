@@ -9,3 +9,6 @@ backgroundColor="#FFF"  # Main color
 secondaryBackgroundColor="#d3d4db"  # sidebar color
 textColor="#262730"
 font="sans serif"
+
+[client]
+showErrorDetails=false
