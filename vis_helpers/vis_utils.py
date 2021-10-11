@@ -139,6 +139,24 @@ def get_chart_vis_properties_vis():
     return palette, template
 
 
+def get_plot_description():
+    print_widget_labels('Labels')
+    xaxis = st.text_input('X axis name', r'Raman Shift cm <sup>-1</sup>')
+    yaxis = st.text_input('Y axis name', r'Intensity [au]')
+    title = st.text_input('Title', r'')
+    chart_titles = {'x': xaxis, 'y': yaxis, 'title': title}
+    return chart_titles
+
+
+def get_plot_description_pca():
+    print_widget_labels('Labels')
+    xaxis = st.text_input('X axis name', r'PC 1')
+    yaxis = st.text_input('Y axis name', r'PC 2')
+    title = st.text_input('Title', r'')
+    chart_titles = {'x': xaxis, 'y': yaxis, 'title': title}
+    return chart_titles
+
+
 def print_widgets_separator(n=1, sidebar=False):
     """
     Prints customized separation line on sidebar

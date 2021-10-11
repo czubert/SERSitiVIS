@@ -109,11 +109,7 @@ def visualisation():
             # # Choose plot colors and templates
             with plot_settings:
                 plots_color, template = vis_utils.get_chart_vis_properties_vis()
-                vis_utils.print_widget_labels('Labels')
-                xaxis = st.text_input('X axis name', r'Raman Shift cm <sup>-1</sup>')
-                yaxis = st.text_input('Y axis name', r'Intensity [au]')
-                title = st.text_input('Title', r'')
-                chart_titles = {'x': xaxis, 'y': yaxis, 'title': title}
+                chart_titles = vis_utils.get_plot_description()
 
             # # Range and separation
             range_expander_name = 'Range' if chart_type in {'SINGLE', 'MS'} else 'Range and separation'
