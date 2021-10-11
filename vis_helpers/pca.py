@@ -131,6 +131,8 @@ def main():
         with st.beta_expander("Uploaded spectra"):
             fig = px.line(df, x=df.index, y=df.columns)
             fig_layout(plot_template, fig, plots_colorscale=plot_palette)
+
+            # What
             # for trace, gr in zip(fig.data, group):
             #     trace['line']['color'] = plot_palette[int(gr)]
             st.plotly_chart(fig, use_container_width=True)
@@ -139,13 +141,15 @@ def main():
         with st.beta_expander("Inverse-transformed spectra"):
             reversed_data = model.inverse_transform(trans_df)
             reversed_df = pd.DataFrame(reversed_data, columns=df.index, index=df.columns).T
-            
+    
             fig = px.line(reversed_df, x=reversed_df.index, y=reversed_df.columns)
             # todo podmienic opis poniżej na descr=f'Specra recovered from {components_num} PC'
             fig_layout(plot_template, fig, plots_colorscale=plot_palette)
+    
+            # What
             # for trace, gr in zip(fig.data, group):
             #     trace['line']['color'] = plot_palette[int(gr)]
-            
+    
             st.plotly_chart(fig, use_container_width=True)
         
         # Showing PCA details
