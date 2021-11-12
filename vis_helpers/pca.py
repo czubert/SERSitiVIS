@@ -17,7 +17,7 @@ def main():
     spectra_types = ['EMPTY', 'BWTEK', 'RENI', 'WITEC', 'WASATCH', 'TELEDYNE', 'JOBIN']
     
     st.write('## PCA Analysis')
-    
+
     print_widgets_separator(1, sidebar=False)
     
     rescale = st.sidebar.checkbox("Rescale")
