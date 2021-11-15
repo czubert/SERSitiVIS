@@ -73,20 +73,20 @@ def get_laser_intensities():
     vis_utils.print_widget_labels('Intensity', 5, 0)
     cols = st.beta_columns(2)
     with cols[0]:
-        i_raman = st.number_input('Raman Intensity', 0, 10000, 1000, 100)
+        i_raman = st.number_input('Raman Intensity', 1, 10000, 1000, 100)
     with cols[1]:
-        i_sers = st.number_input('SERS Intensity', 0, 500000, 60000, 1000)
+        i_sers = st.number_input('SERS Intensity', 1, 500000, 60000, 1000)
     return i_sers, i_raman
 
 
 def get_molecular_weight():
     vis_utils.print_widget_labels('Provide molecular weight', 5, 0)
-    return st.number_input('', 0.0, 1000.0, 154.19, 0.01)
+    return st.number_input('', 0.001, 1000.0, 154.19, 0.01)
 
 
 def get_compound_density():
     vis_utils.print_widget_labels('Provide compound density', 5, 0)
-    return st.number_input('', 0.0, 20.0, 1.3, 0.1)
+    return st.number_input('', 0.001, 20.0, 1.3, 0.1)
 
 
 def get_penetration_depth():
