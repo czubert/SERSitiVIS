@@ -62,21 +62,23 @@ def main():
             if files:
                 df = processing.save_read.files_to_df(files, spectrometer)
                 dfs.append(df)
-    
+
     print_widgets_separator(1, sidebar=False)
-    
+
     if len(dfs) < groups_num:
         return
-    
+
     df = pd.concat(dfs, axis=1)
     df = df.interpolate().bfill().ffill()
+
+    # adding the possibility to put a name of a group in PCA - more visible on the plot
     group = [group_names[i] for i in range(groups_num) for _ in dfs[i].columns]
-    
+
     if rescale:
         scaler = MinMaxScaler()
         rescaled_data = scaler.fit_transform(df)
         df = pd.DataFrame(rescaled_data, columns=df.columns, index=df.index)
-    
+
     if baseline_correction:
         baseline_corr_properties = st.sidebar.beta_expander('Change Baseline Correction Properties')
         with baseline_corr_properties:
