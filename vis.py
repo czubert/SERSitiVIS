@@ -2,6 +2,7 @@ import pandas as pd
 import peakutils
 import plotly.express as px
 import streamlit as st
+
 # noinspection PyUnresolvedReferences
 import str_slider
 from processing import utils, save_read
@@ -9,6 +10,19 @@ from vis_helpers import manual, sidebar, data_customisation, charts, authors, vi
 from vis_helpers.vis_utils import print_widgets_separator
 from visualisation import visualisation_options as vis_opt
 from vis_helpers import pca, rsd, enhancement_factor
+
+import sentry_sdk
+
+if 'sentry_url' in st.secrets:
+    sentry_sdk.init(
+        st.secrets['sentry_url'],
+        # Set traces_sample_rate to 1.0 to capture 100%
+        # of transactions for performance monitoring.
+        # We recommend adjusting this value in production.
+        traces_sample_rate=0.001,
+    )
+else:
+    print('sentry not running')
 
 
 def main():
