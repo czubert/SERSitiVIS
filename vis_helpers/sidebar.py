@@ -11,7 +11,7 @@ def sidebar_head():
     Shows logo in the sidebar
     """
     st.set_page_config(
-        page_title="SERSitive.eu",
+        page_title="SERSitiVIS | SERSitive.eu",
         page_icon="https://sersitive.eu/wp-content/uploads/cropped-icon.png",
         layout="wide",
         initial_sidebar_state="auto"
@@ -20,7 +20,7 @@ def sidebar_head():
     st.set_option('deprecation.showfileUploaderEncoding', False)
 
     # SERSitivis logo
-    html_code = vis_utils.show_sersitivis_logo()
+    html_code = vis_utils.show_sersitivis_logo(100, [1, 1, 1, 1], margin=[0, 0, 0, 0])
     st.sidebar.markdown(html_code, unsafe_allow_html=True)
     st.sidebar.markdown('')
     st.sidebar.markdown('')

@@ -28,13 +28,13 @@ def show_manual():
     """
     
     # company logo
-    html_code = vis_utils.show_logo()
-    st.markdown(html_code, unsafe_allow_html=True)
+    # html_code = vis_utils.show_logo()
+    # st.markdown(html_code, unsafe_allow_html=True)
     
     # warnings with tips how to work with this program
     st.header('Data visualisation')
     st.subheader('Short manual on how to import data')
-    st.warning('First choose spectra type from left sidebar')
+    st.warning("First choose spectra type from left sidebar (if it doesn't work try different one)")
     st.warning('Then upload file or files for visualisation (or load example data) from left sidebar')
     st.write('')
     
