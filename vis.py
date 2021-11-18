@@ -144,6 +144,8 @@ def visualisation():
 
         # data conversion end
         if spectra_conversion_type == 'OPT':
+            df, baselines, baselined, flattened = vis_utils.subtract_baseline_and_smoothen(df, vals)
+    
             baselines = pd.DataFrame(index=df.index)
             baselined = pd.DataFrame(index=df.index)
             flattened = pd.DataFrame(index=df.index)
@@ -151,9 +153,11 @@ def visualisation():
                 tmp_spectrum = df[col].dropna()  # trick for data with NaNs
                 tmp_spectrum = pd.Series(peakutils.baseline(tmp_spectrum, vals[col][0]), index=tmp_spectrum.index)
                 baselines[col] = tmp_spectrum
-
+        
                 baselined[col] = df[col] - baselines[col]
                 flattened[col] = baselined[col].rolling(window=vals[col][1], min_periods=1, center=True).mean()
+            #
+
         #
         # # Plotting
         #
