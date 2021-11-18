@@ -3,7 +3,7 @@ import plotly.express as px
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import MinMaxScaler
 import streamlit as st
-import peakutils
+
 
 import processing
 from constants import LABELS
@@ -71,7 +71,7 @@ def main():
     df = pd.concat(dfs, axis=1)
     df = df.interpolate().bfill().ffill()
 
-    # adding the possibility to put a name of a group in PCA - more visible on the plot
+    # Possibility to put a name of a group in PCA, beneath the file uploader - more visible on the plot
     group = [group_names[i] for i in range(groups_num) for _ in dfs[i].columns]
 
     if rescale:
@@ -85,19 +85,8 @@ def main():
             deg = utils.choosing_regression_degree()
             window = utils.choosing_smoothening_window()
             vals = {'col': (deg, window)}
-        
-        baselines = pd.DataFrame(index=df.index)
-        baselined = pd.DataFrame(index=df.index)
-        flattened = pd.DataFrame(index=df.index)
-        
-        for col in df.columns:
-            tmp_spectrum = df[col].dropna()  # trick for data with NaNs
-            tmp_spectrum = pd.Series(peakutils.baseline(tmp_spectrum, vals['col'][0]), index=tmp_spectrum.index)
-            baselines[col] = tmp_spectrum
-            
-            baselined[col] = df[col] - baselines[col]
-            flattened[col] = baselined[col].rolling(window=vals['col'][1], min_periods=1, center=True).mean()
-        df = flattened
+
+        *_, df = vis_utils.subtract_baseline_and_smoothen(df, vals, cols_name=True)
     
     cols = st.beta_columns((2, 1))
     with cols[1]:
