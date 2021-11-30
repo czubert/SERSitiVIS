@@ -59,7 +59,7 @@ def contact_developers():
     # st.markdown("<p " + authors_css + ">" + "We will appreciate any feedback from you, please contact:</p>",
     #             unsafe_allow_html=True,)
     st.markdown(
-        "<a " + authors_css + ' href="mailto:developers[at]sersitive.eu">' + "SERSitive Developers</a>",
+        "<a " + authors_css + ' href="mailto:developers[at]sersitive.eu" target=_blank>' + "SERSitive Developers</a>",
         unsafe_allow_html=True,
     )
 
