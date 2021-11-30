@@ -24,7 +24,3 @@ def main_page():
     st.markdown("")
     st.markdown("")
     st.markdown("")
-    st.markdown("")
-    st.markdown("")
-    st.markdown("")
-    st.markdown("")
