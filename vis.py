@@ -1,14 +1,8 @@
-import pandas as pd
-import peakutils
-import plotly.express as px
 import streamlit as st
 
 # noinspection PyUnresolvedReferences
 import str_slider
-from processing import utils, save_read
-from vis_helpers import manual, sidebar, data_customisation, charts, authors, vis_utils, visualisation, main_page
-from vis_helpers.vis_utils import print_widgets_separator
-from visualisation import visualisation_options as vis_opt
+from vis_helpers import sidebar, authors, visualisation, main_page
 from vis_helpers import pca, rsd, enhancement_factor
 
 import sentry_sdk

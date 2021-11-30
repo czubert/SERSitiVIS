@@ -5,7 +5,6 @@ import streamlit as st
 
 from constants import LABELS
 from processing import utils
-from vis_helpers import vis_utils
 
 
 def example_data_html(spectrometer):
