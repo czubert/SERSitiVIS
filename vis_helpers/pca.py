@@ -7,7 +7,7 @@ import streamlit as st
 
 import processing
 from constants import LABELS
-from . import sidebar, vis_utils
+from . import vis_utils
 from visualisation.draw import fig_layout
 from processing import utils
 from vis_helpers.vis_utils import print_widgets_separator
