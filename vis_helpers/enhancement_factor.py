@@ -27,7 +27,7 @@ def main():
     #
     st.markdown('## First step of calculations')
     st.markdown('### Calculating the number of molecules ($N$) in the solution')
-    step = st.beta_expander('Show description')
+    step = st.expander('Show description')
     with step:
         st.markdown(r'### <p style="text-align: center;">$$N=N_A \times C \times V$$</p>', unsafe_allow_html=True)
         st.markdown(r'$N$ - Number of particles')
@@ -54,7 +54,7 @@ def main():
     st.markdown('## Second step of calculations')
     st.markdown('### Calculating the laser spot ($S_{Laser}$), '
                 'which is the function of wave length and aperture of the lens:')
-    step = st.beta_expander('Show description')
+    step = st.expander('Show description')
 
     with step:
         st.markdown(
@@ -64,7 +64,7 @@ def main():
         st.markdown(r'$\lambda$ - Laser wavelength $[m]$')
         st.markdown(r'$NA$ - value of numerical aperture, lens dependent')
 
-    cols = st.beta_columns(2)
+    cols = st.columns(2)
     with cols[0]:
         # # Laser wavelength in nm
         laser_wave_length = ef_utils.get_laser_wave_length()
@@ -83,7 +83,7 @@ def main():
     st.markdown('---')
     st.markdown('## Third step of calculations')
     st.markdown('### Calculating the surface area irradiated with the laser ($S_{0}$)')
-    step = st.beta_expander('Show description')
+    step = st.expander('Show description')
 
     with step:
         st.markdown(
@@ -103,7 +103,7 @@ def main():
     st.markdown('---')
     st.markdown('## Fourth step of calculations')
     st.markdown('### Determination of the number of molecules per laser irradiated surface ($N_{SERS}$)')
-    step = st.beta_expander('Show description')
+    step = st.expander('Show description')
 
     with step:
         # # Basic formula for N_SERS
@@ -160,7 +160,7 @@ def main():
     #
     st.markdown('## Fifth step of calculations')
     st.markdown('### Calculation of the volume from which the Raman signal for your compound in solids is recorded')
-    step = st.beta_expander('Show description')
+    step = st.expander('Show description')
     with step:
         st.markdown(r'### <p style="text-align: center;">$$V_{compound}=S_0 \times h$$</p>', unsafe_allow_html=True)
         st.markdown(r'$V_{compound}$ - The volume of your chemical compound crystal subjected to laser illumination')
@@ -181,7 +181,7 @@ def main():
     #
     st.markdown('## Sixth step of calculations')
     st.markdown(r'### Determining the number of p-MBA molecules from which the Raman signal ($N_{Raman}$) comes')
-    step = st.beta_expander('Show description')
+    step = st.expander('Show description')
     with step:
         st.markdown('---')
 
@@ -228,7 +228,7 @@ def main():
     #
     st.markdown('## Seventh step of calculations')
     st.markdown('### Calculating the Enhancement Factor')
-    step = st.beta_expander('Show description')
+    step = st.expander('Show description')
     with step:
         st.markdown(
             r'### <p style="text-align: center;">$$EF=\frac{I_{SERS}}{N_{SERS}} \times \frac{N_{Raman}}{I_{Raman}}$$</p>',
@@ -258,8 +258,8 @@ def main():
         i_sers, i_raman = ef_utils.get_laser_intensities()
 
     elif intensities_radio == 'from_spec':
-
-        main_expander = st.beta_expander("Customize your chart")
+    
+        main_expander = st.expander("Customize your chart")
         # Choose plot colors and templates
         with main_expander:
             plot_palette, plot_template = vis_utils.get_chart_vis_properties()
@@ -273,8 +273,8 @@ def main():
         #     sliders_params = SLIDERS_PARAMS_NORMALIZED
         # else:
         #     sliders_params = SLIDERS_PARAMS_RAW
-
-        cols = st.beta_columns(2)
+    
+        cols = st.columns(2)
 
         with cols[0]:
             raman_file = st.file_uploader(label='Upload Raman spectrum',
@@ -315,7 +315,7 @@ def main():
             return
 
         bg_color = 'yellow'
-        with st.beta_columns([1, 7, 10])[1]:
+        with st.columns([1, 7, 10])[1]:
             peak_range = st.slider(f'Peak range ({bg_color})',
                                    min_value=plot_x_min,
                                    max_value=plot_x_max,
@@ -331,8 +331,8 @@ def main():
             sers_fig.add_vline(x=peak_range[0], line_dash="dash")
             sers_fig.add_vline(x=peak_range[1], line_dash="dash")
             sers_fig.add_vrect(x0=peak_range[0], x1=peak_range[1], line_width=0, fillcolor=bg_color, opacity=0.15)
-
-        cols = st.beta_columns(2)
+    
+        cols = st.columns(2)
         with cols[0]:
             st.plotly_chart(raman_fig, use_container_width=True)
         with cols[1]:
