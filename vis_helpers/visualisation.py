@@ -63,8 +63,8 @@ def visualisation():
         
         # columns in main view. Chart, expanders
         # TODO rozwiązać to jakoś sprytniej
-        
-        col_left, col_right = st.beta_columns([5, 2])
+
+        col_left, col_right = st.columns([5, 2])
         
         if chart_type == 'SINGLE':
             with col_left:
@@ -75,7 +75,7 @@ def visualisation():
             normalized = False
             
             # # Plot settings
-            plot_settings = st.beta_expander("Plot settings", expanded=False)
+            plot_settings = st.expander("Plot settings", expanded=False)
             
             # # Choose plot colors and templates
             with plot_settings:
@@ -84,7 +84,7 @@ def visualisation():
             
             # # Range and separation
             range_expander_name = 'Range' if chart_type in {'SINGLE', 'MS'} else 'Range and separation'
-            range_expander = st.beta_expander(range_expander_name, expanded=False)
+            range_expander = st.expander(range_expander_name, expanded=False)
             
             with range_expander:
                 df = vis_utils.trim_spectra(df)
@@ -92,9 +92,9 @@ def visualisation():
             if spectra_conversion_type != "RAW":
                 
                 # # Data Manipulation
-                with st.beta_expander("Data Manipulation", expanded=False):
+                with st.expander("Data Manipulation", expanded=False):
                     vals = data_customisation.get_deg_win(chart_type, spectra_conversion_type, df.columns)
-                    
+    
                     normalized = st.checkbox("Normalize")
                     if normalized:
                         df = (df - df.min()) / (df.max() - df.min())
