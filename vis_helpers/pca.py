@@ -27,7 +27,7 @@ def main():
     # with main_expander:
     #     plot_palette, plot_template = vis_utils.get_chart_vis_properties()
     
-    cols = st.beta_columns(2)
+    cols = st.columns(2)
     
     with cols[0]:
         groups_num = st.slider('Number of groups', 1, 6, value=2)
@@ -38,8 +38,8 @@ def main():
         components_num = int(components_num)
     
     print_widgets_separator(1, sidebar=False)
-    
-    cols = st.beta_columns(groups_num)
+
+    cols = st.columns(groups_num)
     dfs = []
     group_names = []
     for col_ind, col in enumerate(cols):
@@ -80,18 +80,18 @@ def main():
         df = pd.DataFrame(rescaled_data, columns=df.columns, index=df.index)
 
     if baseline_correction:
-        baseline_corr_properties = st.sidebar.beta_expander('Change Baseline Correction Properties')
+        baseline_corr_properties = st.sidebar.expander('Change Baseline Correction Properties')
         with baseline_corr_properties:
             deg = utils.choosing_regression_degree()
             window = utils.choosing_smoothening_window()
             vals = {'col': (deg, window)}
 
         *_, df = vis_utils.subtract_baseline_and_smoothen(df, vals, cols_name=True)
-    
-    cols = st.beta_columns((2, 1))
+
+    cols = st.columns((2, 1))
     with cols[1]:
         st.markdown("# ")
-        with st.beta_expander("Customize all charts"):
+        with st.expander("Customize all charts"):
             plot_palette, plot_template = vis_utils.get_chart_vis_properties_vis()
             chart_titles = vis_utils.get_plot_description_pca()
     
@@ -119,17 +119,17 @@ def main():
         st.plotly_chart(fig, use_container_width=True)
         
         # Showing uploaded spectra chart. FIrst columnt
-        with st.beta_expander("Uploaded spectra"):
+        with st.expander("Uploaded spectra"):
             fig = px.line(df, x=df.index, y=df.columns)
             fig_layout(plot_template, fig, plots_colorscale=plot_palette)
-
+    
             # What
             # for trace, gr in zip(fig.data, group):
             #     trace['line']['color'] = plot_palette[int(gr)]
             st.plotly_chart(fig, use_container_width=True)
         
         # Showing inversed-transformed spectra chart. FIrst columnt
-        with st.beta_expander("Inverse-transformed spectra"):
+        with st.expander("Inverse-transformed spectra"):
             reversed_data = model.inverse_transform(trans_df)
             reversed_df = pd.DataFrame(reversed_data, columns=df.index, index=df.columns).T
     
@@ -144,6 +144,6 @@ def main():
             st.plotly_chart(fig, use_container_width=True)
         
         # Showing PCA details
-        with st.beta_expander("Show PCA details"):
+        with st.expander("Show PCA details"):
             st.table(var_df)
             st.write(trans_df.assign(group=group))

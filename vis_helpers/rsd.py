@@ -34,7 +34,7 @@ def main():
     if not files:
         return st.warning("Upload data for calculatios")
 
-    main_expander = st.beta_expander("Customize your chart")
+    main_expander = st.expander("Customize your chart")
     # Choose plot colors and templates
     with main_expander:
         plot_palette, plot_template = vis_utils.get_chart_vis_properties()
@@ -61,8 +61,8 @@ def main():
         sliders_params = SLIDERS_PARAMS_RAW
     
     bg_colors = {'Peak 1': 'yellow', 'Peak 2': 'green'}
-    
-    cols = st.beta_columns((0.6, 5.5, 3.5))
+
+    cols = st.columns((0.6, 5.5, 3.5))
     with cols[1]:
         peak1_range = st.slider(f'Peak 1 range ({bg_colors["Peak 1"]})',
                                 min_value=plot_x_min,
@@ -95,7 +95,7 @@ def main():
         fig.add_vline(x=ran[1], line_dash="dash")
         fig.add_vrect(x0=ran[0], x1=ran[1], line_width=0, fillcolor=bg_colors[text], opacity=0.15)
 
-    cols = st.beta_columns((7, 3))
+    cols = st.columns((7, 3))
 
     with cols[0]:
         st.plotly_chart(fig, use_container_width=True)
@@ -117,7 +117,7 @@ def main():
             st.table(rsd_utils.rsd_peak_to_peak_ratio(peak1, peak2))
 
     # TODO to bym przerzucił do wizualizacji i jakoś zaaplikował możliwość dodania peaków do widma
-    # cols = st.beta_columns(4)
+    # cols = st.columns(4)
     # peak_width = cols[0].slider('Min width', min_value=5, max_value=100, value=15, step=5, )
     # peak_distance = cols[1].slider('Min distance', min_value=1, max_value=100, value=5, step=1, )
     # peak_rel_height = cols[2].slider('Min relative height', **sliders_params['rel_height'])

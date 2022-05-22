@@ -10,7 +10,7 @@ def get_concentration():
         r'### <p style="font-weight:500; margin-top:{5}px;margin-bottom:{0}px">Sample concentration. '
         r'$$x * 10^n \frac{mol}{dm^3}$$. Please provide x and n:</p>',
         unsafe_allow_html=True)
-    cols = st.beta_columns(2)
+    cols = st.columns(2)
     with cols[0]:
         multiplier = st.number_input('Provide "x"', 1, 9, 1)
     with cols[1]:
@@ -47,7 +47,7 @@ def get_active_surface_area():
     # # Active surface
     #
     vis_utils.print_widget_labels('The area of active surface of the SERS substrate [mm]', 5, 0)
-    cols = st.beta_columns(3)
+    cols = st.columns(3)
     with cols[0]:
         active_x = st.number_input('First dimension (x)', 0.0, 50.0, 5.0, 0.1)
     with cols[1]:
@@ -71,7 +71,7 @@ def get_laser_intensities():
     # # Intensities
     #
     vis_utils.print_widget_labels('Intensity', 5, 0)
-    cols = st.beta_columns(2)
+    cols = st.columns(2)
     with cols[0]:
         i_raman = st.number_input('Raman Intensity', 1, 10000, 1000, 100)
     with cols[1]:
