@@ -37,13 +37,13 @@ def show_manual():
     st.warning('Then upload file or files for visualisation (or load example data) from left sidebar')
     st.write('')
     
-    with st.beta_expander('BWTEK'):
+    with st.expander('BWTEK'):
         st.write('Upload raw data in *.txt format')
         st.write('Original data consists of metadata and data')
         html = example_data_html('BWTEK')
         st.components.v1.html(html, height=200, scrolling=True)
-    
-    with st.beta_expander('WITec Alpha300 R+'):
+
+    with st.expander('WITec Alpha300 R+'):
         st.write('Upload spectra in *.txt or *.csv format')
         st.write('First column is X axis i.e Raman Shift (name of column is not important)')
         st.write('Other columns should contain the intensity')
@@ -52,8 +52,8 @@ def show_manual():
         st.markdown(f"Do not duplicate names of the columns", unsafe_allow_html=True)
         html = example_data_html('WITEC')
         st.components.v1.html(html, height=200, scrolling=True)
-    
-    with st.beta_expander('Renishaw'):
+
+    with st.expander('Renishaw'):
         st.write('Upload raw data in *.txt or *.csv format')
         st.write('First column is X axis i.e Raman Shift (name of column is not important)')
         st.write('Second column is Y axis, and should contain the intensity')
@@ -62,17 +62,17 @@ def show_manual():
         html = example_data_html('RENI')
         st.components.v1.html(html, height=200, scrolling=True)
 
-    with st.beta_expander('Wasatch'):
+    with st.expander('Wasatch'):
         st.write('Upload raw data in *.txt or *.csv')
         html = example_data_html('WASATCH')
         st.components.v1.html(html, height=200, scrolling=True)
 
-    with st.beta_expander('Teledyne Princeton Instruments'):
+    with st.expander('Teledyne Princeton Instruments'):
         st.write('Upload raw data in *.txt or *.csv:')
         html = example_data_html('TELEDYNE')
         st.components.v1.html(html, height=200, scrolling=True)
 
-    with st.beta_expander(LABELS['JOBIN']):
+    with st.expander(LABELS['JOBIN']):
         st.write('Upload raw data in *.txt or *.csv:')
         html = example_data_html('JOBIN')
         st.components.v1.html(html, height=200, scrolling=True)
