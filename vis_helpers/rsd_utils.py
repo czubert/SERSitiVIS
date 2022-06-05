@@ -3,20 +3,21 @@ import pandas as pd
 from processing.utils import subtract_baseline
 
 
-def rsd_one_peak(peak):
+def rsd_one_peak(peak, degree, round_num):
     """
     This function takes one particular peak from each spectrum,
     and calculates RMSE basing on values that corresponds to this peak
+    :param round_num:
+    :param degree:
     :param peak: DataFrame
     :return: Float, RMSE score
     """
-    round_num = 3
     
     # Calculating mean, std and RSD
     mean_value, std_value, rsd = calculate_OneP_rsd(peak)
     
     # Baseline correction
-    peak = subtract_baseline(peak, 1)
+    peak = subtract_baseline(peak, degree)
     
     # Calculating mean, std and RSD after baseline correction
     mean_value_basecorr, std_value_basecorr, rsd_basecorr = calculate_OneP_rsd(peak)
@@ -31,27 +32,29 @@ def rsd_one_peak(peak):
     return pd.concat((results, results_base_corr), axis=1).style.format(f'{{:.{round_num}f}}')
 
 
-def rsd_peak_to_peak_ratio(peak1, peak2):
+def rsd_peak_to_peak_ratio(peak1, peak2, degree, round_num):
     """
     This function takes proportions between two peaks from each spectrum,
     and calculates RMSE
-    :param peak: DataFrame
+    :param round_num:
+    :param degree:
+    :param peak1:
+    :param peak2:
     :return: Float, RMSE score
     """
-    round_num = 3
-
     # Calculating mean, std and RSD
     mean_value, std_value, rsd = calculate_p2p_rsd(peak1, peak2)
-
+    
     # Baseline correction
-    peak1 = subtract_baseline(peak1, 3)
-    peak2 = subtract_baseline(peak2, 3)
-
+    peak1 = subtract_baseline(peak1, degree)
+    peak2 = subtract_baseline(peak2, degree)
+    
     # Calculating mean, std and RSD after baseline correction
+    # TODO add a slider to set the polynomial for baseline correction
     mean_value_basecorr, std_value_basecorr, rsd_basecorr = calculate_p2p_rsd(peak1, peak2)
-
+    
     results = create_results_df(mean_value, std_value, rsd, 'RAW data')
-
+    
     results_base_corr = create_results_df(mean_value_basecorr,
                                           std_value_basecorr,
                                           rsd_basecorr,
@@ -90,7 +93,7 @@ def calculate_p2p_rsd(peak1, peak2):
 def create_results_df(mean_value, std_value, rsd, col_name):
     results = {'Mean': mean_value,
                'Standard deviation': std_value,
-               'RSD': rsd,
+               'RSD[%]': rsd * 100,
                }
     
     df = pd.DataFrame.from_dict(results, orient='index', columns=[f'{col_name}'])

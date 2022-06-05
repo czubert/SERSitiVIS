@@ -263,7 +263,7 @@ def main():
         # Choose plot colors and templates
         with main_expander:
             plot_palette, plot_template = vis_utils.get_chart_vis_properties()
-
+    
         # TODO need to add it one day
         # rescale = st.sidebar.checkbox("Normalize")
         # if rescale:
@@ -275,7 +275,7 @@ def main():
         #     sliders_params = SLIDERS_PARAMS_RAW
     
         cols = st.columns(2)
-
+    
         with cols[0]:
             raman_file = st.file_uploader(label='Upload Raman spectrum',
                                           accept_multiple_files=True,
@@ -293,7 +293,7 @@ def main():
                 raman_fig = px.line(raman_df, color_discrete_sequence=plot_palette)
                 fig_layout(plot_template, raman_fig, plots_colorscale=plot_palette)
                 raman_fig.update_xaxes(range=[plot_x_min, plot_x_max])
-
+    
         with cols[1]:
             sers_file = st.file_uploader(label='Upload SERS spectrum',
                                          accept_multiple_files=True,
@@ -310,19 +310,17 @@ def main():
                 sers_fig = px.line(sers_df, color_discrete_sequence=plot_palette)
                 fig_layout(plot_template, sers_fig, plots_colorscale=plot_palette)
                 sers_fig.update_xaxes(range=[plot_x_min, plot_x_max])
-
+    
         if not raman_file or not sers_file:
             return
-
+    
         bg_color = 'yellow'
         with st.columns([1, 7, 10])[1]:
             peak_range = st.slider(f'Peak range ({bg_color})',
                                    min_value=plot_x_min,
                                    max_value=plot_x_max,
                                    value=[plot_x_min, plot_x_max])
-
-        peak_range = [int(i) for i in peak_range.split('__')]
-
+    
         if peak_range != [plot_x_min, plot_x_max]:
             raman_fig.add_vline(x=peak_range[0], line_dash="dash")
             raman_fig.add_vline(x=peak_range[1], line_dash="dash")
@@ -337,12 +335,12 @@ def main():
             st.plotly_chart(raman_fig, use_container_width=True)
         with cols[1]:
             st.plotly_chart(sers_fig, use_container_width=True)
-
+    
         raman_mask = (peak_range[0] <= raman_df.index) & (raman_df.index <= peak_range[1])
         sers_mask = (peak_range[0] <= sers_df.index) & (sers_df.index <= peak_range[1])
         raman_peak = raman_df[raman_mask]
         sers_peak = sers_df[sers_mask]
-
+    
         i_raman = raman_peak.max()[0]
         i_sers = sers_peak.max()[0]
     else:

@@ -107,7 +107,7 @@ def get_chart_vis_properties():
                        ]
     }
 
-    col1, col2, col3 = st.beta_columns(3)
+    col1, col2, col3 = st.columns(3)
 
     with col1:
         palette_type = st.selectbox("Type of color palette", list(palettes.keys()), 0)
