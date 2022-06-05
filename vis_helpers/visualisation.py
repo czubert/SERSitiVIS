@@ -4,7 +4,7 @@ import plotly.express as px
 import streamlit as st
 
 # noinspection PyUnresolvedReferences
-import str_slider
+# import str_slider
 from processing import utils, save_read
 from vis_helpers import manual, sidebar, data_customisation, charts, vis_utils
 from vis_helpers.vis_utils import print_widgets_separator

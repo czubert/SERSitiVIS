@@ -7,7 +7,7 @@ plotly==4.14.3
 # rampy==0.4.5
 # scipy==1.6.3
 # seaborn==0.9.0
-streamlit== 1.9.0
+streamlit==1.9.0
 BeautifulSoup4==4.9.3
 streamlit-analytics
 detect_delimiter

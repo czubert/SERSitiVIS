@@ -300,6 +300,6 @@ def slider(
     return self.dg._enqueue("slider", slider_proto, return_value)
 
 
-setattr(streamlit.elements.slider.SliderMixin, 'slider', slider)
-import importlib
-importlib.reload(streamlit)
+# setattr(streamlit.elements.slider.SliderMixin, 'slider', slider)
+# import importlib
+# importlib.reload(streamlit)
