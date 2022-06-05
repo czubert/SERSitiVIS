@@ -47,11 +47,13 @@ def main():
         return st.warning('Upload more than one spectrum')
     df = processing.save_read.files_to_df(files, spectrometer)
     df = df.interpolate().bfill().ffill()
-    
+
     plot_x_min = int(df.index.min())
     plot_x_max = int(df.index.max())
 
     rescale = st.sidebar.checkbox("Normalize")
+
+    # FIX why slider_params is not used?
     if rescale:
         scaler = MinMaxScaler()
         rescaled_data = scaler.fit_transform(df)
@@ -59,7 +61,7 @@ def main():
         sliders_params = SLIDERS_PARAMS_NORMALIZED
     else:
         sliders_params = SLIDERS_PARAMS_RAW
-    
+
     bg_colors = {'Peak 1': 'yellow', 'Peak 2': 'green'}
 
     cols = st.columns((0.6, 5.5, 3.5))
@@ -75,8 +77,6 @@ def main():
                                     min_value=plot_x_min,
                                     max_value=plot_x_max,
                                     value=[plot_x_min, plot_x_max])
-            
-            peak2_range = [int(i) for i in peak2_range.split('__')]
     
     fig = px.line(df)
     fig_layout(plot_template, fig, plots_colorscale=plot_palette)
@@ -89,7 +89,7 @@ def main():
 
     for ran, text in peaks:
         if ran == [plot_x_min, plot_x_max]: continue
-    
+
         fig.add_vline(x=ran[0], line_dash="dash", annotation_text=text)
         fig.add_vline(x=ran[1], line_dash="dash")
         fig.add_vrect(x0=ran[0], x1=ran[1], line_width=0, fillcolor=bg_colors[text], opacity=0.15)
@@ -110,10 +110,12 @@ def main():
     with cols[1]:
         st.header('RSD scores')
         st.write(' ')
+        degree = st.slider('Choose polynomial degree for baseline correcion', 0, 20, 3, 1)
+        round_num = st.slider('Choose decimal places in results', 0, 4, 2, 1)
         if rsd_type == 'OneP':
-            st.table(rsd_utils.rsd_one_peak(peak1))
+            st.table(rsd_utils.rsd_one_peak(peak1, degree, round_num))
         elif rsd_type == 'P2P':
-            st.table(rsd_utils.rsd_peak_to_peak_ratio(peak1, peak2))
+            st.table(rsd_utils.rsd_peak_to_peak_ratio(peak1, peak2, degree, round_num))
 
     # TODO to bym przerzucił do wizualizacji i jakoś zaaplikował możliwość dodania peaków do widma
     # cols = st.columns(4)
@@ -136,11 +138,3 @@ def main():
     #                      )[0]
     #     peak_df = pd.concat([peak_df, df[col].reset_index().iloc[pd.Series(peaks), :].set_index('Raman Shift')],
     #                         axis=1)
-    #
-    # # FIX
-    # #  poniżej moje wypociny mające na celu splaszczenie ramanshifta i przypisanie splaszczonym
-    # #  ramanshiftom srednich wartości, ale coś poszło nie do końca tak jak chciałem ; /
-    #
-    # fig = px.scatter(peak_df, x=peak_df.index, y=peak_df.columns, title='Peak positions')
-    # fig.update_xaxes(range=[plot_x_min, plot_x_max])
-    # st.plotly_chart(fig, use_container_width=True)
