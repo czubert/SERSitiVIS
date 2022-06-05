@@ -68,8 +68,7 @@ def main():
                                 min_value=plot_x_min,
                                 max_value=plot_x_max,
                                 value=[plot_x_min, plot_x_max])
-        peak1_range = [int(i) for i in peak1_range.split('__')]
-    
+
     with cols[1]:
         if rsd_type == 'P2P':
             peak2_range = st.slider(f'Peak 2 range ({bg_colors["Peak 2"]})',

@@ -21,15 +21,14 @@ def rsd_one_peak(peak):
     # Calculating mean, std and RSD after baseline correction
     mean_value_basecorr, std_value_basecorr, rsd_basecorr = calculate_OneP_rsd(peak)
     
-    results = create_results_df(mean_value, std_value, rsd, round_num, 'RAW data')
+    results = create_results_df(mean_value, std_value, rsd, 'RAW data')
     
     results_base_corr = create_results_df(mean_value_basecorr,
                                           std_value_basecorr,
                                           rsd_basecorr,
-                                          round_num,
                                           'Baseline corrected',
                                           )
-    return pd.concat((results, results_base_corr), axis=1)
+    return pd.concat((results, results_base_corr), axis=1).style.format(f'{{:.{round_num}f}}')
 
 
 def rsd_peak_to_peak_ratio(peak1, peak2):
@@ -51,16 +50,15 @@ def rsd_peak_to_peak_ratio(peak1, peak2):
     # Calculating mean, std and RSD after baseline correction
     mean_value_basecorr, std_value_basecorr, rsd_basecorr = calculate_p2p_rsd(peak1, peak2)
 
-    results = create_results_df(mean_value, std_value, rsd, round_num, 'RAW data')
+    results = create_results_df(mean_value, std_value, rsd, 'RAW data')
 
     results_base_corr = create_results_df(mean_value_basecorr,
                                           std_value_basecorr,
                                           rsd_basecorr,
-                                          round_num,
                                           'Baseline corrected',
                                           )
     
-    return pd.concat((results, results_base_corr), axis=1)
+    return pd.concat((results, results_base_corr), axis=1).style.format(f'{{:.{round_num}f}}')
 
 
 def calculate_OneP_rsd(peak):
@@ -89,10 +87,11 @@ def calculate_p2p_rsd(peak1, peak2):
     return mean_value, std_value, rsd
 
 
-def create_results_df(mean_value, std_value, rsd, round_num, col_name):
-    results = {'Mean': round(mean_value, round_num),
-               'Standard deviation': round(std_value, round_num),
-               'RSD': str(round(rsd * 100)) + ' %'
+def create_results_df(mean_value, std_value, rsd, col_name):
+    results = {'Mean': mean_value,
+               'Standard deviation': std_value,
+               'RSD': rsd,
                }
     
-    return pd.DataFrame.from_dict(results, orient='index', columns=[f'{col_name}'])
+    df = pd.DataFrame.from_dict(results, orient='index', columns=[f'{col_name}'])
+    return df
