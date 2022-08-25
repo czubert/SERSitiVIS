@@ -1,4 +1,5 @@
 import streamlit as st
+import os
 
 # noinspection PyUnresolvedReferences
 # import str_slider
@@ -7,16 +8,32 @@ from vis_helpers import pca, rsd, enhancement_factor
 
 import sentry_sdk
 
-if 'sentry_url' in st.secrets:
-    sentry_sdk.init(
-        st.secrets['sentry_url'],
-        # Set traces_sample_rate to 1.0 to capture 100%
-        # of transactions for performance monitoring.
-        # We recommend adjusting this value in production.
-        traces_sample_rate=0.001,
-    )
-else:
-    print('sentry not running')
+try:
+    if os.path.isfile(".streamlit/secrets.toml"):
+        if 'sentry_url' in st.secrets:
+            sentry_sdk.init(
+                st.secrets['sentry_url'],
+                # Set traces_sample_rate to 1.0 to capture 100%
+                # of transactions for performance monitoring.
+                # We recommend adjusting this value in production.
+                traces_sample_rate=0.001,
+            )
+except FileNotFoundError:
+    print('No secrets found')
+
+# if os.path.isfile(".streamlit/secrets.toml"):
+#     if 'sentry_url' in st.secrets:
+#         sentry_sdk.init(
+#             st.secrets['sentry_url'],
+#             # Set traces_sample_rate to 1.0 to capture 100%
+#             # of transactions for performance monitoring.
+#             # We recommend adjusting this value in production.
+#             traces_sample_rate=0.001,
+#         )
+#     else:
+#         print('sentry not running')
+# else:
+#     print('No secrets found')
 
 
 def main():
@@ -44,9 +61,6 @@ def main():
     elif analysis_type == 'RSD':
         rsd.main()
     authors.show_developers()
-
-
-
 
 
 if __name__ == '__main__':

@@ -13,3 +13,5 @@ streamlit-analytics
 detect_delimiter
 scikit-learn
 sentry-sdk==1.5.0
+protobuf==3.20
+
