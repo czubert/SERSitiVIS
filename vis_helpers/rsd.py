@@ -97,7 +97,7 @@ def main():
     cols = st.columns((7, 3))
 
     with cols[0]:
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width='stretch')
 
     mask = (peak1_range[0] <= df.index) & (df.index <= peak1_range[1])
 

@@ -332,9 +332,9 @@ def main():
     
         cols = st.columns(2)
         with cols[0]:
-            st.plotly_chart(raman_fig, use_container_width=True)
+            st.plotly_chart(raman_fig, width='stretch')
         with cols[1]:
-            st.plotly_chart(sers_fig, use_container_width=True)
+            st.plotly_chart(sers_fig, width='stretch')
     
         raman_mask = (peak_range[0] <= raman_df.index) & (raman_df.index <= peak_range[1])
         sers_mask = (peak_range[0] <= sers_df.index) & (sers_df.index <= peak_range[1])
