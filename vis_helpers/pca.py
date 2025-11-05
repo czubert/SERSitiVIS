@@ -116,7 +116,7 @@ def main():
     
     with cols[0]:
         # Showing PCA chart. FIrst columnt
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width='stretch')
         
         # Showing uploaded spectra chart. FIrst columnt
         with st.expander("Uploaded spectra"):
@@ -126,7 +126,7 @@ def main():
             # What
             # for trace, gr in zip(fig.data, group):
             #     trace['line']['color'] = plot_palette[int(gr)]
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width='stretch')
         
         # Showing inversed-transformed spectra chart. FIrst columnt
         with st.expander("Inverse-transformed spectra"):
@@ -141,7 +141,7 @@ def main():
             # for trace, gr in zip(fig.data, group):
             #     trace['line']['color'] = plot_palette[int(gr)]
     
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width='stretch')
         
         # Showing PCA details
         with st.expander("Show PCA details"):

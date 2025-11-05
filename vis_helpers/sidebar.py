@@ -17,8 +17,6 @@ def sidebar_head():
         initial_sidebar_state="auto"
     )
 
-    st.set_option('deprecation.showfileUploaderEncoding', False)
-
     # SERSitivis logo
     html_code = vis_utils.show_sersitivis_logo(100, [1, 1, 1, 1], margin=[0, 0, 0, 0])
     st.sidebar.markdown(html_code, unsafe_allow_html=True)

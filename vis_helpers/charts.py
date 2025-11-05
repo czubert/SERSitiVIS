@@ -22,14 +22,14 @@ def show_charts(figs, plots_color, chart_titles, template):
             f = fig[0]
             draw.fig_layout(template, f, chart_titles=chart_titles, plots_colorscale=plots_color)
             f.update_traces(line=dict(width=3.5))
-            st.plotly_chart(f, use_container_width=True)
+            st.plotly_chart(f, width='stretch')
 
             with st.beta_expander('Detailed view'):
                 for f in fig[1:]:
                     draw.fig_layout(template, f, chart_titles=chart_titles, plots_colorscale=plots_color)
                     f.update_traces(line=dict(width=3.5))
-                    st.plotly_chart(f, use_container_width=True)
+                    st.plotly_chart(f, width='stretch')
         else:
             draw.fig_layout(template, fig, chart_titles=chart_titles, plots_colorscale=plots_color)
             fig.update_traces(line=dict(width=3.5))
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width='stretch')
