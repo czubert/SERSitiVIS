@@ -1,10 +1,7 @@
 import pandas as pd
-import peakutils
 import plotly.express as px
 import streamlit as st
 
-# noinspection PyUnresolvedReferences
-# import str_slider
 from processing import utils, save_read
 from vis_helpers import manual, sidebar, data_customisation, charts, vis_utils
 from vis_helpers.vis_utils import print_widgets_separator
@@ -68,7 +65,7 @@ def visualisation():
         
         if chart_type == 'SINGLE':
             with col_left:
-                col = st.selectbox('', df.columns)
+                col = st.selectbox('Spectrum', df.columns)
                 df = df[[col]]
         
         with col_right:
@@ -102,18 +99,6 @@ def visualisation():
         # data conversion end
         if spectra_conversion_type == 'OPT':
             df, baselines, baselined, flattened = vis_utils.subtract_baseline_and_smoothen(df, vals)
-            
-            baselines = pd.DataFrame(index=df.index)
-            baselined = pd.DataFrame(index=df.index)
-            flattened = pd.DataFrame(index=df.index)
-            for col in df.columns:
-                tmp_spectrum = df[col].dropna()  # trick for data with NaNs
-                tmp_spectrum = pd.Series(peakutils.baseline(tmp_spectrum, vals[col][0]), index=tmp_spectrum.index)
-                baselines[col] = tmp_spectrum
-                
-                baselined[col] = df[col] - baselines[col]
-                flattened[col] = baselined[col].rolling(window=vals[col][1], min_periods=1, center=True).mean()
-            #
         
         #
         # # Plotting
@@ -185,9 +170,10 @@ def visualisation():
         
         with col_left:
             st.markdown('')
-            link = utils.download_button(plot_df.reset_index(), f'spectrum.csv',
-                                         button_text='Download CSV')
-            st.markdown(link, unsafe_allow_html=True)
+            st.download_button('Download CSV',
+                               data=plot_df.reset_index().to_csv(index=False),
+                               file_name='spectrum.csv',
+                               mime='text/csv')
     
     else:
         manual.show_manual()

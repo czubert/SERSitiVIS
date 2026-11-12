@@ -54,7 +54,7 @@ def main():
                                         spectra_types,
                                         format_func=LABELS.get,
                                         index=1,
-                                        key=col
+                                        key=f'spectrometer_{col_ind}'
                                         )
             group_name = st.text_input("Provide group name", f"{col_ind}")
             group_names.append(group_name)

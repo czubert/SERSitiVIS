@@ -17,7 +17,7 @@ def trim_spectra(df):
     return df[mask]
 
 
-@st.cache
+@st.cache_data
 def show_logo(width, padding, margin):
     with open('logos/logo.png', 'rb') as f:
         data = f.read()
@@ -46,7 +46,7 @@ def show_logo(width, padding, margin):
     return html_code
 
 
-@st.cache
+@st.cache_data
 def show_sersitivis_logo(width, padding, margin):
     padding_top, padding_right, padding_bottom, padding_left = padding
     margin_top, margin_right, margin_bottom, margin_left = margin

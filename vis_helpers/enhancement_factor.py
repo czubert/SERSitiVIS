@@ -5,6 +5,7 @@ import streamlit as st
 import processing
 from constants import LABELS
 from visualisation.draw import fig_layout
+from processing.utils import subtract_baseline
 from . import ef_utils
 from . import vis_utils
 
@@ -44,7 +45,7 @@ def main():
     # # Calculating the number of molecules
     num_molecules = ef_utils.num_of_molecules(concentration, volume)
 
-    st.markdown(r'$N =$' + f' {"{:.1e}".format(num_molecules)} $[m^2]$')
+    st.markdown(r'$N =$' + f' {"{:.1e}".format(num_molecules)}')
 
     # # # #
     # # #
@@ -74,7 +75,7 @@ def main():
 
     # # Calculating the Laser spot
     s_laser = ef_utils.cal_size_of_laser_spot(laser_wave_length, lens_params)
-    st.markdown(r'$S_{Laser} =$' + f' {"{:.1e}".format(s_laser)} $[m^2]$')
+    st.markdown(r'$S_{Laser} =$' + f' {"{:.1e}".format(s_laser)} $[m]$')
 
     # # # #
     # # #
@@ -91,7 +92,7 @@ def main():
             unsafe_allow_html=True)
         st.markdown(r'$S_{0}$ - Surface area of the laser spot $[m^2]$')
         st.markdown(r'$\pi$ - mathematical constant, approximately equal to 3.14159')
-        st.markdown(r'$S_{Laser}$ - Laser spot diameter calculated in the previous step $[m^2]$')
+        st.markdown(r'$S_{Laser}$ - Laser spot diameter calculated in the previous step $[m]$')
 
     s0_spot_area = np.pi * (s_laser / 2) ** 2
     st.markdown(r'$S_{0} =$' + f' {"{:.1e}".format(s0_spot_area)} $[m^2]$')
@@ -117,7 +118,7 @@ def main():
         # # Formula for N_LASER
         st.markdown(
             r'### <p style="text-align: center;font-size:1.15em; margin-top:-35px">$$N_{Laser} = '
-            r'\frac {N \times S_{Laser}}{S_{Platform}}$$</p>',
+            r'\frac {N \times S_{0}}{S_{Platform}}$$</p>',
             unsafe_allow_html=True)
         # # Arrow
         st.markdown(
@@ -126,14 +127,14 @@ def main():
         # # Final formula for N_SERS
         st.markdown(
             r'### <p style="text-align: center;font-size:1.15em; margin-top:-35px">$$N_{SERS} = '
-            r'\frac {N \times S_{Laser} \times coverage}{S_{Platform}}$$</p>',
+            r'\frac {N \times S_{0} \times coverage}{S_{Platform}}$$</p>',
             unsafe_allow_html=True)
 
         st.markdown(r'$N_{SERS}$ - The number of molecules per laser irradiated surface')
-        st.markdown(r'$N_{Laser}$ - $$\frac {N \times S_{Laser}}{S_{Platform}}$$')
-        st.markdown(r'$coverage$ - Surface coverage with the particles (e.g. for p-MBA $10^{-6} M$ ~= 10%')
+        st.markdown(r'$N_{Laser}$ - The number of molecules within the laser spot')
+        st.markdown(r'$coverage$ - Surface coverage with the particles (e.g. for p-MBA $10^{-6} M$ ~= 10%)')
         st.markdown(r'$N$ - Number of particles')
-        st.markdown(r'$S_{Laser}$ - Laser spot diameter calculated in the previous step $[m]$')
+        st.markdown(r'$S_{0}$ - Surface area of the laser spot calculated in the previous step $[m^2]$')
         st.markdown(r'$S_{Platform}$ - Surface of the SERS platform '
                     r'$\times$ surface area development coefficient (rough surface ~= 2) $[m^2]$')
 
@@ -205,11 +206,11 @@ def main():
         st.markdown('---')
 
         st.markdown(
-            r'Lastly, The number of molecules irradiated during the recording of the Raman spectrum (&N_{Raman}&) is obtained by multiplying the number of moles by the Avogadro constant:')
+            r'Lastly, The number of molecules irradiated during the recording of the Raman spectrum ($N_{Raman}$) is obtained by multiplying the number of moles by the Avogadro constant:')
         st.markdown(r'### <p style="text-align: center;">$$N_{Raman}= n_{compound}\times N_A$$</p>',
                     unsafe_allow_html=True)
         st.markdown(r'$N_{Raman}$ - The number of molecules irradiated during the recording of the Raman spectrum')
-        st.markdown(r'$n_{compound}$ - Mass of the irradiated crystal $[mol]$')
+        st.markdown(r'$n_{compound}$ - Number of moles of the irradiated crystal $[mol]$')
         st.markdown(r'$N_A$ - Avogadro constant $[mol^{-1}]$')
 
     # # Molecular weight
@@ -258,91 +259,82 @@ def main():
         i_sers, i_raman = ef_utils.get_laser_intensities()
 
     elif intensities_radio == 'from_spec':
-    
-        main_expander = st.expander("Customize your chart")
-        # Choose plot colors and templates
-        with main_expander:
+        with st.expander("Customize your chart"):
             plot_palette, plot_template = vis_utils.get_chart_vis_properties()
-    
-        # TODO need to add it one day
-        # rescale = st.sidebar.checkbox("Normalize")
-        # if rescale:
-        #     scaler = MinMaxScaler()
-        #     rescaled_data = scaler.fit_transform(sers_df)
-        #     df = pd.DataFrame(rescaled_data, columns=sers_df.columns, index=sers_df.index)
-        #     sliders_params = SLIDERS_PARAMS_NORMALIZED
-        # else:
-        #     sliders_params = SLIDERS_PARAMS_RAW
-    
+
+        st.info('You can upload several spectra of each type (e.g. from a map) - they will be averaged. '
+                'Choose the same band in both spectra, e.g. ~1075 or ~1588 cm⁻¹ for p-MBA.')
+
+        baseline_correction = st.checkbox('Subtract baseline before reading peak intensities', value=True)
+        if baseline_correction:
+            degree = st.slider('Polynomial degree for baseline correction', 1, 20, 5, key='ef_baseline_degree')
+
+        spectra = {}
         cols = st.columns(2)
-    
-        with cols[0]:
-            raman_file = st.file_uploader(label='Upload Raman spectrum',
-                                          accept_multiple_files=True,
-                                          type=['txt', 'csv'])
-
-            if not raman_file:
-                st.warning("Upload Raman spectrum")
-            else:
-                raman_df = processing.save_read.files_to_df(raman_file, spectrometer)
-                raman_df = raman_df.interpolate().bfill().ffill()
-
-                plot_x_min = int(raman_df.index.min())
-                plot_x_max = int(raman_df.index.max())
-
-                raman_fig = px.line(raman_df, color_discrete_sequence=plot_palette)
-                fig_layout(plot_template, raman_fig, plots_colorscale=plot_palette)
-                raman_fig.update_xaxes(range=[plot_x_min, plot_x_max])
-    
-        with cols[1]:
-            sers_file = st.file_uploader(label='Upload SERS spectrum',
+        for col, name in zip(cols, ['Raman', 'SERS']):
+            with col:
+                files = st.file_uploader(label=f'Upload {name} spectra',
                                          accept_multiple_files=True,
-                                         type=['txt', 'csv'])
-            if not sers_file:
-                st.warning("Upload SERS spectrum")
-            else:
-                sers_df = processing.save_read.files_to_df(sers_file, spectrometer)
-                sers_df = sers_df.interpolate().bfill().ffill()
+                                         type=['txt', 'csv'],
+                                         key=f'ef_{name}_files')
+                if not files:
+                    st.warning(f'Upload {name} spectrum')
+                    continue
 
-                plot_x_min = int(sers_df.index.min())
-                plot_x_max = int(sers_df.index.max())
+                df = processing.save_read.files_to_df(files, spectrometer)
+                df = df.interpolate().bfill().ffill()
+                if baseline_correction:
+                    df = subtract_baseline(df, degree)
+                spectra[name] = df
 
-                sers_fig = px.line(sers_df, color_discrete_sequence=plot_palette)
-                fig_layout(plot_template, sers_fig, plots_colorscale=plot_palette)
-                sers_fig.update_xaxes(range=[plot_x_min, plot_x_max])
-    
-        if not raman_file or not sers_file:
+        if len(spectra) < 2:
             return
-    
-        bg_color = 'yellow'
-        with st.columns([1, 7, 10])[1]:
-            peak_range = st.slider(f'Peak range ({bg_color})',
-                                   min_value=plot_x_min,
-                                   max_value=plot_x_max,
-                                   value=[plot_x_min, plot_x_max])
-    
-        if peak_range != [plot_x_min, plot_x_max]:
-            raman_fig.add_vline(x=peak_range[0], line_dash="dash")
-            raman_fig.add_vline(x=peak_range[1], line_dash="dash")
-            raman_fig.add_vrect(x0=peak_range[0], x1=peak_range[1], line_width=0, fillcolor=bg_color, opacity=0.15)
 
-            sers_fig.add_vline(x=peak_range[0], line_dash="dash")
-            sers_fig.add_vline(x=peak_range[1], line_dash="dash")
-            sers_fig.add_vrect(x0=peak_range[0], x1=peak_range[1], line_width=0, fillcolor=bg_color, opacity=0.15)
-    
+        intensities = {}
+        bg_color = 'yellow'
         cols = st.columns(2)
-        with cols[0]:
-            st.plotly_chart(raman_fig, width='stretch')
-        with cols[1]:
-            st.plotly_chart(sers_fig, width='stretch')
-    
-        raman_mask = (peak_range[0] <= raman_df.index) & (raman_df.index <= peak_range[1])
-        sers_mask = (peak_range[0] <= sers_df.index) & (sers_df.index <= peak_range[1])
-        raman_peak = raman_df[raman_mask]
-        sers_peak = sers_df[sers_mask]
-    
-        i_raman = raman_peak.max()[0]
-        i_sers = sers_peak.max()[0]
+        for col, name in zip(cols, ['Raman', 'SERS']):
+            df = spectra[name]
+            mean_spectrum = df.mean(axis=1)
+            plot_x_min, plot_x_max = int(df.index.min()), int(df.index.max())
+
+            with col:
+                # separate range for each spectrum - the same band is usually shifted by a few cm-1
+                peak_range = st.slider(f'{name} peak range ({bg_color})',
+                                       min_value=plot_x_min,
+                                       max_value=plot_x_max,
+                                       value=(plot_x_min, plot_x_max),
+                                       key=f'ef_{name}_range')
+
+                plot_df = df.copy()
+                if df.shape[1] > 1:
+                    plot_df['Average'] = mean_spectrum
+                fig = px.line(plot_df, color_discrete_sequence=plot_palette)
+                fig_layout(plot_template, fig, plots_colorscale=plot_palette)
+                fig.update_xaxes(range=[plot_x_min, plot_x_max])
+
+                if tuple(peak_range) != (plot_x_min, plot_x_max):
+                    fig.add_vline(x=peak_range[0], line_dash="dash")
+                    fig.add_vline(x=peak_range[1], line_dash="dash")
+                    fig.add_vrect(x0=peak_range[0], x1=peak_range[1], line_width=0, fillcolor=bg_color, opacity=0.15)
+
+                st.plotly_chart(fig, width='stretch')
+
+                mask = (peak_range[0] <= df.index) & (df.index <= peak_range[1])
+                if not mask.any():
+                    st.warning('Selected peak range is empty')
+                    return
+
+                peak_of_mean = mean_spectrum[mask]
+                intensities[name] = peak_of_mean.max()
+                st.markdown(f'$I_{{{name}}} =$ {intensities[name]:.0f} at {peak_of_mean.idxmax():.0f} cm⁻¹')
+
+                if df.shape[1] > 1:
+                    peaks = df[mask].max()
+                    st.caption(f'Average of {df.shape[1]} spectra. Peak intensity SD: {peaks.std():.0f} '
+                               f'(RSD {100 * peaks.std() / peaks.mean():.1f} %)')
+
+        i_raman, i_sers = intensities['Raman'], intensities['SERS']
     else:
         raise ValueError()  # just to satisfy pycharm linter
 

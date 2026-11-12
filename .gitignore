@@ -1,3 +1,8 @@
 /.streamlit/secrets.toml
 /firestore-key.json
 /tmp_credentials.json
+__pycache__/
+.idea/
+.pytest_cache/
+# internal document, do not publish
+/data/Enhancement_Factor.pdf

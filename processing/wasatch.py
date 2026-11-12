@@ -1,3 +1,5 @@
+import re
+
 import pandas as pd
 import streamlit as st
 
@@ -17,7 +19,7 @@ def read_wasatch(uploaded_files, separator):
                                       'decimal': '.',
                                       'usecols': ['Pixel', 'Wavenumber', col_to_show],
                                       'skipinitialspace': True, },
-                      LABELS["TXT"]: {'delim_whitespace': True, 'decimal': '.', 'skipinitialspace': True,
+                      LABELS["TXT"]: {'sep': r'\s+', 'decimal': '.', 'skipinitialspace': True,
                                       'header': None},
                       }
 
@@ -36,7 +38,9 @@ def read_wasatch(uploaded_files, separator):
         st.stop()
     
     for uploaded_file in uploaded_files:
-        name = uploaded_file.name[:-(len(LABELS["PAT"]))]
+        # strip extension and the timestamp/serial suffix added by Wasatch software,
+        # e.g. 'sample-20201009-093705-137238-WP-00702.txt' -> 'sample'
+        name = re.sub(r'(-\d{8}-\d{6}-\d+-WP-\d+)?\.\w+$', '', uploaded_file.name)
         
         if uploaded_file.name[-3:] == LABELS["CSV"]:
             data, metadata = utils.read_spec(uploaded_file, spectra_params[LABELS["CSV"]], meta_params)

@@ -1,8 +1,6 @@
 import streamlit as st
 import os
 
-# noinspection PyUnresolvedReferences
-# import str_slider
 from vis_helpers import sidebar, authors, visualisation, main_page
 from vis_helpers import pca, rsd, enhancement_factor
 

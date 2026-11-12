@@ -6,28 +6,26 @@ from . import utils
 
 def read_renishaw(uploaded_files, delim):
     """
-    Reads numeric data from file and creates DataFrame
-    :param uploaded_file: Streamlit uploader file
-    :return: Dict of DataFrames
+    Reads two-column spectra (Raman Shift, Intensity) and merges them into one DataFrame.
+    Used for Renishaw, Jobin Yvon and Teledyne files.
+    :param uploaded_files: List of file-like objects
+    :param delim: Str, column separator
+    :return: DataFrame, Raman Shift as index, one column per file
     """
-    reni_data = {}
     spectra_params_uploaded = {'sep': delim, 'decimal': '.', 'skipinitialspace': True,
                                'header': None}
-    
-    # Iterates through each file, converts it to DataFrame and adds to temporary dictionary
+
+    frames = []
     for uploaded_file in uploaded_files:
-        # TODO nie wiem, czemu nie dziala \t dla wszystkich renishawowych danych...
         data = utils.read_spec(uploaded_file, spectra_params_uploaded)
-        
-        name = uploaded_file.name[:-4]
+        data = data.iloc[:, :2]
+        data.columns = [LABELS["RS"], uploaded_file.name[:-4]]
+
+        # comma used as decimal separator
+        data = data.apply(lambda col: pd.to_numeric(col.astype(str).str.replace(',', '.'), errors='coerce'))
         data.dropna(inplace=True, how='any', axis=0)
-        data.columns = [LABELS["RS"], name]
-        data[LABELS["RS"]] = data[LABELS["RS"]].round(decimals=0)
         data.set_index(LABELS["RS"], inplace=True)
-        
-        reni_data[uploaded_file.name[:-4]] = data
-    
-    df = pd.concat([reni_data[data_df] for data_df in reni_data], axis=1)
-    df.dropna(inplace=True, how='any', axis=0)
-    
-    return df
+
+        frames.append(data)
+
+    return utils.align_spectra(frames)

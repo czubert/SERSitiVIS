@@ -1,6 +1,8 @@
 import streamlit as st
 from . import vis_utils
 
+AVOGADRO = 6.02214076e23  # [1/mol]
+
 
 def get_concentration():
     # # #
@@ -22,24 +24,21 @@ def get_volume():
     # # #
     # # Solution Volume
     #
-    vis_utils.print_widget_labels('Volume of solution [ul]', 5, 0)
-    return st.number_input('', 0.0, 10000.0, 2000.0, 10.0) / 1000
+    return st.number_input('Volume of solution [µl]', 0.0, 10000.0, 2000.0, 10.0) / 1000
 
 
 def get_laser_wave_length():
     # # #
     # # Laser wavelength
     #
-    vis_utils.print_widget_labels('Laser wavelength [nm]', 5, 0)
-    return st.number_input('', 450, 1200, 785)
+    return st.number_input('Laser wavelength [nm]', 450, 1200, 785)
 
 
 def get_lens_params():
     # # #
     # # Lens params
     #
-    vis_utils.print_widget_labels('Lens parameter - Numerical Aperture (NA)', 5, 0)
-    return st.number_input('', 0.0, 10.0, 0.22, 0.01)
+    return st.number_input('Lens parameter - Numerical Aperture (NA)', 0.0, 10.0, 0.22, 0.01)
 
 
 def get_active_surface_area():
@@ -62,8 +61,7 @@ def get_surface_coverage():
     # # #
     # # Surface Coverage
     #
-    vis_utils.print_widget_labels('The coverage of the surface by the analyte', 5, 0)
-    return st.number_input('', 0.0, 1.0, 0.1, 0.05, key='coverage')
+    return st.number_input('The coverage of the surface by the analyte (0-1)', 0.0, 1.0, 0.1, 0.05, key='coverage')
 
 
 def get_laser_intensities():
@@ -80,19 +78,16 @@ def get_laser_intensities():
 
 
 def get_molecular_weight():
-    vis_utils.print_widget_labels('Provide molecular weight', 5, 0)
-    return st.number_input('', 0.001, 1000.0, 154.19, 0.01)
+    return st.number_input('Molecular weight [g/mol]', 0.001, 1000.0, 154.19, 0.01)
 
 
 def get_compound_density():
-    vis_utils.print_widget_labels('Provide compound density', 5, 0)
-    return st.number_input('', 0.001, 20.0, 1.3, 0.1)
+    return st.number_input('Compound density [g/cm³]', 0.001, 20.0, 1.3, 0.1)
 
 
 def get_penetration_depth():
-    vis_utils.print_widget_labels(
-        'Provide depth into which the laser penetrates the chemical compound in crystalline form [mm]', 5, 0)
-    penetration_depth = st.number_input('', 0.0, 10.0, 2.0, 0.1)
+    penetration_depth = st.number_input(
+        'Depth into which the laser penetrates the chemical compound in crystalline form [mm]', 0.0, 10.0, 2.0, 0.1)
     return penetration_depth * 10 ** (-3)  # mm -> m
 
 
@@ -103,18 +98,17 @@ def num_of_molecules(conc, vol):
     :param vol: Float, Must be in ml
     :return: Float, Number of Molecules
     """
-    n_av = 6.023 * 10 ** 23
     v_dm = vol * 10 ** (-3)
-    
-    return n_av * conc * v_dm
+
+    return AVOGADRO * conc * v_dm
 
 
 def cal_size_of_laser_spot(wave_length_nm, lens_numeric_aperture):
     """
     Calculating size of laser spot.
-    :param lnm: Int, laser wavelength given in nm
-    :param naa: Float, Lens parameter - Numerical aperture
-    :return: Float, Size of laser spot in meters
+    :param wave_length_nm: Int, laser wavelength given in nm
+    :param lens_numeric_aperture: Float, Lens parameter - Numerical aperture
+    :return: Float, diameter of the laser spot in meters
     """
     wave_length_m = wave_length_nm * 10 ** (-9)  # changing nm to m as it is needed for formula
     return (1.22 * wave_length_m) / lens_numeric_aperture
@@ -134,4 +128,4 @@ def cal_n_raman(v_compound, compound_density, compound_molecular_weight):
     n = m / compound_molecular_weight
     
     # mol * 1/mol
-    return n * 6.02e+23  # calculating the number of molecules using the Avogadro constant
+    return n * AVOGADRO  # calculating the number of molecules using the Avogadro constant

@@ -9,7 +9,7 @@ def show_charts(figs, plots_color, chart_titles, template):
 
     Elements of fig type are simply drawn.
     For elements of type list or tuple creates inner loop - first element is
-    drawn and the rest is hidden in beta_expander
+    drawn and the rest is hidden in an expander
 
     Args:
         figs (list): list of figures to plot (might be nested)
@@ -24,7 +24,7 @@ def show_charts(figs, plots_color, chart_titles, template):
             f.update_traces(line=dict(width=3.5))
             st.plotly_chart(f, width='stretch')
 
-            with st.beta_expander('Detailed view'):
+            with st.expander('Detailed view'):
                 for f in fig[1:]:
                     draw.fig_layout(template, f, chart_titles=chart_titles, plots_colorscale=plots_color)
                     f.update_traces(line=dict(width=3.5))

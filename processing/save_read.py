@@ -1,6 +1,5 @@
 import io
 
-import streamlit
 import streamlit as st
 from detect_delimiter import detect
 
@@ -9,8 +8,8 @@ from processing import bwtek, renishaw, witec, wasatch, teledyne
 
 def read_files(spectrometer, files, delim):
     if spectrometer == "EMPTY":
-        streamlit.warning('Choose spectra type first')
-        streamlit.stop()
+        st.warning('Choose spectra type first')
+        st.stop()
     
     # BWTek raw spectra
     elif spectrometer == 'BWTEK':
@@ -40,14 +39,28 @@ def read_files(spectrometer, files, delim):
         raise ValueError('Unknown spectrometer type')
     
     # fix comma separated decimals (stored as strings)
-    if spectrometer != "None":
-        for col in df.columns:
+    for col in df.columns:
+        if df[col].dtype == object:
             try:
-                df.loc[:, col] = df[col].str.replace(',', '.').astype(float)
+                df[col] = df[col].str.replace(',', '.').astype(float)
             except (AttributeError, ValueError):
                 ...
     
     return df
+
+
+def decode_line(line):
+    """
+    Decodes a line read from an uploaded (binary) file. Files exported by software running on
+    Polish Windows are often not UTF-8 (e.g. cp1250), so fall back to other encodings.
+    """
+    if isinstance(line, str):
+        return line
+    for encoding in ('utf-8', 'cp1250', 'latin-1'):
+        try:
+            return line.decode(encoding)
+        except UnicodeDecodeError:
+            continue
 
 
 def files_to_df(files, spectrometer):
@@ -58,10 +71,7 @@ def files_to_df(files, spectrometer):
         file.seek(0)
         lines = file.readlines()
 
-        try:
-            lines = [line.decode('utf-8') for line in lines]
-        except AttributeError:
-            pass
+        lines = [decode_line(line) for line in lines]
 
         first_lines = '\n'.join(lines[:20])
         delim = detect(first_lines)

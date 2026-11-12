@@ -78,7 +78,6 @@ def calculate_OneP_rsd(peak):
 
 
 def calculate_p2p_rsd(peak1, peak2):
-    import plotly.express as px
     mean_value = (peak1.max() / peak2.max()).mean()
     
     # Standard deviation of absolute numbers

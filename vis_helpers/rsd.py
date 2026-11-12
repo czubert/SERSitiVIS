@@ -88,7 +88,8 @@ def main():
         peaks = zip([peak1_range, peak2_range], ['Peak 1', 'Peak 2'])
 
     for ran, text in peaks:
-        if ran == [plot_x_min, plot_x_max]: continue
+        if tuple(ran) == (plot_x_min, plot_x_max):
+            continue
 
         fig.add_vline(x=ran[0], line_dash="dash", annotation_text=text)
         fig.add_vline(x=ran[1], line_dash="dash")
