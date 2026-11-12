@@ -71,7 +71,7 @@ def main(df):
     with cols[1]:
         st.header('RSD scores')
         st.write(' ')
-        degree = st.slider('Polynomial degree for baseline correction', 0, 20, 3, 1, key='rsd_degree',
+        degree = st.slider('Polynomial degree for baseline correction', 0, 20, 1, 1, key='rsd_degree',
                            help='Baseline is fitted within each peak range - shown as dotted lines on the chart')
         round_num = st.slider('Choose decimal places in results', 0, 4, 2, 1)
         table = analysis.rsd_table(peaks['Peak 1'], peaks.get('Peak 2'), degree)
