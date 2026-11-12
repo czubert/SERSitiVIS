@@ -100,3 +100,14 @@ def test_ef_matches_publication_example():
     app.run()
     assert not app.exception
     assert any(m.value.startswith('$EF =$') and '6.1e+07' in m.value for m in app.markdown)
+
+
+def test_baseline_recovers_background_under_peaks():
+    """Synthetic spectrum: known polynomial background + Raman-like peaks"""
+    import numpy as np
+
+    x = np.linspace(400, 1800, 1500)
+    background = 2000 + 1.5 * (x - 400) - 6e-4 * (x - 400) ** 2
+    peaks = sum(h * np.exp(-((x - c) / 6) ** 2) for c, h in [(640, 3000), (1080, 20000), (1590, 15000)])
+    estimated = utils.baseline(background + peaks, 2, x=x)
+    assert np.max(np.abs(estimated - background)) / np.ptp(peaks) < 0.01

@@ -3,10 +3,27 @@ import os.path
 
 import numpy as np
 import pandas as pd
-import peakutils
 import streamlit as st
 from bs4 import UnicodeDammit
+from pybaselines.polynomial import modpoly
 
+# ModPoly converges slowly - default tolerance (1e-3) stops too early and leaves baseline
+# up to ~15 % of the signal range too high. 1e-5 keeps the error ~3 % at ~4 ms per spectrum.
+BASELINE_TOL = 1e-5
+BASELINE_MAX_ITER = 5000
+
+
+def baseline(y, deg, x=None):
+    """
+    Iterative modified polynomial (ModPoly) baseline, the same algorithm PeakUtils used.
+    :param y: array-like, intensities
+    :param deg: int, polynomial degree
+    :param x: array-like, Raman Shift values (optional, equally spaced points assumed if None)
+    :return: ndarray, baseline
+    """
+    x = None if x is None else np.asarray(x, dtype=float)
+    return modpoly(np.asarray(y, dtype=float), x_data=x, poly_order=deg,
+                   tol=BASELINE_TOL, max_iter=BASELINE_MAX_ITER)[0]
 
 
 def read_spec(uploaded_file, spectra_params, meta_params=None):
@@ -102,7 +119,7 @@ def subtract_baseline(df, deg):
     """
     df = df.astype(float)
     for col in df.columns:
-        df[col] = df[col] - peakutils.baseline(df[col].to_numpy(), deg)
+        df[col] = df[col] - baseline(df[col], deg, x=df.index)
     return df
 
 

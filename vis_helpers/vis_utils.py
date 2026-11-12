@@ -4,7 +4,8 @@ import plotly.express as px
 import plotly.io as pio
 import streamlit as st
 import pandas as pd
-import peakutils
+
+from processing.utils import baseline
 
 
 def trim_spectra(df):
@@ -229,7 +230,8 @@ def subtract_baseline_and_smoothen(df, vals, cols_name=False):
             col_name = 'col'
         
         tmp_spectrum = df[col].dropna()  # trick for data with NaNs
-        tmp_spectrum = pd.Series(peakutils.baseline(tmp_spectrum, vals[col_name][0]), index=tmp_spectrum.index)
+        tmp_spectrum = pd.Series(baseline(tmp_spectrum, vals[col_name][0], x=tmp_spectrum.index),
+                                 index=tmp_spectrum.index)
         baselines[col] = tmp_spectrum
         
         baselined[col] = df[col] - baselines[col]
