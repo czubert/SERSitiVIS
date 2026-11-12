@@ -1,8 +1,6 @@
 import streamlit as st
 from . import vis_utils
 
-AVOGADRO = 6.02214076e23  # [1/mol]
-
 
 def get_concentration():
     # # #
@@ -89,43 +87,3 @@ def get_penetration_depth():
     penetration_depth = st.number_input(
         'Depth into which the laser penetrates the chemical compound in crystalline form [mm]', 0.0, 10.0, 2.0, 0.1)
     return penetration_depth * 10 ** (-3)  # mm -> m
-
-
-def num_of_molecules(conc, vol):
-    """
-    Calculating number of particles contained in the solution.
-    :param conc: Float, Must be in mol/dm**3
-    :param vol: Float, Must be in ml
-    :return: Float, Number of Molecules
-    """
-    v_dm = vol * 10 ** (-3)
-
-    return AVOGADRO * conc * v_dm
-
-
-def cal_size_of_laser_spot(wave_length_nm, lens_numeric_aperture):
-    """
-    Calculating size of laser spot.
-    :param wave_length_nm: Int, laser wavelength given in nm
-    :param lens_numeric_aperture: Float, Lens parameter - Numerical aperture
-    :return: Float, diameter of the laser spot in meters
-    """
-    wave_length_m = wave_length_nm * 10 ** (-9)  # changing nm to m as it is needed for formula
-    return (1.22 * wave_length_m) / lens_numeric_aperture
-
-
-def cal_n_raman(v_compound, compound_density, compound_molecular_weight):
-    """
-    Calculating the number of molecules of the irradiated crystal
-    :param v_compound: The volume of your chemical compound crystal subjected to laser illumination [m^3]
-    :param compound_density:density of the chemical compound g/cm^3
-    :param compound_molecular_weight: Mass of the irradiated crystal [g]
-    :return: Float, N_Raman - number of molecules of the irradiated crystal
-    """
-    # calculating the mass of the irradiated crystal [g]
-    m = v_compound * (compound_density * 10 ** 6)
-    # calculating the number of moles of the irradiated crystal [mol]
-    n = m / compound_molecular_weight
-    
-    # mol * 1/mol
-    return n * AVOGADRO  # calculating the number of molecules using the Avogadro constant

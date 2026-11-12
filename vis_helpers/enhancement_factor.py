@@ -1,25 +1,16 @@
-import numpy as np
 import plotly.express as px
 import streamlit as st
 
-import processing
-from constants import LABELS
+from core import analysis, processing
 from visualisation.draw import fig_layout
-from processing.utils import subtract_baseline
 from . import ef_utils
 from . import vis_utils
 
-SLIDERS_PARAMS_RAW = {'rel_height': dict(min_value=1, max_value=100, value=20, step=1),
-                      'height': dict(min_value=1000, max_value=100000, value=10000, step=1000),
-                      }
-SLIDERS_PARAMS_NORMALIZED = {'rel_height': dict(min_value=0.01, max_value=1., value=0.5, step=0.01),
-                             'height': dict(min_value=0.001, max_value=1., value=0.1, step=0.001),
-                             }
 
-spectra_types = ['EMPTY', 'BWTEK', 'RENI', 'WITEC', 'WASATCH', 'TELEDYNE', 'JOBIN']
-
-
-def main():
+def main(df):
+    """
+    :param df: DataFrame with uploaded spectra (shared data) or None
+    """
     st.title('Enhancement Factor calculator')
 
     # # # #
@@ -43,7 +34,7 @@ def main():
     volume = ef_utils.get_volume()
 
     # # Calculating the number of molecules
-    num_molecules = ef_utils.num_of_molecules(concentration, volume)
+    num_molecules = analysis.num_of_molecules(concentration, volume)
 
     st.markdown(r'$N =$' + f' {"{:.1e}".format(num_molecules)}')
 
@@ -74,7 +65,7 @@ def main():
         lens_params = ef_utils.get_lens_params()
 
     # # Calculating the Laser spot
-    s_laser = ef_utils.cal_size_of_laser_spot(laser_wave_length, lens_params)
+    s_laser = analysis.laser_spot_diameter(laser_wave_length, lens_params)
     st.markdown(r'$S_{Laser} =$' + f' {"{:.1e}".format(s_laser)} $[m]$')
 
     # # # #
@@ -94,7 +85,7 @@ def main():
         st.markdown(r'$\pi$ - mathematical constant, approximately equal to 3.14159')
         st.markdown(r'$S_{Laser}$ - Laser spot diameter calculated in the previous step $[m]$')
 
-    s0_spot_area = np.pi * (s_laser / 2) ** 2
+    s0_spot_area = analysis.laser_spot_area(s_laser)
     st.markdown(r'$S_{0} =$' + f' {"{:.1e}".format(s0_spot_area)} $[m^2]$')
 
     # # # #
@@ -143,8 +134,7 @@ def main():
     # # The coverage of the analyte on the surface between 10^-6 and 6*10^-6 ~=10%
     surface_coverage = ef_utils.get_surface_coverage()
 
-    # n_sers = (num_molecules * s_laser * surface_coverage) / s_platform  # formula version
-    n_sers = (num_molecules * s0_spot_area * surface_coverage) / s_platform  # Szymborski use
+    n_sers = analysis.n_sers(num_molecules, s0_spot_area, surface_coverage, s_platform)
 
     # TODO delete after checking the results
     # st.markdown(f'num_molecules: {"{:.1e}".format(num_molecules)}')
@@ -217,7 +207,7 @@ def main():
     compound_density = ef_utils.get_compound_density()
     compound_molecular_weight = ef_utils.get_molecular_weight()
 
-    n_raman = ef_utils.cal_n_raman(v_compound, compound_density, compound_molecular_weight)
+    n_raman = analysis.n_raman(s0_spot_area, penetration_depth, compound_density, compound_molecular_weight)
 
     st.markdown(r'$N_{Raman} =$' + f' {"{:.1e}".format(n_raman)}')
 
@@ -250,20 +240,19 @@ def main():
                                  format_func=intensities_options.get
                                  )
 
-    spectrometer = st.sidebar.selectbox("Choose spectra type",
-                                        spectra_types,
-                                        format_func=LABELS.get,
-                                        index=0
-                                        )
     if intensities_radio == 'input':
         i_sers, i_raman = ef_utils.get_laser_intensities()
 
-    elif intensities_radio == 'from_spec':
+    else:
+        if df is None:
+            st.warning('Upload Raman and SERS spectra in the sidebar')
+            return
+
         with st.expander("Customize your chart"):
             plot_palette, plot_template = vis_utils.get_chart_vis_properties()
 
-        st.info('You can upload several spectra of each type (e.g. from a map) - they will be averaged. '
-                'Choose the same band in both spectra, e.g. ~1075 or ~1588 cm⁻¹ for p-MBA.')
+        st.info('Choose which uploaded spectra are Raman and which are SERS. Several spectra of each type '
+                '(e.g. from a map) are averaged. Choose the same band in both, e.g. ~1075 or ~1588 cm⁻¹ for p-MBA.')
 
         baseline_correction = st.checkbox('Subtract baseline before reading peak intensities', value=True)
         if baseline_correction:
@@ -273,19 +262,11 @@ def main():
         cols = st.columns(2)
         for col, name in zip(cols, ['Raman', 'SERS']):
             with col:
-                files = st.file_uploader(label=f'Upload {name} spectra',
-                                         accept_multiple_files=True,
-                                         type=['txt', 'csv'],
-                                         key=f'ef_{name}_files')
-                if not files:
-                    st.warning(f'Upload {name} spectrum')
+                chosen = st.multiselect(f'{name} spectra', list(df.columns), key=f'ef_{name}_spectra')
+                if not chosen:
+                    st.warning(f'Choose {name} spectra')
                     continue
-
-                df = processing.save_read.files_to_df(files, spectrometer)
-                df = df.interpolate().bfill().ffill()
-                if baseline_correction:
-                    df = subtract_baseline(df, degree)
-                spectra[name] = df
+                spectra[name] = processing.subtract_baseline(df[chosen], degree) if baseline_correction                     else df[chosen]
 
         if len(spectra) < 2:
             return
@@ -294,9 +275,8 @@ def main():
         bg_color = 'yellow'
         cols = st.columns(2)
         for col, name in zip(cols, ['Raman', 'SERS']):
-            df = spectra[name]
-            mean_spectrum = df.mean(axis=1)
-            plot_x_min, plot_x_max = int(df.index.min()), int(df.index.max())
+            spectra_df = spectra[name]
+            plot_x_min, plot_x_max = int(spectra_df.index.min()), int(spectra_df.index.max())
 
             with col:
                 # separate range for each spectrum - the same band is usually shifted by a few cm-1
@@ -306,9 +286,9 @@ def main():
                                        value=(plot_x_min, plot_x_max),
                                        key=f'ef_{name}_range')
 
-                plot_df = df.copy()
-                if df.shape[1] > 1:
-                    plot_df['Average'] = mean_spectrum
+                plot_df = spectra_df.copy()
+                if spectra_df.shape[1] > 1:
+                    plot_df['Average'] = spectra_df.mean(axis=1)
                 fig = px.line(plot_df, color_discrete_sequence=plot_palette)
                 fig_layout(plot_template, fig, plots_colorscale=plot_palette)
                 fig.update_xaxes(range=[plot_x_min, plot_x_max])
@@ -320,27 +300,21 @@ def main():
 
                 st.plotly_chart(fig, width='stretch')
 
-                mask = (peak_range[0] <= df.index) & (df.index <= peak_range[1])
-                if not mask.any():
+                peak = analysis.peak_intensity(spectra_df, *peak_range)
+                if peak is None:
                     st.warning('Selected peak range is empty')
                     return
 
-                peak_of_mean = mean_spectrum[mask]
-                intensities[name] = peak_of_mean.max()
-                st.markdown(f'$I_{{{name}}} =$ {intensities[name]:.0f} at {peak_of_mean.idxmax():.0f} cm⁻¹')
-
-                if df.shape[1] > 1:
-                    peaks = df[mask].max()
-                    st.caption(f'Average of {df.shape[1]} spectra. Peak intensity SD: {peaks.std():.0f} '
-                               f'(RSD {100 * peaks.std() / peaks.mean():.1f} %)')
+                intensities[name] = peak['intensity']
+                st.markdown(f'$I_{{{name}}} =$ {peak["intensity"]:.0f} at {peak["position"]:.0f} cm⁻¹')
+                if peak['n'] > 1:
+                    st.caption(f'Average of {peak["n"]} spectra. Peak intensity SD: {peak["sd"]:.0f} '
+                               f'(RSD {100 * peak["rsd"]:.1f} %)')
 
         i_raman, i_sers = intensities['Raman'], intensities['SERS']
-    else:
-        raise ValueError()  # just to satisfy pycharm linter
 
-    enhancement_factor = (i_sers / n_sers) * (n_raman / i_raman)
+    ef = analysis.enhancement_factor(i_sers, n_sers, i_raman, n_raman)
 
-    st.markdown(r'$EF =$' + f' {"{:.1e}".format(enhancement_factor)}')
+    st.markdown(r'$EF =$' + f' {"{:.1e}".format(ef)}')
 
     st.markdown('---')
-    st.stop()

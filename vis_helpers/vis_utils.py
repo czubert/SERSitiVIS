@@ -3,9 +3,6 @@ import base64
 import plotly.express as px
 import plotly.io as pio
 import streamlit as st
-import pandas as pd
-
-from processing.utils import baseline
 
 
 def trim_spectra(df):
@@ -209,32 +206,3 @@ def print_widget_labels(widget_title, margin_top=5, margin_bottom=10):
     st.markdown(
         f"""<p style="font-weight:500; margin-top:{margin_top}px;margin-bottom:{margin_bottom}px">{widget_title}</p>""",
         unsafe_allow_html=True)
-
-
-def subtract_baseline_and_smoothen(df, vals, cols_name=False):
-    """
-    Subtracting baseline from original df, and smoothing the curve using rolling average
-    :param df: Original DataFrame
-    :param vals: polynomial degree and window for rolling average both Int
-    :param cols_name:  Boolean
-    :return: DataFrame
-    """
-    baselines = pd.DataFrame(index=df.index)
-    baselined = pd.DataFrame(index=df.index)
-    flattened = pd.DataFrame(index=df.index)
-    
-    for col in df.columns:
-        # for baseline correction in PCA module, as there are some differences in input
-        col_name = col
-        if cols_name:
-            col_name = 'col'
-        
-        tmp_spectrum = df[col].dropna()  # trick for data with NaNs
-        tmp_spectrum = pd.Series(baseline(tmp_spectrum, vals[col_name][0], x=tmp_spectrum.index),
-                                 index=tmp_spectrum.index)
-        baselines[col] = tmp_spectrum
-        
-        baselined[col] = df[col] - baselines[col]
-        flattened[col] = baselined[col].rolling(window=vals[col_name][1], min_periods=1, center=True).mean()
-    
-    return df, baselines, baselined, flattened

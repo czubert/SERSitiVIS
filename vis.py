@@ -2,7 +2,7 @@ import streamlit as st
 import os
 
 from vis_helpers import sidebar, authors, visualisation, main_page
-from vis_helpers import pca, rsd, enhancement_factor
+from vis_helpers import pca, rsd, enhancement_factor, workspace
 
 import sentry_sdk
 
@@ -33,18 +33,22 @@ def main():
     # Sets sidebar's header and logo
     sidebar.sidebar_head()
 
-    analysis_type = st.sidebar.selectbox("Analysis type", ['Main Page', 'visualisation', 'PCA', 'EF', 'RSD'])
+    analysis_type = st.sidebar.selectbox("Analysis type", ['Main Page', 'visualisation', 'PCA', 'EF', 'RSD'],
+                                         key='page')
+
+    # Spectra uploaded once, shared by all pages
+    df = workspace.data_sidebar()
 
     if analysis_type == 'Main Page':
         main_page.main_page()
-    if analysis_type == 'visualisation':
-        visualisation.visualisation()
+    elif analysis_type == 'visualisation':
+        visualisation.visualisation(df)
     elif analysis_type == 'PCA':
-        pca.main()
+        pca.main(df)
     elif analysis_type == 'EF':
-        enhancement_factor.main()
+        enhancement_factor.main(df)
     elif analysis_type == 'RSD':
-        rsd.main()
+        rsd.main(df)
     authors.show_developers()
 
 

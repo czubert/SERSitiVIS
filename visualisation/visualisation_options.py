@@ -11,7 +11,7 @@ def vis_options():
     
     options = ["SINGLE", "MS", "GS", "P3D"]
     
-    chart_type = st.sidebar.selectbox('Choose type of chart', options, 2,
+    chart_type = st.sidebar.selectbox('Choose type of chart', options, 2, key='chart_type',
                                       format_func=LABELS.get)
     return chart_type
 
@@ -22,7 +22,7 @@ def convertion_opt():
     spectra_conversion_type = st.sidebar.radio(
         "Data representation",
         options,
-        key=f'raw',
+        key='conversion',
         format_func=LABELS.get)
     
     return spectra_conversion_type
