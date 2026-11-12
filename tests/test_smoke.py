@@ -171,3 +171,23 @@ def test_ef_matches_publication_example():
     app.run()
     assert not app.exception
     assert any(m.value.startswith('$EF =$') and '6.1e+07' in m.value for m in app.markdown)
+
+
+def test_rsd_not_affected_by_chart_normalisation():
+    """Normalising each spectrum to its maximum made RSD of the strongest peak 0 %"""
+    app = new_app('Jobin Yvon T64000', 'RSD')
+    before = app.table[0].value.astype(float)
+    assert before.loc['RSD[%]', 'RAW data'] > 1
+    next(c for c in app.sidebar.checkbox if c.label == 'Normalize chart').check().run()
+    after = app.table[0].value.astype(float)
+    assert after.equals(before)
+
+
+def test_rsd_polynomial_degree_changes_result():
+    app = new_app('Jobin Yvon T64000', 'RSD')
+    app.slider[0].set_value((1050, 1110)).run()
+    results = []
+    for degree in (1, 10):
+        app.slider(key='rsd_degree').set_value(degree).run()
+        results.append(app.table[0].value.astype(float).loc['RSD[%]', 'Baseline corrected'])
+    assert results[0] != results[1]
