@@ -11,7 +11,7 @@ from dataclasses import dataclass
 import numpy as np
 import pandas as pd
 
-from core import maps
+from core import binary_formats, maps
 from core.processing import align_spectra
 
 RAMAN_SHIFT = 'Raman Shift'
@@ -24,6 +24,9 @@ FORMATS = {
     'WASATCH': 'Wasatch (ENLIGHTEN)',
     'TABLE': 'Text table (Renishaw, WITec, Jobin Yvon, Teledyne, other)',
     'MAP': 'Map (X, Y, Raman Shift, Intensity)',
+    'WDF': 'Renishaw WiRE (*.wdf)',
+    'SPC': 'Galactic / Thermo (*.spc)',
+    'JCAMP': 'JCAMP-DX (*.jdx, *.dx)',
 }
 
 # BWTEK: pixels below this are cut off by the instrument's edge filter (~490 cm-1 and lower)
@@ -98,6 +101,23 @@ def read_file(name, raw, file_format='AUTO'):
     :param file_format: Str, key of FORMATS
     :return: LoadedFile
     """
+    if not raw:
+        raise ParseError('File is empty')
+
+    # binary / special formats first - they must not be decoded as text
+    if file_format == 'AUTO':
+        file_format = binary_formats.detect(name, raw) or 'AUTO'
+    if file_format in ('WDF', 'SPC', 'JCAMP'):
+        reader = {'WDF': binary_formats.read_wdf, 'SPC': binary_formats.read_spc,
+                  'JCAMP': binary_formats.read_jcamp}[file_format]
+        try:
+            df = reader(name, raw if isinstance(raw, bytes) else raw.encode('latin-1'))
+        except binary_formats.BinaryParseError as e:
+            raise ParseError(str(e))
+        if file_format == 'WDF' and maps.coordinates_from_names(df.columns) is not None:
+            file_format = 'MAP'
+        return _finish(name, file_format, df)
+
     text = decode(raw)
     if not text or not text.strip():
         raise ParseError('File is empty')
@@ -115,8 +135,12 @@ def read_file(name, raw, file_format='AUTO'):
             file_format = 'MAP'
     else:
         raise ValueError(f'Unknown format: {file_format}')
+    return _finish(name, file_format, df)
 
+
+def _finish(name, file_format, df):
     df = df[~df.index.duplicated()].sort_index().astype(float)
+    df = df[np.isfinite(df.index)]
     df.index.name = RAMAN_SHIFT
     if df.empty:
         raise ParseError('No spectrum found in the file')

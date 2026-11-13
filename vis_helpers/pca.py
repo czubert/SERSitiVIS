@@ -161,3 +161,33 @@ def main(df):
     if clusters:
         export['cluster'] = clusters['labels']
     vis_utils.download_csv(export, 'pca_scores.csv', t('Download scores (CSV)'), 'pca_csv')
+    vis_utils.report_button('pca', lambda: build_report(data, scores, loadings, explained, group, clusters),
+                            (tuple(scores.index), tuple(group), components_num, None if not clusters else
+                             (clusters['k'], tuple(clusters['labels'])), float(data.to_numpy().sum())))
+
+
+def build_report(data, scores, loadings, explained, group, clusters):
+    from core import report
+
+    rep = report.Report(t('Principal Component Analysis (PCA)'))
+    rep.heading(t('Data'))
+    counts = pd.Series(group).value_counts()
+    rep.key_values({t('Spectra'): len(scores), **{f'{t("Group")} {g}': n for g, n in counts.items()}})
+    rep.heading(t('Explained variance ratio'))
+    rep.table((100 * explained).round(1).rename('%').to_frame())
+    if scores.shape[1] >= 2:
+        labels = [f'{t("Cluster")} {c}' for c in clusters['labels']] if clusters else list(group)
+        rep.figure(report.scatter_figure(scores.iloc[:, 0], scores.iloc[:, 1],
+                                         f'PC 1 ({explained.iloc[0]:.0%})', f'PC 2 ({explained.iloc[1]:.0%})',
+                                         groups=labels), width=150)
+    if clusters:
+        table, ari = multivariate.agreement(group, clusters['labels'])
+        table.columns = [f'{t("Cluster")} {c}' for c in table.columns]
+        table.index.name = t('Group')
+        rep.heading(t('Clustering'))
+        rep.key_values({t('Clusters'): clusters['k'], t('Silhouette'): clusters['silhouette'],
+                        t('Agreement with groups (ARI)'): ari})
+        rep.table(table)
+    rep.heading(t('Loadings - which bands differ between samples'))
+    rep.figure(report.spectra_figure(loadings, ylabel=t('Loading')))
+    return rep.to_bytes()

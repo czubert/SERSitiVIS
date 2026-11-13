@@ -139,3 +139,28 @@ def range_from_selection(chart_key, slider_key, low, high):
 def download_csv(df, file_name, label, key, index=True):
     st.download_button(label, data=df.to_csv(index=index).encode('utf-8'), file_name=file_name, mime='text/csv',
                        icon=':material/download:', key=key)
+
+
+def report_button(key, build, signature):
+    """
+    'Create PDF report' button + download of the created report.
+    The report is dropped when the settings change (signature), so an out-of-date file is never offered.
+    :param build: function returning PDF bytes
+    :param signature: anything describing the current settings and data
+    """
+    from datetime import date
+
+    state_key = f'_{key}_report'
+    signature = str(signature)
+    stored = st.session_state.get(state_key)
+    if stored and stored[0] != signature:
+        st.session_state.pop(state_key)
+        stored = None
+    cols = st.columns((1, 1, 2))
+    if cols[0].button(t('Create PDF report'), key=f'{key}_report_create', icon=':material/picture_as_pdf:'):
+        with st.spinner(t('Creating report...')):
+            stored = st.session_state[state_key] = (signature, build())
+    if stored:
+        cols[1].download_button(t('Download report (PDF)'), stored[1], file_name=f'SERSitiVIS_{key}_{date.today()}.pdf',
+                                mime='application/pdf', key=f'{key}_report_download', icon=':material/download:',
+                                type='primary')

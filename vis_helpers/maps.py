@@ -5,7 +5,7 @@ import plotly.graph_objects as go
 import streamlit as st
 
 from core import calibration, maps, processing
-from vis_helpers import vis_utils
+from vis_helpers import vis_utils, workspace
 from vis_helpers.i18n import t, choice
 
 CHART_KEY = 'map_chart'
@@ -126,3 +126,22 @@ def main(df):
 
     export = coords.assign(value=values.reindex(coords.index)).rename_axis(t('Spectrum')).reset_index()
     vis_utils.download_csv(export, 'map.csv', t('Download map (CSV)'), 'map_csv', index=False)
+    vis_utils.report_button('map', lambda: build_report(df, peak_range, method, degree, stats, image, unit, values),
+                            (peak_range, method, degree, relative, tuple(df.columns[:5]), float(values.sum())))
+
+
+def build_report(df, peak_range, method, degree, stats, image, unit, values):
+    from core import report
+
+    rep = report.Report(t('Substrate uniformity map'))
+    rep.heading(t('Data'))
+    rep.key_values({t('Files'): ', '.join(workspace.file_names()) or '—', t('Points'): stats['n'],
+                    t('Peak range'): f'{peak_range[0]} – {peak_range[1]} cm⁻¹',
+                    t('Signal'): t('Peak height') if method == 'height' else t('Peak area'),
+                    t('Polynomial degree for baseline correction'): degree})
+    rep.heading(t('Results'))
+    rep.key_values({'RSD': f'{stats["rsd"]:.1f} %', t('Mean'): number(stats['mean']), 'Min': number(stats['min']),
+                    'Max': number(stats['max']), t('Within ±20 % of mean'): f'{stats["within_20"]:.0f} %'})
+    rep.figure(report.heatmap_figure(image, unit), width=140)
+    rep.figure(report.histogram_figure(values, unit), width=120)
+    return rep.to_bytes()

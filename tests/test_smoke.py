@@ -607,3 +607,69 @@ def test_pca_page_with_clustering():
     app.checkbox(key='pca_auto_k').uncheck().run()
     app.radio(key='pca_cluster_method').set_value('ward').run()
     assert not app.exception
+
+
+#
+# # Instrument formats: SPC, JCAMP-DX, WDF
+#
+def raman_like():
+    x = np.arange(400.0, 1800.0, 1.0)
+    y = 1000 + 20000 * np.exp(-((x - 1075) / 8) ** 2) + 15000 * np.exp(-((x - 1588) / 8) ** 2)
+    return x, y
+
+
+def test_spc_file():
+    import spc_io
+    x, y = raman_like()
+    spc = spc_io.SPC(xarray=x)
+    spc.add_subfile(yarray=y)
+    spc.add_subfile(yarray=2 * y)
+    raw = spc.to_spc_raw().to_bytes()
+    loaded = readers.read_file('sample.spc', raw)
+    assert loaded.format == 'SPC' and loaded.data.shape == (len(x), 2)
+    assert np.isclose(loaded.data.iloc[:, 0].idxmax(), 1075, atol=1)
+
+
+def test_jcamp_file():
+    x, y = raman_like()
+    lines = ['##TITLE=sample', '##JCAMP-DX=4.24', '##DATA TYPE=RAMAN SPECTRUM', '##XUNITS=1/CM',
+             '##YUNITS=ARBITRARY UNITS', f'##FIRSTX={x[0]}', f'##LASTX={x[-1]}', f'##NPOINTS={len(x)}',
+             '##XFACTOR=1', '##YFACTOR=1', '##XYDATA=(X++(Y..Y))']
+    lines += [f'{xi:.1f} {yi:.3f}' for xi, yi in zip(x, y)] + ['##END=']
+    loaded = readers.read_file('sample.jdx', '\n'.join(lines).encode())
+    assert loaded.format == 'JCAMP' and len(loaded.data) == len(x)
+    assert np.isclose(loaded.data.iloc[:, 0].idxmax(), 1075, atol=1)
+
+
+@pytest.mark.skipif(not os.environ.get('SERSITIVIS_WDF_SAMPLES'),
+                    reason='set SERSITIVIS_WDF_SAMPLES to a folder with Renishaw *.wdf files')
+def test_wdf_files():
+    from core import maps
+    for path in glob.glob(os.path.join(os.environ['SERSITIVIS_WDF_SAMPLES'], '*.wdf')):
+        loaded = read(path)
+        assert loaded.format in ('WDF', 'MAP') and not loaded.data.empty
+        if loaded.format == 'MAP':
+            assert maps.coordinates_from_names(loaded.data.columns) is not None
+
+
+#
+# # PDF reports
+#
+@pytest.mark.parametrize('page,example,key', [
+    ('visualisation', 'Renishaw', 'visualisation'), ('rsd', 'Jobin Yvon T64000', 'rsd'),
+    ('calibration', 'Wasatch', 'calibration'), ('maps', 'WITec Alpha300 R+', 'map'), ('ef', None, 'enhancement_factor'),
+    ('pca', 'Jobin Yvon T64000', 'pca')])
+@pytest.mark.parametrize('language', ['en', 'pl'])
+def test_pdf_report(page, example, key, language):
+    app = new_app(example, page, language)
+    if page == 'pca':
+        names = app.multiselect(key='pca_group_0').options
+        app.multiselect(key='pca_group_0').set_value(names[:1]).run()
+        app.multiselect(key='pca_group_1').set_value(names[1:]).run()
+        app.checkbox(key='pca_cluster').check().run()
+    if page == 'visualisation':
+        app.checkbox(key='peaks').check().run()
+    app.button(key=f'{key}_report_create').click().run()
+    assert not app.exception
+    pdf = app.session_state[f'_{key}_report'][1]
+    assert pdf[:5] == b'%PDF-' and len(pdf) > 10000

@@ -354,6 +354,8 @@ def substrate_ef(df):
     parameters = pd.DataFrame(rows, columns=['key', 'parameter', 'value', 'unit'])
     vis_utils.download_csv(parameters, 'enhancement_factor.csv', t('Download parameters and results (CSV)'),
                            'ef_csv', index=False)
+    vis_utils.report_button('enhancement_factor', lambda: build_report(inputs, steps, ef, uncertainty, analyte),
+                            (tuple(inputs.values()), analyte, None if not uncertainty else uncertainty['low']))
 
 
 def intensities_from_spectra(df):
@@ -424,3 +426,34 @@ def intensities_from_spectra(df):
                     n=peak['n'], sd=f'{peak["sd"]:.0f}', rsd=f'{100 * peak["rsd"]:.1f}'))
 
     return intensities['Raman'], intensities['SERS'], rsd
+
+
+def build_report(inputs, steps, ef, uncertainty, analyte):
+    from core import report
+
+    labels = {'ef_conc_x': 'C = x·10ⁿ mol/dm³, x', 'ef_conc_n': 'n', 'ef_volume': t('Volume of solution [µl]'),
+              'ef_wavelength': t('Laser wavelength [nm]'), 'ef_na': 'NA', 'ef_size_x': t('Size x [mm]'),
+              'ef_size_y': t('Size y [mm]'), 'ef_development': t('Surface area development coefficient'),
+              'ef_coverage': t('The coverage of the surface by the analyte (0-1)'),
+              'ef_density': t('Compound density [g/cm³]'), 'ef_molecular_weight': t('Molecular weight [g/mol]'),
+              'ef_depth': 'h [mm]', 'ef_i_raman': t('Raman Intensity'), 'ef_i_sers': t('SERS Intensity')}
+    rep = report.Report(t('Enhancement Factor (EF) calculator'))
+    rep.heading(t('Results'))
+    results = {'EF': f'{ef:.2e}'}
+    if uncertainty:
+        results[t('EF range (90 %)')] = f'{uncertainty["low"]:.2e} – {uncertainty["high"]:.2e}'
+    rep.key_values(results)
+    rep.heading(t('Parameters'))
+    rep.key_values({t('Analyte preset'): t(ANALYTE_LABELS[analyte]),
+                    **{labels[key]: value for key, value in inputs.items()}}, label_width=95)
+    rep.heading(t('Show calculation step by step'))
+    rep.table(pd.DataFrame([(name, value, unit) for name, _, value, unit in steps],
+                           columns=[t('Parameter'), t('Value'), '']), index=False)
+    if uncertainty:
+        names = {'coverage': t('Surface coverage'), 'development': t('Surface development'),
+                 'depth': t('Penetration depth'), 'i_sers': t('SERS Intensity'), 'i_raman': t('Raman Intensity')}
+        rep.heading(t('Which input changes EF the most'))
+        rep.figure(report.range_figure({names[k]: v for k, v in uncertainty['sensitivity'].items()}, ef, 'EF'),
+                   width=150)
+    rep.text(t('Method: P. Piecyk, A. Kowalska, T. Szymborski, IChF PAN 2020.'), size=8)
+    return rep.to_bytes()

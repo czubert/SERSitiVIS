@@ -5,7 +5,7 @@ import plotly.graph_objects as go
 import streamlit as st
 
 from core import calibration, processing
-from vis_helpers import vis_utils
+from vis_helpers import vis_utils, workspace
 from vis_helpers.i18n import t, choice
 
 CHART_KEY = 'cal_chart'
@@ -216,3 +216,45 @@ def main(df):
                                               result.sigma]})
         vis_utils.download_csv(pd.concat([export, results]), 'calibration.csv', t('Download results (CSV)'),
                                'cal_csv', index=False)
+        vis_utils.report_button(
+            'calibration',
+            lambda: build_report(df, peak_range, method, degree, unit, log_x, sigma_source, result, summary,
+                                 concentration[known], signal[known]),
+            (peak_range, method, degree, unit, log_x, sigma_source, tuple(concentration.fillna(-1)),
+             float(df.to_numpy().sum())))
+
+
+def build_report(df, peak_range, method, degree, unit, log_x, sigma_source, result, summary, concentration, signal):
+    from core import report
+
+    signal_name = t('Peak height') if method == 'height' else t('Peak area')
+    rep = report.Report(t('Calibration curve and limit of detection (LOD)'))
+    rep.heading(t('Data'))
+    rep.key_values({t('Files'): ', '.join(workspace.file_names()) or '—', t('Spectra'): df.shape[1],
+                    t('Peak range'): f'{peak_range[0]} – {peak_range[1]} cm⁻¹', t('Signal'): signal_name,
+                    t('Polynomial degree for baseline correction'): degree,
+                    t('Concentration axis'): t('Logarithmic') if log_x else t('Linear'),
+                    t('Standard deviation for LOD'): t('Residuals of the fit') if sigma_source == 'regression'
+                    else t('Blank spectra (concentration 0)')})
+    rep.heading(t('Results'))
+    x_label = f'log10(c / {unit})' if log_x else 'c'
+    rep.key_values({'LOD': f'{fmt(result.lod, unit)}', 'LOQ': f'{fmt(result.loq, unit)}', 'R²': fmt(result.r2),
+                    t('Slope'): fmt(result.slope),
+                    'y =': f'{result.slope:.4g} · {x_label} {"+" if result.intercept >= 0 else "−"} '
+                           f'{abs(result.intercept):.4g}'})
+    points = summary.reset_index()
+    if log_x:
+        points = points[points['c'] > 0]
+    fit_x = np.logspace(np.log10(points['c'].min()), np.log10(points['c'].max()), 100) if log_x \
+        else np.linspace(0, points['c'].max(), 100)
+    rep.figure(report.scatter_figure(concentration, signal, f'{t("Concentration")} [{unit}]', signal_name,
+                                     line=(fit_x, result.predict(fit_x)),
+                                     errors=(points['c'], points['mean'], points['std'].fillna(0)), log_x=log_x),
+               width=150)
+    table = summary.rename(columns={'mean': t('Mean'), 'std': 'SD', 'count': 'n', 'rsd': 'RSD [%]'})
+    table.index.name = f'{t("Concentration")} [{unit}]'
+    rep.table(table)
+    rep.figure(report.spectra_figure(df, ranges=[(peak_range[0], peak_range[1], report.GOLD)], legend=False))
+    rep.text(t('LOD/LOQ from the fit: 3.3·SD(residuals)/slope and 10·SD/slope (ICH Q2). From blank spectra: '
+               '3·SD(blank)/slope and 10·SD/slope.'), size=8)
+    return rep.to_bytes()

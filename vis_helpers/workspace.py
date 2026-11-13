@@ -25,6 +25,7 @@ EXAMPLES = {
 }
 DEFAULT_EXAMPLE = 'Jobin Yvon T64000'  # p-MBA, three spectra
 NO_EXAMPLE = '—'
+FILE_TYPES = ['txt', 'csv', 'wdf', 'spc', 'jdx', 'dx', 'jcamp']
 
 # session_state keys
 FILES = '_ws_files'  # list of (name, bytes)
@@ -91,13 +92,14 @@ def data_sidebar():
     st.session_state.setdefault(EXAMPLE_WIDGET, st.session_state[EXAMPLE])
 
     st.sidebar.subheader(t('Data'))
-    st.sidebar.file_uploader(t('Upload spectra (*.txt, *.csv)'),
+    st.sidebar.file_uploader(t('Upload spectra'),
                              accept_multiple_files=True,
-                             type=['txt', 'csv'],
+                             type=FILE_TYPES,
                              key=_uploader_key(),
                              on_change=_on_upload,
-                             help=t('Spectrometer type is detected automatically. '
-                                    'You can upload files from different spectrometers at once.'))
+                             help=t('Spectrometer type is detected automatically. You can upload files from '
+                                    'different spectrometers at once. Formats: *.txt, *.csv, Renishaw *.wdf, '
+                                    'Galactic *.spc, JCAMP-DX *.jdx.'))
 
     st.sidebar.selectbox(t('...or try example data'), [NO_EXAMPLE] + list(EXAMPLES),
                          key=EXAMPLE_WIDGET, on_change=_on_example)
@@ -152,7 +154,7 @@ def stored_uploader(label, key):
         st.session_state[store] = []
         st.session_state[version] = st.session_state.get(version, 0) + 1
 
-    st.file_uploader(label, accept_multiple_files=True, type=['txt', 'csv'], key=widget_key, on_change=on_change)
+    st.file_uploader(label, accept_multiple_files=True, type=FILE_TYPES, key=widget_key, on_change=on_change)
 
     files = st.session_state[store]
     if not files:
@@ -167,3 +169,8 @@ def stored_uploader(label, key):
         st.caption(', '.join(name for name, _ in files))
     st.button(t('Clear data'), key=f'{key}_clear', on_click=on_clear, icon=':material/delete:')
     return files, df
+
+
+def file_names():
+    """Names of the files loaded in the sidebar (for reports)"""
+    return [name for name, _ in st.session_state.get(FILES, [])]

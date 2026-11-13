@@ -96,6 +96,17 @@ def choice(widget, label, options, key, format_func, container=None, **kwargs):
 
 
 PL = {
+    # reports
+    'Create PDF report': 'Utwórz raport PDF',
+    'Creating report...': 'Tworzenie raportu...',
+    'Download report (PDF)': 'Pobierz raport (PDF)',
+    'Files': 'Pliki',
+    'Parameters': 'Parametry',
+    'LOD/LOQ from the fit: 3.3·SD(residuals)/slope and 10·SD/slope (ICH Q2). From blank spectra: '
+    '3·SD(blank)/slope and 10·SD/slope.':
+        'LOD/LOQ z dopasowania: 3,3·SD(reszt)/nachylenie i 10·SD/nachylenie (ICH Q2). Ze ślepej próby: '
+        '3·SD(ślepej próby)/nachylenie i 10·SD/nachylenie.',
+
     # navigation
     'Start': 'Start',
     'Visualisation': 'Wizualizacja',
@@ -127,7 +138,15 @@ PL = {
 
     # sidebar / data
     'Data': 'Dane',
-    'Upload spectra (*.txt, *.csv)': 'Wgraj widma (*.txt, *.csv)',
+    'Renishaw WiRE (*.wdf)': 'Renishaw WiRE (*.wdf)',
+    'Galactic / Thermo (*.spc)': 'Galactic / Thermo (*.spc)',
+    'JCAMP-DX (*.jdx, *.dx)': 'JCAMP-DX (*.jdx, *.dx)',
+    'No XY spectrum found in the JCAMP file (peak tables and multi-block files are not supported)':
+        'W pliku JCAMP nie ma widma XY (tabele pików i pliki wieloblokowe nie są obsługiwane)',
+    'Spectrometer type is detected automatically. You can upload files from different spectrometers at once. '
+    'Formats: *.txt, *.csv, Renishaw *.wdf, Galactic *.spc, JCAMP-DX *.jdx.':
+        'Typ spektrometru rozpoznawany jest automatycznie. Możesz wgrać naraz pliki z różnych spektrometrów. '
+        'Formaty: *.txt, *.csv, Renishaw *.wdf, Galactic *.spc, JCAMP-DX *.jdx.',
     'Spectrometer type is detected automatically. You can upload files from different spectrometers at once.':
         'Typ spektrometru rozpoznawany jest automatycznie. Możesz wgrać naraz pliki z różnych spektrometrów.',
     '...or try example data': '...lub wypróbuj przykładowe dane',

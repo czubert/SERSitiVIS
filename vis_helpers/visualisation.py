@@ -4,7 +4,7 @@ import plotly.graph_objects as go
 import streamlit as st
 
 from core import calibration, peaks, processing
-from vis_helpers import manual, data_customisation, vis_utils
+from vis_helpers import manual, data_customisation, vis_utils, workspace
 from vis_helpers.i18n import t, choice
 
 NORMALIZATIONS = {'none': 'None', 'minmax': 'Min-max (0-1)', 'max': 'Maximum = 1', 'area': 'Area = 1',
@@ -137,3 +137,35 @@ def visualisation(df):
                                              t('Prominence'): '{:.4g}', t('FWHM [cm⁻¹]'): '{:.1f}'}),
                          hide_index=True, width='stretch')
             vis_utils.download_csv(peaks_table, 'peaks.csv', t('Download peaks (CSV)'), 'peaks_csv', index=False)
+
+        if chart_type != 'P3D':
+            vis_utils.report_button(
+                'visualisation',
+                lambda: build_report(plot_df, chart_type, steps_settings, normalization,
+                                     peaks_table if show_peaks else None),
+                (chart_type, steps_settings, normalization, show_peaks, plot_df.shape, float(plot_df.to_numpy().sum())))
+
+
+def build_report(plot_df, chart_type, steps_settings, normalization, peaks_table):
+    from core import report
+
+    rep = report.Report(t('Visualisation'))
+    rep.heading(t('Data'))
+    rep.key_values({t('Files'): ', '.join(workspace.file_names()) or '—', t('Chart type'): t(CHART_TYPES[chart_type]),
+                    t('Spectra'): plot_df.shape[1],
+                    t('Raman Shift range [cm⁻¹]'): f'{plot_df.index.min():.0f} – {plot_df.index.max():.0f}'})
+    rep.heading(t('Processing'))
+    baseline, smoothing = steps_settings['baseline'], steps_settings['smoothing']
+    rep.key_values({
+        t('Remove spikes (cosmic rays)'): steps_settings['despike'] or '—',
+        t('Baseline correction'): f'{t(data_customisation.BASELINE_LABELS[baseline[0]])}, {baseline[1]}'
+        if baseline else '—',
+        t('Smoothing'): f'{t(data_customisation.SMOOTHING_LABELS[smoothing[0]])}, {smoothing[1]}' if smoothing else '—',
+        t('Normalization'): t(NORMALIZATIONS[normalization])})
+    rep.figure(report.spectra_figure(plot_df))
+    if peaks_table is not None and not peaks_table.empty:
+        rep.heading(t('Peaks'))
+        rep.table(peaks_table.rename(columns={'spectrum': t('Spectrum'), 'position': 'cm⁻¹',
+                                              'intensity': t('Intensity'), 'prominence': t('Prominence'),
+                                              'fwhm': 'FWHM'}), index=False)
+    return rep.to_bytes()
