@@ -151,7 +151,7 @@ def test_visualisation(instrument, chart, processed):
     app.selectbox(key='chart_type').set_value(chart).run()
     if processed:
         app.checkbox(key='processed').check().run()
-        app.checkbox(key='normalized').check().run()
+        app.selectbox(key='normalization').set_value('minmax').run()
         if chart in {'SINGLE', 'MS'}:
             app.checkbox(key='show_steps').check().run()
     else:
@@ -460,3 +460,74 @@ def test_map_page_with_grid():
     app.number_input(key='map_columns').set_value(2).run()
     app.checkbox(key='map_relative').check().run()
     assert not app.exception
+
+
+#
+# # Preprocessing
+#
+def synthetic_spectrum(spikes=()):
+    x = np.arange(400, 1800, 1.0)
+    background = 3000 + 4000 * np.exp(-((x - 1100) / 600) ** 2)
+    peaks = sum(h * np.exp(-4 * np.log(2) * ((x - c) / w) ** 2)
+                for c, h, w in [(520, 3000, 8), (1075, 20000, 12), (1200, 8000, 4), (1588, 15000, 10)])
+    y = background + peaks + np.random.default_rng(0).normal(0, 30, x.size)
+    clean = y.copy()
+    for i, height in spikes:
+        y[i] += height
+    return x, background, peaks, clean, y
+
+
+def test_spikes_removed_peaks_kept():
+    from core.processing import remove_spikes
+    x, _, _, clean, y = synthetic_spectrum(spikes=[(300, 30000), (700, 1500), (900, 20000), (901, 9000)])
+    cleaned, removed = remove_spikes(pd.DataFrame({'s': y}, index=x))
+    error = np.abs(cleaned['s'].to_numpy() - clean)
+    spike_area = [299, 300, 301, 699, 700, 701, 899, 900, 901, 902]
+    assert np.delete(error, spike_area).max() == 0  # real peaks (also a narrow 4 cm-1 one) untouched
+    assert error[spike_area].max() < 200
+
+
+@pytest.mark.parametrize('method,param,tolerance', [('modpoly', 5, 0.02), ('arpls', 1e6, 0.01), ('snip', 60, 0.05)])
+def test_baseline_methods(method, param, tolerance):
+    from core.processing import baselines
+    x, background, _, clean, _ = synthetic_spectrum()
+    fitted = baselines(pd.DataFrame({'s': clean}, index=x), method, param)['s']
+    assert np.max(np.abs(fitted - background)) / 20000 < tolerance
+
+
+def test_savgol_keeps_peak_height():
+    from core.processing import smooth
+    x, _, peaks, _, _ = synthetic_spectrum()
+    noisy = pd.DataFrame({'s': peaks + np.random.default_rng(1).normal(0, 300, x.size)}, index=x)
+    savgol = smooth(noisy, 'savgol', 9)['s'].loc[1580:1596].max()
+    average = smooth(noisy, 'moving_average', 9)['s'].loc[1580:1596].max()
+    assert abs(savgol - 15000) < abs(average - 15000)
+
+
+def test_normalizations():
+    from core.processing import normalize_by
+    x, _, _, clean, _ = synthetic_spectrum()
+    df = pd.DataFrame({'a': clean, 'b': 3 * clean}, index=x)
+    assert np.allclose(normalize_by(df, 'max').max(), 1)
+    assert np.allclose([np.trapezoid(normalize_by(df, 'area')[c], x) for c in 'ab'], 1)
+    assert np.allclose(np.sqrt((normalize_by(df, 'vector') ** 2).sum()), 1)
+    snv = normalize_by(df, 'snv')
+    assert np.allclose(snv.mean(), 0) and np.allclose(snv.std(), 1)
+    assert np.allclose(normalize_by(df, 'peak', (1065, 1085)).loc[1065:1085].max(), 1)
+    assert np.allclose(normalize_by(df, 'minmax')['a'], normalize_by(df, 'minmax')['b'])
+
+
+@pytest.mark.parametrize('baseline', ['modpoly', 'arpls', 'snip'])
+@pytest.mark.parametrize('normalization', ['none', 'max', 'area', 'vector', 'snv', 'peak'])
+def test_visualisation_processing_options(baseline, normalization):
+    app = new_app('Renishaw', 'visualisation')
+    app.checkbox(key='despike').check().run()
+    app.checkbox(key='processed').check().run()
+    app.selectbox(key='baseline_method').set_value(baseline).run()
+    app.checkbox(key='smoothing').check().run()
+    app.selectbox(key='smoothing_method').set_value('savgol').run()
+    app.selectbox(key='normalization').set_value(normalization).run()
+    app.selectbox(key='chart_type').set_value('MS').run()
+    app.checkbox(key='show_steps').check().run()
+    assert not app.exception
+    assert app.get('plotly_chart')

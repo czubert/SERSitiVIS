@@ -3,10 +3,13 @@ import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
 
-from core import peaks, processing
+from core import calibration, peaks, processing
 from vis_helpers import manual, data_customisation, vis_utils
 from vis_helpers.i18n import t, choice
 
+NORMALIZATIONS = {'none': 'None', 'minmax': 'Min-max (0-1)', 'max': 'Maximum = 1', 'area': 'Area = 1',
+                  'vector': 'Vector (Euclidean norm = 1)', 'snv': 'SNV (mean 0, SD 1)',
+                  'peak': 'Reference peak = 1 (internal standard)'}
 CHART_TYPES = {'GS': 'Grouped spectra', 'SINGLE': 'Single spectrum', 'MS': 'Mean spectrum', 'P3D': '3D plot'}
 
 
@@ -35,12 +38,18 @@ def visualisation(df):
                 shift = st.slider(t('Separate spectra from each other'), 0.0, 1.0, 0.0, 0.05, key='shift')
 
         with st.expander(t('Processing'), icon=':material/tune:', expanded=True):
-            processed = st.checkbox(t('Baseline correction and smoothing'), key='processed')
-            if processed:
-                params = data_customisation.processing_params(df.columns, allow_each=chart_type in {'GS', 'P3D'})
-                show_steps = chart_type in {'SINGLE', 'MS'} and st.checkbox(
-                    t('Show baseline and intermediate steps'), key='show_steps')
-            normalized = st.checkbox(t('Normalize (0-1)'), key='normalized')
+            steps_settings = data_customisation.processing_settings(df.columns,
+                                                                    allow_each=chart_type in {'GS', 'P3D'})
+            spike_note = st.empty()
+            processed = steps_settings['baseline'] is not None or steps_settings['smoothing'] is not None
+            show_steps = processed and chart_type in {'SINGLE', 'MS'} and st.checkbox(
+                t('Show baseline and intermediate steps'), key='show_steps')
+            normalization = choice('selectbox', t('Normalization'), ['none'] + processing.NORMALIZATION_METHODS,
+                                   key='normalization', format_func=lambda n: t(NORMALIZATIONS[n]))
+            if normalization == 'peak':
+                reference = vis_utils.range_slider(t('Reference peak range'), *vis_utils.spectrum_limits(df),
+                                                   key='reference_peak',
+                                                   default=calibration.strongest_peak_range(df))
 
         if chart_type != 'P3D':
             with st.expander(t('Peaks'), icon=':material/location_on:', expanded=st.session_state.get('peaks', False)):
@@ -59,13 +68,17 @@ def visualisation(df):
         with st.expander(t('Chart appearance'), icon=':material/palette:'):
             settings = vis_utils.chart_settings('vis')
 
-    # processing
-    plot_df = df
-    if processed:
-        baselines, corrected, smoothed = processing.baseline_and_smooth(df, params)
-        plot_df = smoothed
-    if normalized:
-        plot_df = processing.normalize(plot_df)
+    # processing: spikes -> baseline -> smoothing -> normalization
+    if steps_settings['despike']:
+        df, removed = processing.remove_spikes(df, steps_settings['despike'])
+        spike_note.caption(t('Spike points replaced: {n}').format(n=sum(removed.values())))
+    baselines = processing.baselines(df, *steps_settings['baseline']) if steps_settings['baseline']         else pd.DataFrame(0.0, index=df.index, columns=df.columns)
+    corrected = df - baselines
+    smoothed = processing.smooth(corrected, *steps_settings['smoothing']) if steps_settings['smoothing']         else corrected
+    plot_df = smoothed
+    if normalization != 'none':
+        plot_df = processing.normalize_by(plot_df, normalization,
+                                          peak=reference if normalization == 'peak' else None)
 
     # charts
     if chart_type == 'GS':
@@ -82,8 +95,13 @@ def visualisation(df):
 
     elif processed and show_steps:
         name = df.columns[0]
-        steps = pd.concat([df[name], baselines[name], corrected[name], smoothed[name]], axis=1,
-                          keys=[name, t('Baseline'), t('Baseline corrected'), t('Baseline corrected + smoothed')])
+        parts = {name: df[name]}
+        if steps_settings['baseline']:
+            parts[t('Baseline')] = baselines[name]
+            parts[t('Baseline corrected')] = corrected[name]
+        if steps_settings['smoothing']:
+            parts[t('Smoothed')] = smoothed[name]
+        steps = pd.DataFrame(parts)
         fig = px.line(steps, color_discrete_sequence=settings['palette'])
         plot_df = steps
 
