@@ -326,8 +326,18 @@ def test_peak_signal_height_and_area():
     assert np.isclose(area['b'] / area['a'], 2, rtol=0.01)
 
 
+def test_convenient_unit():
+    from core.calibration import concentrations_from_names
+    values, unit = concentrations_from_names(['R6G_1x10-6M_1', 'R6G_10x10-6M_1', 'blank_0M'])
+    assert unit == 'µM' and list(values) == [1.0, 10.0, 0.0]
+    assert concentrations_from_names(['a_1ppm', 'b_2ppm'])[1] == 'ppm'
+
+
 def test_calibration_page():
     app = new_app('Wasatch', 'calibration')
+    assert not app.exception
+    assert [m.label for m in app.metric][:3] == ['LOD', 'LOQ', 'R²']  # peak chosen automatically
+    app.selectbox(key='cal_unit').set_value('ppb').run()
     assert not app.exception
     app.slider(key='cal_range').set_value((990, 1110)).run()
     assert not app.exception

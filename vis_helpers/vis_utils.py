@@ -87,14 +87,14 @@ def show_chart(fig, settings, lines=True, **kwargs):
     return st.plotly_chart(fig, width='stretch', config=config, **kwargs)
 
 
-def range_slider(label, low, high, key, **kwargs):
+def range_slider(label, low, high, key, default=None, **kwargs):
     """
-    Range slider which resets itself when the stored range does not fit new data
+    Range slider which resets itself (to default or full range) when the stored range does not fit new data
     (its value can also be set from a chart selection - see range_from_selection)
     """
     value = st.session_state.get(key)
     if not value or value[0] < low or value[1] > high or value[0] >= value[1]:
-        st.session_state[key] = (low, high)
+        st.session_state[key] = default or (low, high)
     return st.slider(label, min_value=low, max_value=high, key=key, **kwargs)
 
 

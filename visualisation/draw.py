@@ -13,7 +13,7 @@ def fig_layout(template, fig, chart_titles=None, plots_colorscale=None):
     if chart_titles is None:
         chart_titles = {'x': 'Raman Shift [cm<sup>-1</sup>]', 'y': 'Intensity [a.u.]', 'title': ''}
 
-    fig.update_layout(showlegend=True,
+    fig.update_layout(showlegend=fig.layout.showlegend is not False,
                       template=template,
                       colorway=plots_colorscale,
                       paper_bgcolor='white',
@@ -35,7 +35,7 @@ def fig_layout(template, fig, chart_titles=None, plots_colorscale=None):
                                  gridwidth=1,
                                  gridcolor='#e5e5e5'),
                       title=go.layout.Title(text=chart_titles['title'], font=dict(size=22)),
-                      legend=go.layout.Legend(orientation='h', x=0.5, xanchor='center', y=-0.2, yanchor='top',
+                      legend=go.layout.Legend(orientation='h', x=0.5, xanchor='center', y=-0.28, yanchor='top',
                                               title_text='', font=dict(size=13), itemclick='toggle'),
                       hovermode='x')
 

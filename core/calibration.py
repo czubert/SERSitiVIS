@@ -13,7 +13,7 @@ from dataclasses import dataclass
 import numpy as np
 import pandas as pd
 
-from core.processing import subtract_baseline, trim
+from core.processing import baseline, subtract_baseline, trim
 
 MOLAR = {'M': 1, 'mM': 1e-3, 'uM': 1e-6, 'µM': 1e-6, 'nM': 1e-9, 'pM': 1e-12}
 MASS = {'ppm': 1, 'ppb': 1e-3, 'ppt': 1e-6}
@@ -49,7 +49,8 @@ def parse_concentration(name):
         else:
             number, exponent, unit = match.groups()
             value = float(number.replace(',', '.')) * (10 ** int(exponent.replace('−', '-')) if exponent else 1)
-        return value, unit.replace('u', 'µ') if unit == 'uM' else unit
+        value = float(f'{value:.10g}')  # 10x10-6 -> 1e-05, not 9.999999999e-06
+        return value, ('µM' if unit == 'uM' else unit)
     return None
 
 
@@ -61,10 +62,29 @@ def convert(value, unit, target):
     return None
 
 
+def family_of(unit):
+    return next((family for family in (MOLAR, MASS) if unit in family), None)
+
+
+def convenient_unit(values, unit):
+    """
+    Unit of the same family in which typical (median, non-zero) values are between 0.1 and 1000,
+    e.g. 5e-6 M -> 'µM'
+    """
+    family = family_of(unit)
+    values = np.asarray([v for v in values if v and np.isfinite(v)], dtype=float)
+    if family is None or not len(values):
+        return unit
+    typical = np.median(values) * family[unit]
+    candidates = [u for u in family if u != 'uM']
+    return min(candidates, key=lambda u: abs(np.log10(typical / family[u]) - 1.5))
+
+
 def concentrations_from_names(names):
     """
     :param names: spectra names
-    :return: (Series of concentrations - NaN when not found, most common unit or None)
+    :return: (Series of concentrations - NaN when not found, unit or None). The unit is chosen so that
+             the numbers are convenient to read (e.g. µM instead of 0.000005 M).
     """
     parsed = {name: parse_concentration(name) for name in names}
     units = [p[1] for p in parsed.values() if p]
@@ -72,7 +92,25 @@ def concentrations_from_names(names):
         return pd.Series(np.nan, index=list(names)), None
     unit = max(set(units), key=units.count)
     values = {name: (convert(*p, unit) if p else None) for name, p in parsed.items()}
-    return pd.Series(values, dtype=float), unit
+    best = convenient_unit(values.values(), unit)
+    values = {name: (None if v is None else float(f'{convert(v, unit, best):.10g}')) for name, v in values.items()}
+    return pd.Series(values, dtype=float), best
+
+
+def strongest_peak_range(df, half_width=20):
+    """
+    Raman Shift range around the strongest peak of the mean spectrum (after a rough baseline removal,
+    ignoring 5 % at both ends, where edge artefacts are common)
+    :return: (low, high) as ints
+    """
+    mean = df.mean(axis=1).dropna()
+    corrected = mean - baseline(mean, 3, x=mean.index)
+    margin = int(len(corrected) * 0.05)
+    inner = corrected.iloc[margin:len(corrected) - margin] if margin else corrected
+    center = float(inner.idxmax())
+    low = max(int(df.index.min()), int(round(center - half_width)))
+    high = min(int(df.index.max()) + 1, int(round(center + half_width)))
+    return low, high
 
 
 def peak_signal(df, low, high, method='height', degree=1):

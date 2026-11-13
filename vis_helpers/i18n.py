@@ -279,6 +279,8 @@ PL = {
     'Linear': 'Liniowa',
     'Logarithmic': 'Logarytmiczna',
     'Unit': 'Jednostka',
+    'Changing the unit converts the values (e.g. 1 µM = 0.001 mM).':
+        'Zmiana jednostki przelicza wartości (np. 1 µM = 0,001 mM).',
     'Concentrations': 'Stężenia',
     'Read from file names - correct them if needed. Use 0 for blank samples.':
         'Odczytane z nazw plików - popraw w razie potrzeby. Dla ślepej próby wpisz 0.',
@@ -296,6 +298,12 @@ PL = {
     'standard deviation.': 'Przy osi logarytmicznej LOD liczony jest z widm ślepej próby - wybierz je jako źródło '
                            'odchylenia standardowego.',
     'Calibration curve': 'Krzywa kalibracyjna',
+    'Peak': 'Pik',
+    'Peak - measured signal': 'Pik - mierzony sygnał',
+    'Read from file names: {found} of {total}. Correct them if needed, use 0 for blank samples.':
+        'Odczytane z nazw plików: {found} z {total}. Popraw w razie potrzeby, dla ślepej próby wpisz 0.',
+    'Enter concentrations for at least two different levels in the table above (step 2).':
+        'Wpisz stężenia dla co najmniej dwóch różnych poziomów w tabeli powyżej (krok 2).',
     'The signal does not increase with concentration, so LOD cannot be calculated. '
     'Check the concentrations and the peak range.':
         'Sygnał nie rośnie ze stężeniem, więc nie da się policzyć LOD. Sprawdź stężenia i zakres piku.',
