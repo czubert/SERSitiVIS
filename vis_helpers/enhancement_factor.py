@@ -2,6 +2,7 @@
 Enhancement Factor calculator.
 Method: 'Enhancement Factor (EF): teoria i praktyka', P. Piecyk, A. Kowalska, T. Szymborski, IChF PAN 2020.
 """
+import numpy as np
 import pandas as pd
 import plotly.express as px
 import streamlit as st
@@ -12,12 +13,97 @@ from vis_helpers.i18n import t, choice
 
 SPECTRA_TYPES = ['Raman', 'SERS']
 
+# Inputs that can be saved to / loaded from a file: widget key -> (type, min, max, unit)
+PARAMETERS = {
+    'ef_conc_x': (int, 1, 9, 'x (C = x·10ⁿ mol/dm³)'),
+    'ef_conc_n': (int, -15, 0, 'n (C = x·10ⁿ mol/dm³)'),
+    'ef_volume': (float, 0.0, 10000.0, 'µl'),
+    'ef_wavelength': (int, 450, 1200, 'nm'),
+    'ef_na': (float, 0.01, 10.0, 'NA'),
+    'ef_size_x': (float, 0.1, 50.0, 'mm'),
+    'ef_size_y': (float, 0.1, 50.0, 'mm'),
+    'ef_development': (float, 0.1, 10.0, ''),
+    'ef_coverage': (float, 0.0, 1.0, ''),
+    'ef_density': (float, 0.001, 20.0, 'g/cm³'),
+    'ef_molecular_weight': (float, 0.001, 1000.0, 'g/mol'),
+    'ef_depth': (float, 0.0, 10.0, 'mm'),
+    'ef_i_raman': (int, 1, 1000000, 'a.u.'),
+    'ef_i_sers': (int, 1, 10000000, 'a.u.'),
+}
+# files exported by the previous version: label -> (key, conversion)
+OLD_FORMAT = {'V [ml]': ('ef_volume', 1000), 'λ [nm]': ('ef_wavelength', 1), 'NA': ('ef_na', 1),
+              'coverage': ('ef_coverage', 1), 'd [g/cm³]': ('ef_density', 1), 'M [g/mol]': ('ef_molecular_weight', 1),
+              'h [m]': ('ef_depth', 1000), 'I Raman': ('ef_i_raman', 1), 'I SERS': ('ef_i_sers', 1)}
+
+
+def parse_parameters(raw):
+    """
+    Reads EF parameters from a CSV file downloaded from this page (current or previous format)
+    :param raw: bytes
+    :return: (dict {widget key: value}, list of keys that were out of range and skipped)
+    """
+    import io
+    table = pd.read_csv(io.BytesIO(raw), encoding='utf-8')
+    values = {}
+    if 'key' in table.columns:
+        values = {k: v for k, v in zip(table['key'], table['value']) if k in PARAMETERS}
+    else:  # previous format: two columns - label, value
+        for label, value in zip(table.iloc[:, 0], table.iloc[:, 1]):
+            if label in OLD_FORMAT:
+                key, factor = OLD_FORMAT[label]
+                values[key] = float(value) * factor
+            elif label == 'C [mol/dm³]' and float(value) > 0:
+                exponent = int(np.floor(np.log10(float(value))))
+                values['ef_conc_x'] = round(float(value) / 10 ** exponent)
+                values['ef_conc_n'] = exponent
+
+    loaded, skipped = {}, []
+    for key, value in values.items():
+        kind, low, high, _ = PARAMETERS[key]
+        try:
+            value = kind(round(float(value)) if kind is int else float(value))
+        except (TypeError, ValueError):
+            skipped.append(key)
+            continue
+        if low <= value <= high:
+            loaded[key] = value
+        else:
+            skipped.append(key)
+    return loaded, skipped
+
+
+def load_parameters():
+    """file_uploader callback - fills the inputs with values from the file"""
+    uploaded = st.session_state.get('ef_parameters_file')
+    if not uploaded:
+        return
+    try:
+        loaded, skipped = parse_parameters(uploaded.getvalue())
+    except Exception:
+        st.session_state['_ef_load_message'] = ('error', t('This is not a parameters file downloaded from this page.'))
+        return
+    for key, value in loaded.items():
+        st.session_state[key] = value
+    if 'ef_i_raman' in loaded or 'ef_i_sers' in loaded:
+        st.session_state['_ef_source'] = 'input'
+        st.session_state.pop('ef_source', None)
+    message = t('Loaded {n} parameters.').format(n=len(loaded))
+    if skipped:
+        message += ' ' + t('Skipped (out of range): {keys}').format(keys=', '.join(skipped))
+    st.session_state['_ef_load_message'] = ('success' if loaded else 'error', message)
+
 
 def main(df):
     """
     :param df: DataFrame with uploaded spectra (shared data) or None
     """
     st.header(t('Enhancement Factor (EF) calculator'))
+    with st.expander(t('Load parameters from a file'), icon=':material/upload_file:'):
+        st.file_uploader(t('Upload a parameters file (CSV) downloaded from this page earlier'), type=['csv'],
+                         key='ef_parameters_file', on_change=load_parameters)
+    if '_ef_load_message' in st.session_state:
+        kind, message = st.session_state.pop('_ef_load_message')
+        (st.success if kind == 'success' else st.error)(message)
     result = st.container()
 
     # # Inputs
@@ -107,11 +193,15 @@ def main(df):
             c[2].markdown(f'{value:.2e} {unit}')
         st.caption(t('Method: P. Piecyk, A. Kowalska, T. Szymborski, IChF PAN 2020.'))
 
-    parameters = pd.DataFrame([
-        ('C [mol/dm³]', concentration), ('V [ml]', volume), ('λ [nm]', wavelength), ('NA', aperture),
-        ('S platform [m²]', s_platform), ('coverage', coverage), ('d [g/cm³]', density),
-        ('M [g/mol]', molecular_weight), ('h [m]', depth), ('I Raman', i_raman), ('I SERS', i_sers),
-        *[(name, value) for name, _, value, _ in steps]], columns=[t('Parameter'), t('Value')])
+    # 'key' column lets the file be loaded back (Load parameters from a file)
+    inputs = {'ef_conc_x': multiplier, 'ef_conc_n': exponent, 'ef_volume': volume * 1000,
+              'ef_wavelength': wavelength, 'ef_na': aperture, 'ef_size_x': size_x, 'ef_size_y': size_y,
+              'ef_development': development, 'ef_coverage': coverage, 'ef_density': density,
+              'ef_molecular_weight': molecular_weight, 'ef_depth': depth * 1000,
+              'ef_i_raman': i_raman, 'ef_i_sers': i_sers}
+    rows = [(key, key.removeprefix('ef_'), value, PARAMETERS[key][3]) for key, value in inputs.items()]
+    rows += [(f'result_{i}', name, value, unit) for i, (name, _, value, unit) in enumerate(steps, start=1)]
+    parameters = pd.DataFrame(rows, columns=['key', 'parameter', 'value', 'unit'])
     vis_utils.download_csv(parameters, 'enhancement_factor.csv', t('Download parameters and results (CSV)'),
                            'ef_csv', index=False)
 

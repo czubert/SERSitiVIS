@@ -354,6 +354,12 @@ PL = {
         'Średnia z {n} widm. SD intensywności piku: {sd} (RSD {rsd} %)',
     'Show calculation step by step': 'Pokaż obliczenia krok po kroku',
     'Download parameters and results (CSV)': 'Pobierz parametry i wyniki (CSV)',
+    'Load parameters from a file': 'Wczytaj parametry z pliku',
+    'Upload a parameters file (CSV) downloaded from this page earlier':
+        'Wgraj plik z parametrami (CSV) pobrany wcześniej z tej strony',
+    'This is not a parameters file downloaded from this page.': 'To nie jest plik z parametrami pobrany z tej strony.',
+    'Loaded {n} parameters.': 'Wczytano parametrów: {n}.',
+    'Skipped (out of range): {keys}': 'Pominięto (poza zakresem): {keys}',
     'Parameter': 'Parametr',
     'Value': 'Wartość',
     'Number of molecules in the solution': 'Liczba cząsteczek w roztworze',

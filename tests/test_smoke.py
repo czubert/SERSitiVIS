@@ -343,3 +343,33 @@ def test_calibration_page():
     assert not app.exception
     labels = [m.label for m in app.metric]
     assert labels[:3] == ['LOD', 'LOQ', 'R²']
+
+
+#
+# # EF parameters file
+#
+def test_ef_parameters_file_new_format():
+    from vis_helpers.enhancement_factor import parse_parameters
+    csv = ('key,parameter,value,unit\nef_conc_x,conc_x,2,x\nef_conc_n,conc_n,-6,n\nef_volume,volume,1500.0,µl\n'
+           'ef_wavelength,wavelength,633,nm\nef_na,na,0.4,NA\nef_i_sers,i_sers,40000,a.u.\n'
+           'result_7,EF,6.1e7,\nef_depth,depth,99,mm\n').encode('utf-8')
+    loaded, skipped = parse_parameters(csv)
+    assert loaded == {'ef_conc_x': 2, 'ef_conc_n': -6, 'ef_volume': 1500.0, 'ef_wavelength': 633, 'ef_na': 0.4,
+                      'ef_i_sers': 40000}
+    assert skipped == ['ef_depth']  # 99 mm is out of range
+    assert isinstance(loaded['ef_wavelength'], int) and isinstance(loaded['ef_volume'], float)
+
+
+def test_ef_parameters_file_previous_format():
+    from vis_helpers.enhancement_factor import parse_parameters
+    csv = ('Parameter,Value\nC [mol/dm³],5e-06\nV [ml],2.0\nλ [nm],785\nNA,0.22\nS platform [m²],4e-05\n'
+           'coverage,0.1\nd [g/cm³],1.3\nM [g/mol],154.19\nh [m],0.002\nI Raman,1000\nI SERS,60000\n').encode('utf-8')
+    loaded, _ = parse_parameters(csv)
+    assert loaded['ef_conc_x'] == 5 and loaded['ef_conc_n'] == -6
+    assert loaded['ef_volume'] == 2000.0 and loaded['ef_depth'] == 2.0 and loaded['ef_wavelength'] == 785
+
+
+def test_ef_parameters_file_rejects_other_files():
+    from vis_helpers.enhancement_factor import parse_parameters
+    loaded, _ = parse_parameters('a,b\n1,2\n'.encode('utf-8'))
+    assert loaded == {}
