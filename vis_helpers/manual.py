@@ -4,6 +4,7 @@ import streamlit as st
 
 from core import readers
 from vis_helpers import workspace
+from vis_helpers.i18n import t
 
 FORMAT_NOTES = {
     'BWTEK': ['Upload raw data in *.txt format (metadata + data).'],
@@ -32,15 +33,15 @@ def show_manual():
     """
     Shows manual on front page if data is not uploaded
     """
-    st.header('Data visualisation')
-    st.subheader('How to start')
-    st.info('Upload your spectra (*.txt or *.csv) in the left sidebar, or choose example data. '
-            'Spectrometer type is detected automatically - you can upload files from different instruments at once.')
+    st.header(t('Visualisation'))
+    st.subheader(t('How to start'))
+    st.info(t('Upload your spectra (*.txt or *.csv) in the left sidebar, or choose example data. '
+              'Spectrometer type is detected automatically - you can upload files from different instruments at once.'))
     st.write('')
 
-    st.subheader('Supported files')
+    st.subheader(t('Supported files'))
     for instrument, notes in FORMAT_NOTES.items():
         with st.expander(instrument):
             for note in notes:
-                st.write(note)
+                st.write(t(note))
             st.components.v1.html(example_data_html(instrument), height=200, scrolling=True)

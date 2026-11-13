@@ -1,0 +1,281 @@
+"""
+Translations. English is the default; texts are written in English in the code and wrapped in t().
+Polish translations live in PL. A missing translation falls back to English (a test checks that none is missing).
+"""
+import streamlit as st
+
+LANGUAGES = {'en': 'English', 'pl': 'Polski'}
+LANG_KEY = 'lang'
+
+
+def lang():
+    return st.session_state.get(LANG_KEY, 'en')
+
+
+def t(text):
+    if lang() == 'pl':
+        return PL.get(text, text)
+    return text
+
+
+def language_selector():
+    """Language switch in the sidebar. Kept in a plain session_state key, so it survives page changes."""
+    st.session_state.setdefault(LANG_KEY, 'en')
+    st.session_state.setdefault('_lang_widget', lang())
+
+    def on_change():
+        st.session_state[LANG_KEY] = st.session_state['_lang_widget']
+
+    st.sidebar.radio('Language', list(LANGUAGES), format_func=LANGUAGES.get, key='_lang_widget',
+                     on_change=on_change, horizontal=True, label_visibility='collapsed')
+
+
+def choice(widget, label, options, key, format_func, container=None, **kwargs):
+    """
+    st.selectbox / st.radio with translated option labels.
+    Streamlit remembers a choice by its displayed text, so after a language change the old text would not match.
+    Every language gets its own widget, the chosen value is kept in a plain session_state key.
+    :param widget: 'selectbox' or 'radio'
+    :return: chosen option
+    """
+    container = container or st
+    store = f'_{key}'
+    widget_key = key if lang() == 'en' else f'{key}__{lang()}'
+    if st.session_state.get(store) not in options:
+        st.session_state[store] = options[0]
+    if st.session_state.get(widget_key) not in options:
+        st.session_state[widget_key] = st.session_state[store]
+
+    def on_change():
+        st.session_state[store] = st.session_state[widget_key]
+
+    labels = {option: format_func(option) for option in options}  # translated now, in the current language
+    getattr(container, widget)(label, options, key=widget_key, format_func=labels.get, on_change=on_change,
+                               **kwargs)
+    return st.session_state[store]
+
+
+PL = {
+    # navigation
+    'Start': 'Start',
+    'Visualisation': 'Wizualizacja',
+    'RSD': 'RSD',
+    'Enhancement Factor': 'Współczynnik EF',
+    'PCA': 'PCA',
+
+    # start page
+    'Fast and easy processing and visualisation of Raman and SERS spectra':
+        'Szybka i prosta obróbka oraz wizualizacja widm Ramana i SERS',
+    'Upload spectra': 'Wgraj widma',
+    'Drop *.txt or *.csv files in the sidebar. The spectrometer type is detected automatically.':
+        'Upuść pliki *.txt lub *.csv w panelu bocznym. Typ spektrometru rozpoznawany jest automatycznie.',
+    'Choose analysis': 'Wybierz analizę',
+    'Visualise and process spectra, check reproducibility (RSD), calculate the Enhancement Factor or run PCA.':
+        'Wizualizuj i obrabiaj widma, sprawdź powtarzalność (RSD), policz współczynnik wzmocnienia (EF) '
+        'lub wykonaj PCA.',
+    'Download results': 'Pobierz wyniki',
+    'Export charts (PNG, SVG) and processed data (CSV).':
+        'Eksportuj wykresy (PNG, SVG) i przetworzone dane (CSV).',
+    'Try with example data': 'Wypróbuj na przykładowych danych',
+    'Supported spectrometers': 'Obsługiwane spektrometry',
+    'other text tables': 'inne tabele tekstowe',
+    'Need SERS substrates?': 'Potrzebujesz podłoży SERS?',
+    'SERSitive makes reproducible silver and gold SERS substrates.':
+        'SERSitive produkuje powtarzalne srebrne i złote podłoża SERS.',
+    'Visit SERSitive': 'Odwiedź SERSitive',
+    'Feedback and questions': 'Uwagi i pytania',
+
+    # sidebar / data
+    'Data': 'Dane',
+    'Upload spectra (*.txt, *.csv)': 'Wgraj widma (*.txt, *.csv)',
+    'Spectrometer type is detected automatically. You can upload files from different spectrometers at once.':
+        'Typ spektrometru rozpoznawany jest automatycznie. Możesz wgrać naraz pliki z różnych spektrometrów.',
+    '...or try example data': '...lub wypróbuj przykładowe dane',
+    'File format': 'Format pliku',
+    'Change it only if a file is read incorrectly.': 'Zmień tylko, jeśli plik wczytuje się niepoprawnie.',
+    'Auto-detect': 'Rozpoznaj automatycznie',
+    'Text table (Renishaw, WITec, Jobin Yvon, Teledyne, other)':
+        'Tabela tekstowa (Renishaw, WITec, Jobin Yvon, Teledyne, inne)',
+    'Loaded {spectra} spectra from {files} files': 'Wczytane widma: {spectra}, pliki: {files}',
+    'File': 'Plik',
+    'Format': 'Format',
+    'Spectra': 'Widma',
+    'Raman Shift: {low} – {high} cm⁻¹, {points} points': 'Przesunięcie Ramana: {low} – {high} cm⁻¹, {points} punktów',
+    'Clear data': 'Wyczyść dane',
+    'Spectra do not share a common Raman Shift range - upload them separately.':
+        'Widma nie mają wspólnego zakresu przesunięcia Ramana - wgraj je osobno.',
+    'Reading files...': 'Wczytywanie plików...',
+    'Upload spectra in the sidebar (or choose example data)':
+        'Wgraj widma w panelu bocznym (lub wybierz przykładowe dane)',
+
+    # reader errors
+    'File is empty': 'Plik jest pusty',
+    'No spectrum found in the file': 'W pliku nie znaleziono widma',
+    'Could not read the file': 'Nie udało się odczytać pliku',
+    'Could not find columns with numbers': 'Nie znaleziono kolumn z liczbami',
+    'Expected at least two columns: Raman Shift and intensity':
+        'Oczekiwano co najmniej dwóch kolumn: przesunięcie Ramana i intensywność',
+    'No intensity column found': 'Nie znaleziono kolumny z intensywnością',
+    'BWTEK data header (Pixel; ... Raman Shift ...) not found':
+        'Nie znaleziono nagłówka danych BWTEK (Pixel; ... Raman Shift ...)',
+    'Wasatch data header (Pixel,Wavelength,Wavenumber...) not found':
+        'Nie znaleziono nagłówka danych Wasatch (Pixel,Wavelength,Wavenumber...)',
+    'Expected 5 columns: pixel, wavelength, wavenumber, processed, raw':
+        'Oczekiwano 5 kolumn: piksel, długość fali, liczba falowa, przetworzone, surowe',
+
+    # visualisation
+    'Chart type': 'Typ wykresu',
+    'Single spectrum': 'Pojedyncze widmo',
+    'Mean spectrum': 'Widmo średnie',
+    'Grouped spectra': 'Widma zgrupowane',
+    '3D plot': 'Wykres 3D',
+    'Spectrum': 'Widmo',
+    'Range': 'Zakres',
+    'Raman Shift range [cm⁻¹]': 'Zakres przesunięcia Ramana [cm⁻¹]',
+    'Separate spectra from each other': 'Rozsuń widma',
+    'Processing': 'Obróbka',
+    'Baseline correction and smoothing': 'Korekta linii bazowej i wygładzanie',
+    'Same settings for all spectra': 'Te same ustawienia dla wszystkich widm',
+    'Polynomial degree': 'Stopień wielomianu',
+    'Higher degree follows the background more closely, but may cut into broad peaks.':
+        'Wyższy stopień lepiej dopasowuje się do tła, ale może „zjadać” szerokie piki.',
+    'Smoothing window': 'Okno wygładzania',
+    'Number of points averaged. 1 = no smoothing.': 'Liczba uśrednianych punktów. 1 = bez wygładzania.',
+    'Normalize (0-1)': 'Normalizuj (0-1)',
+    'Show baseline and intermediate steps': 'Pokaż linię bazową i kroki pośrednie',
+    'Average': 'Średnia',
+    'Baseline': 'Linia bazowa',
+    'Baseline corrected': 'Po korekcie linii bazowej',
+    'Baseline corrected + smoothed': 'Po korekcie i wygładzeniu',
+    'Chart appearance': 'Wygląd wykresu',
+    'Raman Shift [cm<sup>-1</sup>]': 'Przesunięcie Ramana [cm<sup>-1</sup>]',
+    'Intensity [a.u.]': 'Intensywność [j.u.]',
+    'Colour palette': 'Paleta kolorów',
+    'Reversed colours': 'Odwróć kolory',
+    'Chart style': 'Styl wykresu',
+    'Hexadecimal colors': 'Kolory szesnastkowe',
+    'Type space separated hexadecimal codes': 'Wpisz kody szesnastkowe oddzielone spacjami',
+    'X axis title': 'Tytuł osi X',
+    'Y axis title': 'Tytuł osi Y',
+    'Chart title': 'Tytuł wykresu',
+    'Line width': 'Grubość linii',
+    'Download data (CSV)': 'Pobierz dane (CSV)',
+    'Image format for the camera icon': 'Format obrazu dla ikony aparatu',
+    'Use the camera icon above a chart to save it as an image.':
+        'Użyj ikony aparatu nad wykresem, aby zapisać go jako obraz.',
+    'How to start': 'Jak zacząć',
+    'Supported files': 'Obsługiwane pliki',
+    'Upload your spectra (*.txt or *.csv) in the left sidebar, or choose example data. '
+    'Spectrometer type is detected automatically - you can upload files from different instruments at once.':
+        'Wgraj widma (*.txt lub *.csv) w lewym panelu albo wybierz przykładowe dane. '
+        'Typ spektrometru rozpoznawany jest automatycznie - możesz wgrać naraz pliki z różnych urządzeń.',
+    'Upload raw data in *.txt format (metadata + data).': 'Wgraj surowe dane w formacie *.txt (metadane + dane).',
+    'First column: Raman Shift, second column: intensity.':
+        'Pierwsza kolumna: przesunięcie Ramana, druga: intensywność.',
+    'Name of the file is used as the name of the spectrum.': 'Nazwa pliku jest używana jako nazwa widma.',
+    'First column: Raman Shift, other columns: intensities.':
+        'Pierwsza kolumna: przesunięcie Ramana, pozostałe: intensywności.',
+    'Column names are shown in the legend. A file may contain several Raman Shift columns.':
+        'Nazwy kolumn pojawiają się w legendzie. Plik może zawierać kilka kolumn z przesunięciem Ramana.',
+    'Upload *.csv (ENLIGHTEN export) or *.txt files.': 'Wgraj pliki *.csv (eksport ENLIGHTEN) lub *.txt.',
+
+    # chart selection
+    'Tip: drag on the chart to select the peak range.': 'Wskazówka: przeciągnij po wykresie, aby zaznaczyć zakres piku.',
+    'Selection on the chart sets': 'Zaznaczenie na wykresie ustawia',
+
+    # RSD
+    'Relative Standard Deviation (RSD)': 'Względne odchylenie standardowe (RSD)',
+    'Choose at least two spectra': 'Wybierz co najmniej dwa widma',
+    'RSD type': 'Rodzaj RSD',
+    'Intensity of one peak': 'Intensywność jednego piku',
+    'Ratio of two peaks': 'Stosunek dwóch pików',
+    'Peak 1 range': 'Zakres piku 1',
+    'Peak 2 range': 'Zakres piku 2',
+    'Peak 1': 'Pik 1',
+    'Peak 2': 'Pik 2',
+    'Normalize chart': 'Normalizuj wykres',
+    'Changes only the chart - RSD is always calculated from the original intensities':
+        'Zmienia tylko wykres - RSD zawsze liczone jest z oryginalnych intensywności',
+    'Peak range is too narrow': 'Zakres piku jest za wąski',
+    'Results': 'Wyniki',
+    'Polynomial degree for baseline correction': 'Stopień wielomianu korekty linii bazowej',
+    'Baseline is fitted within each peak range - shown as dotted lines on the chart':
+        'Linia bazowa dopasowywana jest w zakresie każdego piku - na wykresie linie kropkowane',
+    'Decimal places': 'Miejsca po przecinku',
+    'RAW data': 'Surowe dane',
+    'Mean': 'Średnia',
+    'Standard deviation': 'Odchylenie standardowe',
+    'Download results (CSV)': 'Pobierz wyniki (CSV)',
+
+    # PCA
+    'Principal Component Analysis (PCA)': 'Analiza głównych składowych (PCA)',
+    'PCA needs at least two spectra': 'PCA wymaga co najmniej dwóch widm',
+    'Number of groups': 'Liczba grup',
+    'Principal components': 'Główne składowe',
+    'Group name': 'Nazwa grupy',
+    '...or choose from loaded data': '...lub wybierz z wczytanych danych',
+    'Upload spectra for each group, or choose them from the data loaded in the sidebar.':
+        'Wgraj widma dla każdej grupy albo wybierz je z danych wczytanych w panelu bocznym.',
+    'Each spectrum can belong to one group only': 'Każde widmo może należeć tylko do jednej grupy',
+    'Choose at least {n} spectra': 'Wybierz co najmniej {n} widma',
+    'Rescale spectra (0-1)': 'Przeskaluj widma (0-1)',
+    'Group': 'Grupa',
+    'Spectra used': 'Użyte widma',
+    'Spectra recovered from principal components': 'Widma odtworzone z głównych składowych',
+    'Details': 'Szczegóły',
+    'Explained variance ratio': 'Udział wyjaśnionej wariancji',
+    'Download scores (CSV)': 'Pobierz wyniki PCA (CSV)',
+
+    # EF
+    'Enhancement Factor (EF) calculator': 'Kalkulator współczynnika wzmocnienia (EF)',
+    'Solution': 'Roztwór',
+    'Concentration': 'Stężenie',
+    'Volume of solution [µl]': 'Objętość roztworu [µl]',
+    'Instrument': 'Aparatura',
+    'Laser wavelength [nm]': 'Długość fali lasera [nm]',
+    'Lens parameter - Numerical Aperture (NA)': 'Apertura numeryczna obiektywu (NA)',
+    'SERS substrate': 'Podłoże SERS',
+    'Size x [mm]': 'Wymiar x [mm]',
+    'Size y [mm]': 'Wymiar y [mm]',
+    'Surface area development coefficient': 'Współczynnik rozwinięcia powierzchni',
+    'Rough surface ~2': 'Chropowata powierzchnia ~2',
+    'The coverage of the surface by the analyte (0-1)': 'Pokrycie powierzchni analitem (0-1)',
+    'e.g. ~0.1 for p-MBA 10⁻⁶ M': 'np. ~0,1 dla p-MBA 10⁻⁶ M',
+    'Compound (solid, for Raman reference)': 'Związek (ciało stałe, do pomiaru Ramana)',
+    'Compound density [g/cm³]': 'Gęstość związku [g/cm³]',
+    'Molecular weight [g/mol]': 'Masa molowa [g/mol]',
+    'Depth into which the laser penetrates the chemical compound in crystalline form [mm]':
+        'Głębokość wnikania lasera w kryształ związku [mm]',
+    'Intensities': 'Intensywności',
+    'Type in the intensities': 'Wpisz intensywności',
+    'Read them from uploaded spectra': 'Odczytaj z wgranych widm',
+    'Raman Intensity': 'Intensywność Ramana',
+    'SERS Intensity': 'Intensywność SERS',
+    'Raman spectra': 'Widma Ramana',
+    'SERS spectra': 'Widma SERS',
+    'Choose {name} spectra': 'Wybierz widma {name}',
+    'Raman peak range': 'Zakres piku Ramana',
+    'SERS peak range': 'Zakres piku SERS',
+    'Subtract baseline before reading peak intensities': 'Odejmij linię bazową przed odczytem intensywności',
+    'Selected peak range is empty': 'Wybrany zakres piku jest pusty',
+    'Choose which uploaded spectra are Raman and which are SERS. Several spectra of each type '
+    '(e.g. from a map) are averaged. Choose the same band in both, e.g. ~1075 or ~1588 cm⁻¹ for p-MBA.':
+        'Wybierz, które z wgranych widm to Raman, a które SERS. Kilka widm danego typu (np. z mapy) '
+        'zostanie uśrednionych. Wybierz to samo pasmo w obu, np. ~1075 lub ~1588 cm⁻¹ dla p-MBA.',
+    'at': 'przy',
+    'Average of {n} spectra. Peak intensity SD: {sd} (RSD {rsd} %)':
+        'Średnia z {n} widm. SD intensywności piku: {sd} (RSD {rsd} %)',
+    'Show calculation step by step': 'Pokaż obliczenia krok po kroku',
+    'Download parameters and results (CSV)': 'Pobierz parametry i wyniki (CSV)',
+    'Parameter': 'Parametr',
+    'Value': 'Wartość',
+    'Number of molecules in the solution': 'Liczba cząsteczek w roztworze',
+    'Laser spot diameter': 'Średnica plamki lasera',
+    'Laser spot area': 'Pole plamki lasera',
+    'Molecules on the irradiated SERS surface': 'Cząsteczki na oświetlonej powierzchni SERS',
+    'Irradiated volume of the solid compound': 'Oświetlona objętość kryształu',
+    'Molecules irradiated in the Raman measurement': 'Cząsteczki oświetlone w pomiarze Ramana',
+    'Method: P. Piecyk, A. Kowalska, T. Szymborski, IChF PAN 2020.':
+        'Metoda: P. Piecyk, A. Kowalska, T. Szymborski, IChF PAN 2020.',
+    'Upload Raman and SERS spectra in the sidebar': 'Wgraj widma Ramana i SERS w panelu bocznym',
+}

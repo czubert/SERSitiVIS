@@ -133,16 +133,16 @@ def read_files(files, file_format='AUTO'):
         except ParseError as e:
             errors[name] = str(e)
         except Exception as e:  # unexpected file layout
-            errors[name] = f'Could not read the file ({type(e).__name__})'
+            errors[name] = 'Could not read the file'
 
     if not loaded:
         return None, loaded, errors
 
-    frames = _unique_column_names([f.data for f in loaded])
+    frames = unique_column_names([f.data for f in loaded])
     return align_spectra(frames).rename_axis(RAMAN_SHIFT), loaded, errors
 
 
-def _unique_column_names(frames):
+def unique_column_names(frames):
     """Two files with the same name (or the same column names) must not overwrite each other"""
     seen = {}
     result = []
@@ -242,7 +242,7 @@ def read_table(name, text):
         frame = frame[frame.index.notna()].dropna()
         frames.append(frame)
 
-    return align_spectra(_unique_column_names(frames))
+    return align_spectra(unique_column_names(frames))
 
 
 def _looks_like_raman_shift(values, first_x):

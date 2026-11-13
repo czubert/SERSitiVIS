@@ -102,92 +102,174 @@ def test_baseline_recovers_background_under_peaks():
 #
 # # App
 #
-def new_app(example=None, page=None):
-    app = AppTest.from_file('vis.py', default_timeout=60)
+PAGES = {'start': 'app_pages/start.py', 'visualisation': 'app_pages/visualisation.py', 'rsd': 'app_pages/rsd.py',
+         'ef': 'app_pages/enhancement_factor.py', 'pca': 'app_pages/pca.py'}
+
+
+def new_app(example=None, page=None, language=None):
+    app = AppTest.from_file(os.path.join(ROOT, 'vis.py'), default_timeout=60)
+    if language:
+        app.session_state['lang'] = language
     app.run()
     if example:
         app.selectbox(key='workspace_example').set_value(example).run()
     if page:
-        app.selectbox(key='page').set_value(page).run()
+        app.switch_page(PAGES[page]).run()
     return app
 
 
-@pytest.mark.parametrize('page', ['Main Page', 'visualisation', 'PCA', 'EF', 'RSD'])
-def test_page_renders_without_data(page):
-    assert not new_app(page=page).exception
+@pytest.mark.parametrize('language', ['en', 'pl'])
+@pytest.mark.parametrize('page', PAGES)
+def test_page_renders(page, language):
+    assert not new_app(page=page, language=language).exception
+    assert not new_app('Jobin Yvon T64000', page, language).exception
+
+
+def test_example_button_on_start_page():
+    app = new_app()
+    app.button[0].click().run()
+    assert not app.exception
+    assert app.session_state['_ws_example'] == workspace.DEFAULT_EXAMPLE
+    assert app.get('plotly_chart')
+
+
+def test_data_survives_page_changes():
+    app = new_app('Renishaw', 'rsd')
+    for page in ['pca', 'ef', 'start', 'visualisation']:
+        app.switch_page(PAGES[page]).run()
+    assert app.selectbox(key='workspace_example').value == 'Renishaw'
+    assert app.get('plotly_chart')
 
 
 @pytest.mark.parametrize('chart', ['SINGLE', 'MS', 'GS', 'P3D'])
-@pytest.mark.parametrize('conversion', ['RAW', 'OPT'])
+@pytest.mark.parametrize('processed', [False, True])
 @pytest.mark.parametrize('instrument', workspace.EXAMPLES)
-def test_visualisation(instrument, chart, conversion):
+def test_visualisation(instrument, chart, processed):
     app = new_app(instrument, 'visualisation')
     app.selectbox(key='chart_type').set_value(chart).run()
-    app.radio(key='conversion').set_value(conversion).run()
+    if processed:
+        app.checkbox(key='processed').check().run()
+        app.checkbox(key='normalized').check().run()
+        if chart in {'SINGLE', 'MS'}:
+            app.checkbox(key='show_steps').check().run()
+    else:
+        app.slider(key='range').set_value((800, 1500)).run()
     assert not app.exception
     assert app.get('plotly_chart')
 
 
 @pytest.mark.parametrize('instrument', workspace.EXAMPLES)
 def test_pca(instrument):
-    app = new_app(instrument, 'PCA')
+    app = new_app(instrument, 'pca')
+    names = app.multiselect(key='pca_group_0').options
+    app.multiselect(key='pca_group_0').set_value(names[:1]).run()
+    app.multiselect(key='pca_group_1').set_value(names[1:]).run()
     assert not app.exception
     assert app.get('plotly_chart')
 
 
+def test_pca_same_spectrum_in_two_groups():
+    app = new_app('Jobin Yvon T64000', 'pca')
+    names = app.multiselect(key='pca_group_0').options
+    app.multiselect(key='pca_group_0').set_value(names).run()
+    app.multiselect(key='pca_group_1').set_value(names[:1]).run()
+    assert not app.exception and app.warning
+
+
 @pytest.mark.parametrize('instrument', workspace.EXAMPLES)
 def test_rsd(instrument):
-    app = new_app(instrument, 'RSD')
+    app = new_app(instrument, 'rsd')
+    app.radio(key='rsd_type').set_value('P2P').run()
     assert not app.exception
     assert app.table
 
 
+def test_chart_selection_to_range():
+    from vis_helpers.vis_utils import selected_range
+    assert selected_range({'selection': {'box': [{'x': [1100.4, 1050.2], 'y': [0, 1]}], 'points': []}})         == (1050.2, 1100.4)
+    assert selected_range({'selection': {'box': [], 'points': [{'x': 900}, {'x': 950}]}}) == (900, 950)
+    assert selected_range({'selection': {'box': [], 'points': []}}) is None
+
+
 def test_ef_from_spectra():
-    app = new_app('Jobin Yvon T64000', 'EF')
-    app.radio[0].set_value('from_spec').run()
+    app = AppTest.from_file(os.path.join(ROOT, 'vis.py'), default_timeout=60)
+    app.session_state['_ef_source'] = 'spectra'
+    app.run()
+    app.selectbox(key='workspace_example').set_value('Jobin Yvon T64000').run()
+    app.switch_page(PAGES['ef']).run()
     names = app.multiselect(key='ef_Raman_spectra').options
     app.multiselect(key='ef_Raman_spectra').set_value(names[:1]).run()
     app.multiselect(key='ef_SERS_spectra').set_value(names[1:]).run()
     app.slider(key='ef_Raman_range').set_value((1070, 1090)).run()
     app.slider(key='ef_SERS_range').set_value((1070, 1090)).run()
     assert not app.exception
-    assert any(m.value.startswith('$EF =$') for m in app.markdown)
+    assert app.metric[0].label == 'EF'
 
 
 def test_ef_matches_publication_example():
     """Values from 'Enhancement Factor (EF): teoria i praktyka', IChF PAN 2020, section 4.3 -> EF = 6.1e7"""
-    app = new_app(page='EF')
-    inputs = {'Provide "x"': 1, 'Provide "n"': -6, 'Volume of solution [µl]': 2000.0,
-              'Laser wavelength [nm]': 785, 'Lens parameter - Numerical Aperture (NA)': 0.40,
-              'First dimension (x)': 3.0, 'Second dimension (y)': 3.0,
-              'Surface area development coefficient': 2.0,
-              'The coverage of the surface by the analyte (0-1)': 0.1,
-              'Depth into which the laser penetrates the chemical compound in crystalline form [mm]': 2.0,
-              'Compound density [g/cm³]': 1.3, 'Molecular weight [g/mol]': 154.19,
-              'Raman Intensity': 1000, 'SERS Intensity': 40000}
-    widgets = {w.label: w for w in app.number_input}
-    for label, value in inputs.items():
-        widgets[label].set_value(value)
+    app = new_app(page='ef')
+    inputs = {'ef_conc_x': 1, 'ef_conc_n': -6, 'ef_volume': 2000.0, 'ef_wavelength': 785, 'ef_na': 0.40,
+              'ef_size_x': 3.0, 'ef_size_y': 3.0, 'ef_development': 2.0, 'ef_coverage': 0.1, 'ef_depth': 2.0,
+              'ef_density': 1.3, 'ef_molecular_weight': 154.19, 'ef_i_raman': 1000, 'ef_i_sers': 40000}
+    for key, value in inputs.items():
+        app.number_input(key=key).set_value(value)
     app.run()
     assert not app.exception
-    assert any(m.value.startswith('$EF =$') and '6.1e+07' in m.value for m in app.markdown)
+    assert app.metric[0].value == '6.1e+07'
 
 
 def test_rsd_not_affected_by_chart_normalisation():
     """Normalising each spectrum to its maximum made RSD of the strongest peak 0 %"""
-    app = new_app('Jobin Yvon T64000', 'RSD')
+    app = new_app('Jobin Yvon T64000', 'rsd')
     before = app.table[0].value.astype(float)
     assert before.loc['RSD[%]', 'RAW data'] > 1
-    next(c for c in app.sidebar.checkbox if c.label == 'Normalize chart').check().run()
-    after = app.table[0].value.astype(float)
-    assert after.equals(before)
+    app.checkbox(key='rsd_normalize').check().run()
+    assert app.table[0].value.astype(float).equals(before)
 
 
 def test_rsd_polynomial_degree_changes_result():
-    app = new_app('Jobin Yvon T64000', 'RSD')
-    app.slider[0].set_value((1050, 1110)).run()
+    app = new_app('Jobin Yvon T64000', 'rsd')
+    app.slider(key='rsd_Peak 1_range').set_value((1050, 1110)).run()
     results = []
     for degree in (1, 10):
         app.slider(key='rsd_degree').set_value(degree).run()
         results.append(app.table[0].value.astype(float).loc['RSD[%]', 'Baseline corrected'])
     assert results[0] != results[1]
+
+
+#
+# # Translations
+#
+def translated_texts():
+    """All string literals passed to t() in the app code"""
+    import ast
+    texts = set()
+    for path in glob.glob(os.path.join(ROOT, 'vis_helpers', '*.py')) + [os.path.join(ROOT, 'vis.py')]:
+        with open(path, encoding='utf-8') as f:
+            tree = ast.parse(f.read())
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Call) and getattr(node.func, 'id', None) == 't' and node.args                     and isinstance(node.args[0], ast.Constant):
+                texts.add(node.args[0].value)
+    return texts
+
+
+def test_every_text_has_polish_translation():
+    from vis_helpers.i18n import PL
+    missing = sorted(text for text in translated_texts() if text not in PL)
+    assert not missing, missing
+
+
+@pytest.mark.parametrize('page', PAGES)
+def test_language_switch_keeps_choices(page):
+    app = new_app('Renishaw', 'visualisation')
+    app.selectbox(key='chart_type').set_value('MS').run()
+    app.switch_page(PAGES[page]).run()
+    app.radio(key='_lang_widget').set_value('pl').run()
+    assert not app.exception
+    app.switch_page(PAGES['visualisation']).run()
+    assert not app.exception
+    assert app.selectbox(key='chart_type__pl').value == 'MS'
+    assert app.session_state['_ws_example'] == 'Renishaw'
+    app.radio(key='_lang_widget').set_value('en').run()
+    assert not app.exception and app.selectbox(key='chart_type').value == 'MS'

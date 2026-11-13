@@ -1,208 +1,141 @@
-import base64
-
+"""
+Chart settings and helpers shared by all pages.
+"""
 import plotly.express as px
 import plotly.io as pio
 import streamlit as st
 
+from core import processing
+from visualisation.draw import fig_layout
+from vis_helpers.i18n import t, lang
 
-def trim_spectra(df):
-    # trim raman shift range
-    min_, max_ = int(float(df.index.min())), int(float(df.index.max())) + 1
-    min_max = st.slider('Custom range', min_value=min_, max_value=max_, value=[min_, max_])
-    min_rs, max_rs = min_max  #.split('__')
-    min_rs, max_rs = float(min_rs), float(max_rs)
-    mask = (min_rs <= df.index) & (df.index <= max_rs)
-    return df[mask]
-
-
-@st.cache_data
-def show_logo(width, padding, margin):
-    with open('logos/logo.png', 'rb') as f:
-        data = f.read()
-    link = 'http://sersitive.eu'
-    padding_top, padding_right, padding_bottom, padding_left = padding
-    margin_top, margin_right, margin_bottom, margin_left = margin
-    
-    bin_str = base64.b64encode(data).decode()
-    html_code = f'''
-                <a href="{link}" target = _blank>
-                    <img src="data:image/png;base64,{bin_str}"
-                    style="
-                     margin: auto;
-                     width: {width}%;
-                     margin-top: {margin_top}px;
-                     margin-right: {margin_right}px;
-                     margin-bottom: {margin_bottom}px;
-                     margin-left: {margin_left}%;
-                     padding-top: {margin_top}px;
-                     padding-right: {padding_right}px;
-                     padding-bottom: {padding_bottom}px;
-                     padding-left: {padding_left}%;
-                     "/>
-                 </a>
-                '''
-    return html_code
+# SERSitive colours first (navy, blue, gold), then well distinguishable ones
+SERSITIVE_PALETTE = ['#1C336D', '#6C9BC0', '#DBBD8A', '#B5651D', '#5B8C5A', '#8E6C8A', '#C0504D', '#4BACC6',
+                     '#7F7F7F', '#2E2E2E']
+PALETTES = {'SERSitive': SERSITIVE_PALETTE,
+            'Plotly': px.colors.qualitative.Plotly,
+            'D3': px.colors.qualitative.D3,
+            'Safe (colour-blind friendly)': px.colors.qualitative.Safe,
+            'Bold': px.colors.qualitative.Bold,
+            'Dark24': px.colors.qualitative.Dark24,
+            'Viridis': px.colors.sequential.Viridis,
+            'Plasma': px.colors.sequential.Plasma,
+            'Turbo': px.colors.sequential.Turbo,
+            'Custom': None}
 
 
-@st.cache_data
-def show_sersitivis_logo(width, padding, margin):
-    padding_top, padding_right, padding_bottom, padding_left = padding
-    margin_top, margin_right, margin_bottom, margin_left = margin
-    
-    link = 'http://sersitive.eu'
-    
-    with open('logos/sersitivis_no_background.png', 'rb') as f:
-        data = f.read()
-    
-    bin_str = base64.b64encode(data).decode()
-    html_code = f'''
-                <img src="data:image/png;base64,{bin_str}"
-                style="
-                     margin: auto;
-                     width: {width}%;
-                     margin-top: {margin_top}px;
-                     margin-right: {margin_right}px;
-                     margin-bottom: {margin_bottom}px;
-                     margin-left: {margin_left}%;
-                     padding-top: {margin_top}px;
-                     padding-right: {padding_right}px;
-                     padding-bottom: {padding_bottom}px;
-                     padding-left: {padding_left}%;
-                     "/>
-                '''
-
-    return html_code
+def default_titles():
+    return {'x': t('Raman Shift [cm<sup>-1</sup>]'), 'y': t('Intensity [a.u.]'), 'title': ''}
 
 
-def choose_template():
+def chart_settings(key, titles=None):
     """
-    Choose default template from the list
-    :return: Str, chosen template
+    Chart appearance settings (put it inside an expander)
+    :param key: Str, unique prefix for widget keys
+    :param titles: Dict with default axis titles {'x', 'y', 'title'}
+    :return: Dict: palette, template, titles, line_width, image_format
     """
-    template = st.selectbox(
-        "Chart template",
-        list(pio.templates), index=6, key='new')
+    titles = {**default_titles(), **(titles or {})}
+    language = lang()
 
-    return template
-
-
-def get_chart_vis_properties():
-    palettes = {
-        'qualitative': ['Alphabet', 'Antique', 'Bold', 'D3', 'Dark2', 'Dark24', 'G10', 'Light24', 'Pastel',
-                        'Pastel1', 'Pastel2', 'Plotly', 'Prism', 'Safe', 'Set1', 'Set2', 'Set3', 'T10', 'Vivid',
-                        ],
-        'diverging': ['Armyrose', 'BrBG', 'Earth', 'Fall', 'Geyser', 'PRGn', 'PiYG', 'Picnic', 'Portland', 'PuOr',
-                      'RdBu', 'RdGy', 'RdYlBu', 'RdYlGn', 'Spectral', 'Tealrose', 'Temps', 'Tropic', 'balance',
-                      'curl', 'delta', 'oxy',
-                      ],
-        'sequential': ['Aggrnyl', 'Agsunset', 'Blackbody', 'Bluered', 'Blues', 'Blugrn', 'Bluyl', 'Brwnyl', 'BuGn',
-                       'BuPu', 'Burg', 'Burgyl', 'Cividis', 'Darkmint', 'Electric', 'Emrld', 'GnBu', 'Greens', 'Greys',
-                       'Hot', 'Inferno', 'Jet', 'Magenta', 'Magma', 'Mint', 'OrRd', 'Oranges', 'Oryel', 'Peach',
-                       'Pinkyl', 'Plasma', 'Plotly3', 'PuBu', 'PuBuGn', 'PuRd', 'Purp', 'Purples', 'Purpor', 'Rainbow',
-                       'RdBu', 'RdPu', 'Redor', 'Reds', 'Sunset', 'Sunsetdark', 'Teal', 'Tealgrn', 'Turbo', 'Viridis',
-                       'YlGn', 'YlGnBu', 'YlOrBr', 'YlOrRd', 'algae', 'amp', 'deep', 'dense', 'gray', 'haline', 'ice',
-                       'matter', 'solar', 'speed', 'tempo', 'thermal', 'turbid',
-                       ]
-    }
-
-    col1, col2, col3 = st.columns(3)
-
-    with col1:
-        palette_type = st.selectbox("Type of color palette", list(palettes.keys()), 0)
-    with col2:
-        palette = st.selectbox("Color palette", palettes[palette_type], index=0)
-        if st.checkbox('Reversed', False):
-            palette = palette + '_r'
-    with col3:
-        template = choose_template()
-
-    palette_module = getattr(px.colors, palette_type)
-    palette = getattr(palette_module, palette)
-
-    return palette, template
-
-
-def get_chart_vis_properties_vis():
-    palettes = {
-        'qualitative': ['Alphabet', 'Antique', 'Bold', 'D3', 'Dark2', 'Dark24', 'G10', 'Light24', 'Pastel',
-                        'Pastel1', 'Pastel2', 'Plotly', 'Prism', 'Safe', 'Set1', 'Set2', 'Set3', 'T10', 'Vivid',
-                        ],
-        'diverging': ['Armyrose', 'BrBG', 'Earth', 'Fall', 'Geyser', 'PRGn', 'PiYG', 'Picnic', 'Portland', 'PuOr',
-                      'RdBu', 'RdGy', 'RdYlBu', 'RdYlGn', 'Spectral', 'Tealrose', 'Temps', 'Tropic', 'balance',
-                      'curl', 'delta', 'oxy',
-                      ],
-        'sequential': ['Aggrnyl', 'Agsunset', 'Blackbody', 'Bluered', 'Blues', 'Blugrn', 'Bluyl', 'Brwnyl', 'BuGn',
-                       'BuPu', 'Burg', 'Burgyl', 'Cividis', 'Darkmint', 'Electric', 'Emrld', 'GnBu', 'Greens', 'Greys',
-                       'Hot', 'Inferno', 'Jet', 'Magenta', 'Magma', 'Mint', 'OrRd', 'Oranges', 'Oryel', 'Peach',
-                       'Pinkyl', 'Plasma', 'Plotly3', 'PuBu', 'PuBuGn', 'PuRd', 'Purp', 'Purples', 'Purpor', 'Rainbow',
-                       'RdBu', 'RdPu', 'Redor', 'Reds', 'Sunset', 'Sunsetdark', 'Teal', 'Tealgrn', 'Turbo', 'Viridis',
-                       'YlGn', 'YlGnBu', 'YlOrBr', 'YlOrRd', 'algae', 'amp', 'deep', 'dense', 'gray', 'haline', 'ice',
-                       'matter', 'solar', 'speed', 'tempo', 'thermal', 'turbid',
-                       ]
-    }
-    print_widget_labels('Colors')
-    palette_type = st.selectbox("Type of color palette", list(palettes.keys()) + ['custom'], 0)
-    if palette_type == 'custom':
-        palette = st.text_area('Hexadecimal colors', '#DB0457 #520185 #780A34 #49BD02 #B25AE8',
-                               help='Type space separated hexadecimal codes')
-        palette = palette.split()
+    palette_name = st.selectbox(t('Colour palette'), list(PALETTES), key=f'{key}_palette')
+    if palette_name == 'Custom':
+        palette = st.text_input(t('Hexadecimal colors'), '#DB0457 #520185 #780A34 #49BD02 #B25AE8',
+                                help=t('Type space separated hexadecimal codes'), key=f'{key}_custom').split()
     else:
-        palette = st.selectbox("Color palette", palettes[palette_type], index=0)
-        palette_module = getattr(px.colors, palette_type)
-        palette = getattr(palette_module, palette)
-
-    if st.checkbox('Reversed', False):
+        palette = PALETTES[palette_name]
+    if st.checkbox(t('Reversed colours'), key=f'{key}_reversed'):
         palette = palette[::-1]
 
-    print_widgets_separator(2)
-    print_widget_labels('Template')
-    template = choose_template()
-    print_widgets_separator(2)
+    line_width = st.slider(t('Line width'), 0.5, 5.0, 2.0, 0.5, key=f'{key}_line_width')
 
-    return palette, template
+    # keys per language - default titles are translated
+    chart_titles = {'x': st.text_input(t('X axis title'), titles['x'], key=f'{key}_x_title_{language}'),
+                    'y': st.text_input(t('Y axis title'), titles['y'], key=f'{key}_y_title_{language}'),
+                    'title': st.text_input(t('Chart title'), titles['title'], key=f'{key}_title_{language}')}
 
+    templates = list(pio.templates)
+    template = st.selectbox(t('Chart style'), templates, index=templates.index('plotly_white'), key=f'{key}_template')
 
-def get_plot_description():
-    print_widget_labels('Labels')
-    xaxis = st.text_input('X axis name', r'Raman Shift cm <sup>-1</sup>')
-    yaxis = st.text_input('Y axis name', r'Intensity [au]')
-    title = st.text_input('Title', r'')
-    chart_titles = {'x': xaxis, 'y': yaxis, 'title': title}
-    return chart_titles
+    image_format = st.radio(t('Image format for the camera icon'), ['png', 'svg'], horizontal=True,
+                            key=f'{key}_image_format',
+                            help=t('Use the camera icon above a chart to save it as an image.'))
 
-
-def get_plot_description_pca():
-    print_widget_labels('Labels')
-    xaxis = st.text_input('X axis name', r'PC 1')
-    yaxis = st.text_input('Y axis name', r'PC 2')
-    title = st.text_input('Title', r'')
-    chart_titles = {'x': xaxis, 'y': yaxis, 'title': title}
-    return chart_titles
+    return {'palette': palette, 'template': template, 'titles': chart_titles, 'line_width': line_width,
+            'image_format': image_format}
 
 
-def print_widgets_separator(n=1, sidebar=False):
+def default_chart_settings():
+    return {'palette': SERSITIVE_PALETTE, 'template': 'plotly_white', 'titles': default_titles(),
+            'line_width': 2.0, 'image_format': 'png'}
+
+
+def show_chart(fig, settings, lines=True, **kwargs):
     """
-    Prints customized separation line on sidebar
+    Applies layout and shows the chart with high resolution image export
+    :param fig: plotly Figure
+    :param settings: Dict from chart_settings()
+    :param lines: Bool, apply line width to the traces
+    :param kwargs: passed to st.plotly_chart (e.g. key, on_select)
     """
-    html = """<hr style="height:1px;
-            border:none;color:#fff;
-            background-color:#999;
-            margin-top:5px;
-            margin-bottom:10px"
-            />"""
-
-    for _ in range(n):
-        if sidebar:
-            st.sidebar.markdown(html, unsafe_allow_html=True)
-        else:
-            st.markdown(html, unsafe_allow_html=True)
+    fig_layout(settings['template'], fig, chart_titles=settings['titles'], plots_colorscale=settings['palette'])
+    if lines:
+        fig.update_traces(selector=dict(mode='lines'), line_width=settings['line_width'])
+    config = {'displaylogo': False,
+              'toImageButtonOptions': {'format': settings['image_format'], 'scale': 3,
+                                       'filename': settings['titles']['title'] or 'sersitivis'}}
+    return st.plotly_chart(fig, width='stretch', config=config, **kwargs)
 
 
-def print_widget_labels(widget_title, margin_top=5, margin_bottom=10):
+def range_slider(label, low, high, key, **kwargs):
     """
-    Prints Widget label on the sidebar and lets adjust its margins easily
-    :param widget_title: Str
+    Range slider which resets itself when the stored range does not fit new data
+    (its value can also be set from a chart selection - see range_from_selection)
     """
-    st.markdown(
-        f"""<p style="font-weight:500; margin-top:{margin_top}px;margin-bottom:{margin_bottom}px">{widget_title}</p>""",
-        unsafe_allow_html=True)
+    value = st.session_state.get(key)
+    if not value or value[0] < low or value[1] > high or value[0] >= value[1]:
+        st.session_state[key] = (low, high)
+    return st.slider(label, min_value=low, max_value=high, key=key, **kwargs)
+
+
+def spectrum_limits(df):
+    return int(float(df.index.min())), int(float(df.index.max())) + 1
+
+
+def trim_spectra(df, key='range'):
+    """Slider for the Raman Shift range"""
+    low, high = range_slider(t('Raman Shift range [cm⁻¹]'), *spectrum_limits(df), key=key)
+    return processing.trim(df, low, high)
+
+
+def selected_range(event):
+    """
+    X range selected on a chart (box selection, or the selected points)
+    :param event: value of st.plotly_chart(on_select=...) / its session_state
+    :return: (low, high) or None
+    """
+    if not event:
+        return None
+    selection = event.get('selection', {}) if isinstance(event, dict) else event.selection
+    boxes = selection.get('box') or []
+    if boxes and boxes[-1].get('x'):
+        x = boxes[-1]['x']
+        return min(x), max(x)
+    points = [p['x'] for p in selection.get('points') or [] if 'x' in p]
+    if len(points) > 1:
+        return min(points), max(points)
+    return None
+
+
+def range_from_selection(chart_key, slider_key, low, high):
+    """
+    on_select callback: copies the range selected on the chart into the range slider
+    """
+    selected = selected_range(st.session_state.get(chart_key))
+    if selected:
+        st.session_state[slider_key] = (max(low, int(selected[0])), min(high, int(round(selected[1]))))
+
+
+def download_csv(df, file_name, label, key, index=True):
+    st.download_button(label, data=df.to_csv(index=index).encode('utf-8'), file_name=file_name, mime='text/csv',
+                       icon=':material/download:', key=key)
