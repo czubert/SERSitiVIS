@@ -113,3 +113,52 @@ def peak_intensity(df, low, high):
             'n': df.shape[1],
             'sd': per_spectrum.std() if df.shape[1] > 1 else None,
             'rsd': per_spectrum.std() / per_spectrum.mean() if df.shape[1] > 1 else None}
+
+
+def ef_from_parameters(p):
+    """
+    EF from all inputs (works with numbers and numpy arrays - used for Monte Carlo)
+    :param p: Dict with keys: concentration [mol/dm3], volume [ml], wavelength [nm], aperture, size_x, size_y [mm],
+              development, coverage, depth [m], density [g/cm3], molecular_weight [g/mol], i_sers, i_raman
+    """
+    n = num_of_molecules(p['concentration'], p['volume'])
+    s0 = laser_spot_area(laser_spot_diameter(p['wavelength'], p['aperture']))
+    platform = p['size_x'] * p['size_y'] * 10 ** (-6) * p['development']
+    return enhancement_factor(p['i_sers'], n_sers(n, s0, p['coverage'], platform),
+                              p['i_raman'], n_raman(s0, p['depth'], p['density'], p['molecular_weight']))
+
+
+def ef_uncertainty(parameters, ranges, relative_sd, draws=20000, seed=0):
+    """
+    Monte Carlo uncertainty of EF
+    :param parameters: Dict of nominal values (see ef_from_parameters)
+    :param ranges: Dict {parameter: (low, high)} - uniform distribution within the range
+    :param relative_sd: Dict {parameter: relative SD} - normal distribution (e.g. intensities)
+    :return: Dict: median, low (5th percentile), high (95th percentile),
+             sensitivity {parameter: (EF at low end, EF at high end)}
+    """
+    rng = np.random.default_rng(seed)
+    sample = {key: np.full(draws, float(value)) for key, value in parameters.items()}
+    for key, (low, high) in ranges.items():
+        sample[key] = rng.uniform(low, high, draws)
+    for key, sd in relative_sd.items():
+        sample[key] = parameters[key] * np.clip(rng.normal(1, sd, draws), 0.05, None)
+    values = ef_from_parameters(sample)
+
+    sensitivity = {}
+    for key, (low, high) in ranges.items():
+        sensitivity[key] = (ef_from_parameters({**parameters, key: low}), ef_from_parameters({**parameters, key: high}))
+    for key, sd in relative_sd.items():
+        sensitivity[key] = (ef_from_parameters({**parameters, key: parameters[key] * (1 - sd)}),
+                            ef_from_parameters({**parameters, key: parameters[key] * (1 + sd)}))
+
+    low, median, high = np.percentile(values, [5, 50, 95])
+    return {'median': median, 'low': low, 'high': high, 'sensitivity': sensitivity}
+
+
+def analytical_ef(i_sers, c_sers, i_raman, c_raman):
+    """
+    Analytical enhancement factor: AEF = (I_SERS / c_SERS) / (I_Raman / c_Raman)
+    c_SERS, c_Raman - analyte concentrations in the SERS and in the normal Raman measurement (same units)
+    """
+    return (i_sers / c_sers) / (i_raman / c_raman)

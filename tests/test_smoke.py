@@ -531,3 +531,39 @@ def test_visualisation_processing_options(baseline, normalization):
     app.checkbox(key='show_steps').check().run()
     assert not app.exception
     assert app.get('plotly_chart')
+
+
+#
+# # EF presets, uncertainty, AEF
+#
+PUBLICATION = dict(concentration=1e-6, volume=2.0, wavelength=785, aperture=0.40, size_x=3, size_y=3, development=2,
+                   coverage=0.1, depth=2e-3, density=1.3, molecular_weight=154.19, i_sers=40000, i_raman=1000)
+
+
+def test_ef_uncertainty():
+    from core.analysis import ef_from_parameters, ef_uncertainty
+    ef = ef_from_parameters(PUBLICATION)
+    assert np.isclose(ef, 6.07e7, rtol=0.01)
+    result = ef_uncertainty(PUBLICATION, {'coverage': (0.04, 0.18), 'depth': (1e-3, 3e-3)}, {'i_sers': 0.2})
+    assert result['low'] < ef < result['high']
+    spans = {k: abs(np.log10(b / a)) for k, (a, b) in result['sensitivity'].items()}
+    assert max(spans, key=spans.get) == 'coverage'  # literature range 4-18 % dominates
+
+
+def test_aef():
+    from core.analysis import analytical_ef
+    assert np.isclose(analytical_ef(40000, 1e-6, 1000, 0.1), 4e6)
+
+
+def test_ef_presets_and_uncertainty_tile():
+    app = new_app(page='ef')
+    app.selectbox(key='ef_analyte').set_value('pmba').run()
+    app.selectbox(key='ef_objective').set_value('20x').run()
+    assert not app.exception
+    assert app.number_input(key='ef_na').value == 0.40
+    assert app.number_input(key='ef_molecular_weight').value == 154.19
+    assert app.number_input(key='ef_cov_low').value == 0.04
+    assert app.metric[1].value != '—'  # EF range
+    app.selectbox(key='ef_analyte').set_value('r6g').run()
+    assert app.number_input(key='ef_molecular_weight').value == 479.02 and app.warning
+    assert any(m.label == 'AEF' for m in app.metric)

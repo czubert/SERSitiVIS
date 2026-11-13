@@ -5,6 +5,7 @@ Method: 'Enhancement Factor (EF): teoria i praktyka', P. Piecyk, A. Kowalska, T.
 import numpy as np
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
 import streamlit as st
 
 from core import analysis, processing
@@ -30,6 +31,42 @@ PARAMETERS = {
     'ef_i_raman': (int, 1, 1000000, 'a.u.'),
     'ef_i_sers': (int, 1, 10000000, 'a.u.'),
 }
+# Analyte presets. p-MBA: values from 'Enhancement Factor (EF): teoria i praktyka' (IChF PAN 2020), coverage range
+# 4-18 % from the literature cited there. Other analytes: only the molar mass is certain - density, coverage and
+# penetration depth must be taken from the literature (the publication says so explicitly).
+ANALYTES = {
+    'custom': {},
+    'pmba': {'ef_molecular_weight': 154.19, 'ef_density': 1.3, 'ef_coverage': 0.1, 'ef_depth': 2.0},
+    '4atp': {'ef_molecular_weight': 125.19},
+    'r6g': {'ef_molecular_weight': 479.02},
+    'cv': {'ef_molecular_weight': 407.98},
+}
+ANALYTE_LABELS = {'custom': 'Custom', 'pmba': 'p-MBA (4-mercaptobenzoic acid)', '4atp': '4-ATP (4-aminothiophenol)',
+                  'r6g': 'Rhodamine 6G', 'cv': 'Crystal violet'}
+COVERAGE_RANGE = {'pmba': (0.04, 0.18)}
+# typical numerical apertures - check the value engraved on your objective
+OBJECTIVES = {'custom': None, '10x': 0.25, '20x': 0.40, '50x LWD': 0.50, '50x': 0.75, '100x': 0.90}
+
+
+def short(value):
+    """7.2e+07 -> 7.2e7"""
+    return f'{value:.1e}'.replace('e+0', 'e').replace('e-0', 'e-').replace('e+', 'e')
+
+
+def apply_analyte():
+    analyte = st.session_state['_ef_analyte']
+    for key, value in ANALYTES[analyte].items():
+        st.session_state[key] = value
+    if analyte in COVERAGE_RANGE:
+        st.session_state['ef_cov_low'], st.session_state['ef_cov_high'] = COVERAGE_RANGE[analyte]
+
+
+def apply_objective():
+    aperture = OBJECTIVES[st.session_state['_ef_objective']]
+    if aperture:
+        st.session_state['ef_na'] = aperture
+
+
 # files exported by the previous version: label -> (key, conversion)
 OLD_FORMAT = {'V [ml]': ('ef_volume', 1000), 'λ [nm]': ('ef_wavelength', 1), 'NA': ('ef_na', 1),
               'coverage': ('ef_coverage', 1), 'd [g/cm³]': ('ef_density', 1), 'M [g/mol]': ('ef_molecular_weight', 1),
@@ -98,6 +135,48 @@ def main(df):
     :param df: DataFrame with uploaded spectra (shared data) or None
     """
     st.header(t('Enhancement Factor (EF) calculator'))
+    substrate_tab, aef_tab = st.tabs([t('Substrate EF'), t('Analytical EF (AEF)')])
+    with aef_tab:
+        analytical()
+    with substrate_tab:
+        substrate_ef(df)
+
+
+def analytical():
+    """AEF = (I_SERS / c_SERS) / (I_Raman / c_Raman)"""
+    st.caption(t('Simpler definition, often used to compare substrates: signal per concentration in SERS divided by '
+                 'signal per concentration in normal Raman (analyte solution measured under the same conditions).'))
+    cols = st.columns(2)
+    values = {}
+    for col, name, default_exponent, default_intensity in [(cols[0], 'SERS', -6, 60000), (cols[1], 'Raman', -1, 1000)]:
+        with col.container(border=True):
+            st.markdown(f'##### {name}')
+            c = st.columns(2)
+            x = c[0].number_input(t('Concentration') + ' x', 1, 9, 1, key=f'aef_{name}_x')
+            n = c[1].number_input('× 10ⁿ mol/dm³, n', -15, 1, default_exponent, key=f'aef_{name}_n')
+            label = t('SERS Intensity') if name == 'SERS' else t('Raman Intensity')
+            intensity = st.number_input(label, 1, 10000000, default_intensity, key=f'aef_{name}_i')
+            values[name] = (intensity, x * 10.0 ** n)
+    aef = analysis.analytical_ef(values['SERS'][0], values['SERS'][1], values['Raman'][0], values['Raman'][1])
+    st.metric('AEF', f'{aef:.1e}', border=True)
+    st.latex(r'AEF = \frac{I_{SERS} / c_{SERS}}{I_{Raman} / c_{Raman}}')
+
+
+def substrate_ef(df):
+    """Substrate EF (method of the IChF PAN publication) with presets and uncertainty"""
+    cols = st.columns(2)
+    with cols[0]:
+        analyte = choice('selectbox', t('Analyte preset'), list(ANALYTES), key='ef_analyte',
+                         format_func=lambda a: t(ANALYTE_LABELS[a]), on_change=apply_analyte)
+    with cols[1]:
+        choice('selectbox', t('Objective preset (NA)'), list(OBJECTIVES), key='ef_objective',
+               format_func=lambda o: t('Custom') if o == 'custom' else f'{o} - NA {OBJECTIVES[o]:.2f}',
+               on_change=apply_objective,
+               help=t('Typical values - check the numerical aperture engraved on your objective.'))
+    if analyte not in ('custom', 'pmba'):
+        st.warning(t('Only the molar mass is set for this analyte. Take density, surface coverage and penetration '
+                     'depth from the literature - they differ between molecules.'))
+
     with st.expander(t('Load parameters from a file'), icon=':material/upload_file:'):
         st.file_uploader(t('Upload a parameters file (CSV) downloaded from this page earlier'), type=['csv'],
                          key='ef_parameters_file', on_change=load_parameters)
@@ -147,11 +226,12 @@ def main(df):
                         label_visibility='collapsed',
                         format_func=lambda s: t('Type in the intensities') if s == 'input'
                         else t('Read them from uploaded spectra'))
+        measured_rsd = {}
         if source == 'spectra':
             intensities = intensities_from_spectra(df)
             if intensities is None:
                 return
-            i_raman, i_sers = intensities
+            i_raman, i_sers, measured_rsd = intensities
         else:
             c = st.columns(2)
             i_raman = c[0].number_input(t('Raman Intensity'), 1, 1000000, 1000, 100, key='ef_i_raman')
@@ -167,12 +247,59 @@ def main(df):
     n_raman = analysis.n_raman(s0, depth, density, molecular_weight)
     ef = analysis.enhancement_factor(i_sers, n_sers, i_raman, n_raman)
 
+    # # Uncertainty (Monte Carlo)
+    with st.expander(t('Uncertainty of EF'), icon=':material/error_med:'):
+        st.caption(t('EF depends on assumptions that are hard to measure. The range comes from 20 000 random '
+                     'combinations of the uncertain inputs (uniform within the ranges, normal for intensities).'))
+        c = st.columns(3)
+        default_coverage = COVERAGE_RANGE.get(analyte, (round(coverage * 0.5, 3), round(min(1.0, coverage * 1.5), 3)))
+        cov_low = c[0].number_input(t('Coverage from'), 0.0, 1.0, default_coverage[0], 0.01, key='ef_cov_low')
+        cov_high = c[0].number_input(t('Coverage to'), 0.0, 1.0, default_coverage[1], 0.01, key='ef_cov_high')
+        dev_spread = c[1].slider(t('Surface development ± [%]'), 0, 90, 30, key='ef_dev_spread')
+        depth_spread = c[1].slider(t('Penetration depth ± [%]'), 0, 90, 50, key='ef_depth_spread')
+        sers_rsd = c[2].slider(t('SERS intensity RSD [%]'), 0, 100,
+                               int(round(100 * measured_rsd.get('SERS', 0.2))), key='ef_sers_rsd',
+                               help=t('From the uploaded spectra when several SERS spectra are averaged.'))
+        raman_rsd = c[2].slider(t('Raman intensity RSD [%]'), 0, 100,
+                                int(round(100 * measured_rsd.get('Raman', 0.1))), key='ef_raman_rsd')
+
+    nominal = dict(concentration=concentration, volume=volume, wavelength=wavelength, aperture=aperture,
+                   size_x=size_x, size_y=size_y, development=development, coverage=coverage, depth=depth,
+                   density=density, molecular_weight=molecular_weight, i_sers=i_sers, i_raman=i_raman)
+    ranges = {'coverage': (min(cov_low, cov_high), max(cov_low, cov_high)),
+              'development': (development * (1 - dev_spread / 100), development * (1 + dev_spread / 100)),
+              'depth': (depth * (1 - depth_spread / 100), depth * (1 + depth_spread / 100))}
+    ranges = {key: value for key, value in ranges.items() if 0 < value[0] < value[1]}
+    relative_sd = {key: value / 100 for key, value in (('i_sers', sers_rsd), ('i_raman', raman_rsd)) if value}
+    uncertainty = analysis.ef_uncertainty(nominal, ranges, relative_sd) if ranges or relative_sd else None
+
     with result:
-        c = st.columns(4)
+        c = st.columns((1, 1.5, 1, 1, 1))
         c[0].metric('EF', f'{ef:.1e}', border=True)
-        c[1].metric('N SERS', f'{n_sers:.1e}', border=True)
-        c[2].metric('N Raman', f'{n_raman:.1e}', border=True)
-        c[3].metric('I SERS / I Raman', f'{i_sers / i_raman:.1f}', border=True)
+        c[1].metric(t('EF range (90 %)'), f'{short(uncertainty["low"])} – {short(uncertainty["high"])}'
+                    if uncertainty else '—', border=True)
+        c[2].metric('N SERS', f'{n_sers:.1e}', border=True)
+        c[3].metric('N Raman', f'{n_raman:.1e}', border=True)
+        c[4].metric('I SERS / I Raman', f'{i_sers / i_raman:.1f}', border=True)
+
+    if uncertainty:
+        names = {'coverage': t('Surface coverage'), 'development': t('Surface development'),
+                 'depth': t('Penetration depth'), 'i_sers': t('SERS Intensity'), 'i_raman': t('Raman Intensity')}
+        sensitivity = uncertainty['sensitivity']
+        order = sorted(sensitivity, key=lambda k: abs(np.log10(sensitivity[k][1] / sensitivity[k][0])))
+        tornado = go.Figure()
+        for key in order:
+            tornado.add_trace(go.Scatter(x=list(sensitivity[key]), y=[names[key]] * 2, mode='lines+markers',
+                                         line=dict(width=14, color=vis_utils.SERSITIVE_PALETTE[1]),
+                                         marker=dict(size=4, color=vis_utils.SERSITIVE_PALETTE[0]),
+                                         showlegend=False, hovertemplate='%{x:.2e}<extra></extra>'))
+        tornado.add_vline(x=ef, line_dash='dash', line_color=vis_utils.SERSITIVE_PALETTE[2])
+        tornado.update_xaxes(type='log', title='EF')
+        tornado.update_layout(height=80 + 45 * len(order), margin=dict(t=20, l=10, r=10, b=40),
+                              template='plotly_white')
+        with st.expander(t('Which input changes EF the most'), icon=':material/bar_chart:'):
+            st.plotly_chart(tornado, width='stretch', config={'displaylogo': False})
+            st.caption(t('Each bar: EF when only this input goes from the low to the high end of its range.'))
 
     steps = [
         (t('Number of molecules in the solution'), r'N = N_A \cdot C \cdot V', n, ''),
@@ -209,7 +336,7 @@ def main(df):
 def intensities_from_spectra(df):
     """
     Peak intensities read from the uploaded spectra
-    :return: (I Raman, I SERS) or None
+    :return: (I Raman, I SERS, {name: measured RSD of the peak intensity}) or None
     """
     if df is None:
         st.warning(t('Upload Raman and SERS spectra in the sidebar'))
@@ -237,7 +364,7 @@ def intensities_from_spectra(df):
         return None
 
     st.caption(t('Tip: drag on the chart to select the peak range.'))
-    intensities = {}
+    intensities, rsd = {}, {}
     for col, name in zip(st.columns(2), SPECTRA_TYPES):
         spectra_df = spectra[name]
         low, high = vis_utils.spectrum_limits(spectra_df)
@@ -266,9 +393,11 @@ def intensities_from_spectra(df):
                 st.warning(t('Selected peak range is empty'))
                 return None
             intensities[name] = peak['intensity']
+            if peak['n'] > 1:
+                rsd[name] = peak['rsd']
             st.markdown(f'$I_{{{name}}} =$ {peak["intensity"]:.0f} {t("at")} {peak["position"]:.0f} cm⁻¹')
             if peak['n'] > 1:
                 st.caption(t('Average of {n} spectra. Peak intensity SD: {sd} (RSD {rsd} %)').format(
                     n=peak['n'], sd=f'{peak["sd"]:.0f}', rsd=f'{100 * peak["rsd"]:.1f}'))
 
-    return intensities['Raman'], intensities['SERS']
+    return intensities['Raman'], intensities['SERS'], rsd

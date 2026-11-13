@@ -82,8 +82,12 @@ def choice(widget, label, options, key, format_func, container=None, **kwargs):
     if st.session_state.get(widget_key) not in options:
         st.session_state[widget_key] = st.session_state[store]
 
+    extra_callback = kwargs.pop('on_change', None)
+
     def on_change():
         st.session_state[store] = st.session_state[widget_key]
+        if extra_callback:
+            extra_callback()
 
     labels = {option: format_func(option) for option in options}  # translated now, in the current language
     getattr(container, widget)(label, options, key=widget_key, format_func=labels.get, on_change=on_change,
@@ -384,6 +388,47 @@ PL = {
     'Colour scale': 'Skala kolorów',
     'Distribution': 'Rozkład',
     'Download map (CSV)': 'Pobierz mapę (CSV)',
+
+    # EF presets, uncertainty, AEF
+    'Substrate EF': 'EF podłoża',
+    'Analytical EF (AEF)': 'Analityczny EF (AEF)',
+    'Simpler definition, often used to compare substrates: signal per concentration in SERS divided by '
+    'signal per concentration in normal Raman (analyte solution measured under the same conditions).':
+        'Prostsza definicja, często używana do porównywania podłoży: sygnał na jednostkę stężenia w SERS podzielony '
+        'przez sygnał na jednostkę stężenia w zwykłym Ramanie (roztwór analitu mierzony w tych samych warunkach).',
+    'Analyte preset': 'Analit (ustawienia)',
+    'Custom': 'Własne',
+    'p-MBA (4-mercaptobenzoic acid)': 'p-MBA (kwas 4-merkaptobenzoesowy)',
+    '4-ATP (4-aminothiophenol)': '4-ATP (4-aminotiofenol)',
+    'Rhodamine 6G': 'Rodamina 6G',
+    'Crystal violet': 'Fiolet krystaliczny',
+    'Objective preset (NA)': 'Obiektyw (NA)',
+    'Typical values - check the numerical aperture engraved on your objective.':
+        'Typowe wartości - sprawdź aperturę numeryczną wygrawerowaną na obiektywie.',
+    'Only the molar mass is set for this analyte. Take density, surface coverage and penetration '
+    'depth from the literature - they differ between molecules.':
+        'Dla tego analitu ustawiona jest tylko masa molowa. Gęstość, pokrycie powierzchni i głębokość wnikania '
+        'weź z literatury - różnią się między cząsteczkami.',
+    'Uncertainty of EF': 'Niepewność EF',
+    'EF depends on assumptions that are hard to measure. The range comes from 20 000 random '
+    'combinations of the uncertain inputs (uniform within the ranges, normal for intensities).':
+        'EF zależy od założeń, które trudno zmierzyć. Zakres pochodzi z 20 000 losowych kombinacji niepewnych '
+        'danych (rozkład jednostajny w zakresach, normalny dla intensywności).',
+    'Coverage from': 'Pokrycie od',
+    'Coverage to': 'Pokrycie do',
+    'Surface development ± [%]': 'Rozwinięcie powierzchni ± [%]',
+    'Penetration depth ± [%]': 'Głębokość wnikania ± [%]',
+    'SERS intensity RSD [%]': 'RSD intensywności SERS [%]',
+    'Raman intensity RSD [%]': 'RSD intensywności Ramana [%]',
+    'From the uploaded spectra when several SERS spectra are averaged.':
+        'Z wgranych widm, gdy uśredniasz kilka widm SERS.',
+    'EF range (90 %)': 'Zakres EF (90 %)',
+    'Surface coverage': 'Pokrycie powierzchni',
+    'Surface development': 'Rozwinięcie powierzchni',
+    'Penetration depth': 'Głębokość wnikania',
+    'Which input changes EF the most': 'Który parametr najbardziej zmienia EF',
+    'Each bar: EF when only this input goes from the low to the high end of its range.':
+        'Każdy pasek: EF, gdy tylko ten parametr zmienia się od dolnego do górnego końca zakresu.',
 
     # EF
     'Enhancement Factor (EF) calculator': 'Kalkulator współczynnika wzmocnienia (EF)',
