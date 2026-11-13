@@ -567,3 +567,43 @@ def test_ef_presets_and_uncertainty_tile():
     app.selectbox(key='ef_analyte').set_value('r6g').run()
     assert app.number_input(key='ef_molecular_weight').value == 479.02 and app.warning
     assert any(m.label == 'AEF' for m in app.metric)
+
+
+#
+# # PCA clustering, loadings
+#
+def three_groups():
+    x = np.arange(400, 1800, 2.0)
+    rng = np.random.default_rng(0)
+
+    def spectrum(a, b):
+        return 1000 + a * np.exp(-((x - 1075) / 8) ** 2) + b * np.exp(-((x - 1588) / 8) ** 2) + rng.normal(0, 30, x.size)
+    columns = {**{f'A{i}': spectrum(5000, 1000) for i in range(6)}, **{f'B{i}': spectrum(1000, 5000) for i in range(6)},
+               **{f'C{i}': spectrum(3000, 3000) for i in range(6)}}
+    return pd.DataFrame(columns, index=x)
+
+
+@pytest.mark.parametrize('method', ['kmeans', 'ward'])
+def test_clusters_found_automatically(method):
+    from core import multivariate
+    data = three_groups()
+    _, scores, loadings, _ = multivariate.pca(data, 2)
+    result = multivariate.cluster(scores, method)
+    assert result['k'] == 3 and result['silhouette'] > 0.8
+    _, ari = multivariate.agreement([name[0] for name in data.columns], result['labels'])
+    assert ari == 1.0
+    top_bands = loadings['PC 1'].abs().nlargest(4).index
+    assert any(abs(b - 1075) < 5 for b in top_bands) and any(abs(b - 1588) < 5 for b in top_bands)
+
+
+def test_pca_page_with_clustering():
+    app = new_app('Jobin Yvon T64000', 'pca')
+    names = app.multiselect(key='pca_group_0').options
+    app.multiselect(key='pca_group_0').set_value(names[:1]).run()
+    app.multiselect(key='pca_group_1').set_value(names[1:]).run()
+    app.checkbox(key='pca_cluster').check().run()
+    assert not app.exception
+    assert [m.label for m in app.metric][:2] == ['Clusters', 'Silhouette']
+    app.checkbox(key='pca_auto_k').uncheck().run()
+    app.radio(key='pca_cluster_method').set_value('ward').run()
+    assert not app.exception

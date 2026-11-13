@@ -308,6 +308,33 @@ PL = {
     'Details': 'Szczegóły',
     'Explained variance ratio': 'Udział wyjaśnionej wariancji',
     'Download scores (CSV)': 'Pobierz wyniki PCA (CSV)',
+    'Clustering': 'Klastrowanie',
+    'Find clusters': 'Znajdź klastry',
+    'Groups spectra by similarity of their PCA scores, without using your group names.':
+        'Grupuje widma według podobieństwa wyników PCA, bez korzystania z nazw Twoich grup.',
+    'Method': 'Metoda',
+    'Hierarchical (Ward)': 'Hierarchiczna (Ward)',
+    'Number of clusters - automatic': 'Liczba klastrów - automatycznie',
+    'Chosen by the best silhouette score.': 'Wybierana na podstawie najlepszego współczynnika silhouette.',
+    'Number of clusters': 'Liczba klastrów',
+    'Cluster': 'Klaster',
+    'Clusters': 'Klastry',
+    'Silhouette': 'Silhouette',
+    'Separation of the clusters: close to 1 = well separated, around 0 = overlapping.':
+        'Rozdzielenie klastrów: blisko 1 = dobrze rozdzielone, około 0 = nakładają się.',
+    'Agreement with groups (ARI)': 'Zgodność z grupami (ARI)',
+    'Adjusted Rand index: 1 = clusters are exactly your groups, ~0 = no relation.':
+        'Skorygowany indeks Randa: 1 = klastry to dokładnie Twoje grupy, ~0 = brak związku.',
+    'Number of spectra of each group in each cluster:': 'Liczba widm z każdej grupy w każdym klastrze:',
+    'Loadings - which bands differ between samples': 'Ładunki - które pasma różnią próbki',
+    'Large positive or negative values mark the Raman bands that the principal component '
+    'is made of.': 'Duże wartości dodatnie lub ujemne wskazują pasma Ramana, z których składa się główna składowa.',
+    'Loading': 'Ładunek',
+    'PC 1 is dominated by bands near: {bands} cm⁻¹': 'PC 1 tworzą głównie pasma w okolicy: {bands} cm⁻¹',
+    'Scree plot - variance explained by each component': 'Wykres osypiska - wariancja wyjaśniona przez składowe',
+    'Component': 'Składowa',
+    'Cumulative': 'Skumulowana',
+    'Explained variance [%]': 'Wyjaśniona wariancja [%]',
 
     # calibration
     'Calibration & LOD': 'Kalibracja i LOD',
