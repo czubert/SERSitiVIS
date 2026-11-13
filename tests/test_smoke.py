@@ -148,7 +148,7 @@ def test_data_survives_page_changes():
 @pytest.mark.parametrize('instrument', workspace.EXAMPLES)
 def test_visualisation(instrument, chart, processed):
     app = new_app(instrument, 'visualisation')
-    app.selectbox(key='chart_type').set_value(chart).run()
+    app.radio(key='chart_type').set_value(chart).run()
     if processed:
         app.checkbox(key='processed').check().run()
         app.selectbox(key='normalization').set_value('minmax').run()
@@ -266,16 +266,16 @@ def test_every_text_has_translation(language):
 @pytest.mark.parametrize('page', PAGES)
 def test_language_switch_keeps_choices(page):
     app = new_app('Renishaw', 'visualisation')
-    app.selectbox(key='chart_type').set_value('MS').run()
+    app.radio(key='chart_type').set_value('MS').run()
     app.switch_page(PAGES[page]).run()
     app.radio(key='_lang_widget').set_value('pl').run()
     assert not app.exception
     app.switch_page(PAGES['visualisation']).run()
     assert not app.exception
-    assert app.selectbox(key='chart_type__pl').value == 'MS'
+    assert app.radio(key='chart_type__pl').value == 'MS'
     assert app.session_state['_ws_example'] == 'Renishaw'
     app.radio(key='_lang_widget').set_value('en').run()
-    assert not app.exception and app.selectbox(key='chart_type').value == 'MS'
+    assert not app.exception and app.radio(key='chart_type').value == 'MS'
 
 
 #
@@ -396,7 +396,7 @@ def test_peaks_found_at_known_positions():
 @pytest.mark.parametrize('instrument', workspace.EXAMPLES)
 def test_visualisation_peaks(instrument, chart):
     app = new_app(instrument, 'visualisation')
-    app.selectbox(key='chart_type').set_value(chart).run()
+    app.radio(key='chart_type').set_value(chart).run()
     app.checkbox(key='peaks').check().run()
     if chart == 'GS':
         app.slider(key='shift').set_value(0.3).run()
@@ -528,7 +528,7 @@ def test_visualisation_processing_options(baseline, normalization):
     app.checkbox(key='smoothing').check().run()
     app.selectbox(key='smoothing_method').set_value('savgol').run()
     app.selectbox(key='normalization').set_value(normalization).run()
-    app.selectbox(key='chart_type').set_value('MS').run()
+    app.radio(key='chart_type').set_value('MS').run()
     app.checkbox(key='show_steps').check().run()
     assert not app.exception
     assert app.get('plotly_chart')
@@ -684,3 +684,16 @@ def test_pca_clustering_with_two_spectra_explains_why():
     app.checkbox(key='pca_cluster').check().run()
     assert not app.exception
     assert any('3' in w.value for w in app.warning)
+
+
+def test_single_spectrum_arrows():
+    app = new_app(workspace.DEFAULT_EXAMPLE, 'visualisation')
+    app.radio(key='chart_type').set_value('SINGLE').run()
+    names = list(app.session_state['df'].columns)
+    assert app.session_state['single_spectrum'] == names[0]
+    app.button(key='single_spectrum_next').click().run()
+    assert app.session_state['single_spectrum'] == names[1]
+    app.button(key='single_spectrum_prev').click().run()
+    app.button(key='single_spectrum_prev').click().run()
+    assert app.session_state['single_spectrum'] == names[-1]  # wraps around
+    assert not app.exception and app.get('plotly_chart')

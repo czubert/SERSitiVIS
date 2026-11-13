@@ -1,6 +1,8 @@
 """
 Chart settings and helpers shared by all pages.
 """
+import html
+
 import plotly.express as px
 import plotly.io as pio
 import streamlit as st
@@ -175,3 +177,32 @@ def report_button(key, build, signature):
         cols[1].download_button(t('Download report (PDF)'), stored[1], file_name=f'SERSitiVIS_{key}_{date.today()}.pdf',
                                 mime='application/pdf', key=f'{key}_report_download', icon=':material/download:',
                                 type='primary')
+
+
+def _step_spectrum(key, names, delta):
+    current = st.session_state.get(key)
+    i = names.index(current) if current in names else 0
+    st.session_state[key] = names[(i + delta) % len(names)]
+
+
+def spectrum_stepper(names, key):
+    """
+    Pick one spectrum with ‹ › arrows (wraps around) instead of a drop-down list.
+    :param names: list of spectrum names
+    :param key: session_state key holding the chosen name
+    :return: chosen name
+    """
+    names = list(names)
+    if st.session_state.get(key) not in names:
+        st.session_state[key] = names[0]
+    name = st.session_state[key]
+    left, middle, right = st.columns((1, 4, 1), vertical_alignment='center', gap='small')
+    left.button('', icon=':material/chevron_left:', key=f'{key}_prev', help=t('Previous spectrum'),
+                on_click=_step_spectrum, args=(key, names, -1), use_container_width=True)
+    right.button('', icon=':material/chevron_right:', key=f'{key}_next', help=t('Next spectrum'),
+                 on_click=_step_spectrum, args=(key, names, 1), use_container_width=True)
+    middle.html(f'<div title="{html.escape(name)}" style="text-align: center; line-height: 1.25;">'
+                f'<div style="font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">'
+                f'{html.escape(name)}</div>'
+                f'<div style="font-size: 0.8rem; opacity: 0.65;">{names.index(name) + 1} / {len(names)}</div></div>')
+    return name

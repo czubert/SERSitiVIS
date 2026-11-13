@@ -65,6 +65,8 @@ DE = {
     'Grouped spectra': 'Gruppierte Spektren',
     '3D plot': '3D-Diagramm',
     'Spectrum': 'Spektrum',
+    'Previous spectrum': 'Vorheriges Spektrum',
+    'Next spectrum': 'Nächstes Spektrum',
     'Range': 'Bereich',
     'Raman Shift range [cm⁻¹]': 'Bereich der Raman-Verschiebung [cm⁻¹]',
     'Separate spectra from each other': 'Spektren voneinander trennen',

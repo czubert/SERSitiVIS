@@ -25,10 +25,14 @@ def visualisation(df):
     chart_col, settings_col = st.columns((3, 1))
 
     with settings_col:
-        chart_type = choice('selectbox', t('Chart type'), list(CHART_TYPES), key='chart_type',
-                            format_func=lambda c: t(CHART_TYPES[c]))
+        # header shows the current choice, so the expander can stay closed
+        current = st.session_state.get('_chart_type', 'GS')
+        with st.expander(f'{t("Chart type")}: {t(CHART_TYPES.get(current, CHART_TYPES["GS"]))}',
+                         icon=':material/insert_chart:'):
+            chart_type = choice('radio', t('Chart type'), list(CHART_TYPES), key='chart_type',
+                                format_func=lambda c: t(CHART_TYPES[c]), label_visibility='collapsed')
         if chart_type == 'SINGLE':
-            df = df[[st.selectbox(t('Spectrum'), list(df.columns), key='single_spectrum')]]
+            df = df[[vis_utils.spectrum_stepper(df.columns, key='single_spectrum')]]
         elif chart_type == 'MS':
             df = df.mean(axis=1).rename(t('Average')).to_frame()
 

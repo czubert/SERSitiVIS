@@ -200,6 +200,8 @@ PL = {
     'Grouped spectra': 'Widma zgrupowane',
     '3D plot': 'Wykres 3D',
     'Spectrum': 'Widmo',
+    'Previous spectrum': 'Poprzednie widmo',
+    'Next spectrum': 'Następne widmo',
     'Range': 'Zakres',
     'Raman Shift range [cm⁻¹]': 'Zakres przesunięcia Ramana [cm⁻¹]',
     'Separate spectra from each other': 'Rozsuń widma',

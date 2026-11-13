@@ -65,6 +65,8 @@ UK = {
     'Grouped spectra': 'Згруповані спектри',
     '3D plot': '3D-графік',
     'Spectrum': 'Спектр',
+    'Previous spectrum': 'Попередній спектр',
+    'Next spectrum': 'Наступний спектр',
     'Range': 'Діапазон',
     'Raman Shift range [cm⁻¹]': 'Діапазон раманівського зсуву [см⁻¹]',
     'Separate spectra from each other': 'Розсунути спектри',

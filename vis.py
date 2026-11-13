@@ -8,6 +8,7 @@ import streamlit as st
 
 from vis_helpers import authors, workspace
 from vis_helpers.i18n import t
+from visualisation.draw import is_dark
 
 if os.path.isfile(".streamlit/secrets.toml") and 'sentry_url' in st.secrets:
     sentry_sdk.init(st.secrets['sentry_url'], traces_sample_rate=0.001)
@@ -28,6 +29,10 @@ def main():
             '[data-testid="stSidebarLogo"] {display: block; width: 100%; height: auto; max-width: none; '
             'max-height: none;}'
             '</style>')
+    # selectbox dropdown lists have the page background - they blended with the panels behind them
+    menu_bg, menu_border = ('#2A3340', '#3A4452') if is_dark() else ('#FFFFFF', '#C9D3DE')
+    st.html(f'<style>[data-testid="stSelectboxVirtualDropdown"] {{background-color: {menu_bg}; '
+            f'border: 1px solid {menu_border}; box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);}}</style>')
 
     pages = [
         st.Page('app_pages/start.py', title=t('Start'), icon=':material/home:', default=True),
