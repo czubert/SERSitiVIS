@@ -471,7 +471,7 @@ PL = {
         'Średnia z {n} widm. SD intensywności piku: {sd} (RSD {rsd} %)',
     'Show calculation step by step': 'Pokaż obliczenia krok po kroku',
     'Download parameters and results (CSV)': 'Pobierz parametry i wyniki (CSV)',
-    'Load a previous calculation': 'Wczytaj poprzednie obliczenia',
+    'Load parameters from a previous calculation file': 'Wczytaj parametry z pliku poprzednich obliczeń',
     'At the bottom of this page you can download all parameters and results with '
     '"Download parameters and results (CSV)". Upload that file here to restore the calculation '
     '- e.g. the settings of your microscope - instead of typing them again.':

@@ -205,7 +205,7 @@ def test_ef_from_spectra():
     app.slider(key='ef_Raman_range').set_value((1070, 1090)).run()
     app.slider(key='ef_SERS_range').set_value((1070, 1090)).run()
     assert not app.exception
-    assert app.metric[0].label == 'EF'
+    assert any(m.label == 'EF' for m in app.metric)
 
 
 def test_ef_matches_publication_example():
@@ -218,7 +218,7 @@ def test_ef_matches_publication_example():
         app.number_input(key=key).set_value(value)
     app.run()
     assert not app.exception
-    assert app.metric[0].value == '6.1e+07'
+    assert next(m for m in app.metric if m.label == 'EF').value == '6.1e+07'
 
 
 def test_rsd_not_affected_by_chart_normalisation():
@@ -563,7 +563,7 @@ def test_ef_presets_and_uncertainty_tile():
     assert app.number_input(key='ef_na').value == 0.40
     assert app.number_input(key='ef_molecular_weight').value == 154.19
     assert app.number_input(key='ef_cov_low').value == 0.04
-    assert app.metric[1].value != '—'  # EF range
+    assert next(m for m in app.metric if m.label == 'EF range (90 %)').value != '—'
     app.selectbox(key='ef_analyte').set_value('r6g').run()
     assert app.number_input(key='ef_molecular_weight').value == 479.02 and app.warning
     assert any(m.label == 'AEF' for m in app.metric)

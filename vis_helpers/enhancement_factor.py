@@ -14,6 +14,24 @@ from vis_helpers.i18n import t, choice
 
 SPECTRA_TYPES = ['Raman', 'SERS']
 
+# Tabs styled like folder / binder tabs in SERSitive colours: gold (AEF), blue (substrate EF)
+_TAB_COLORS = [('#E9D3A8', '#FBF6EC'), ('#B9D0E4', '#F2F7FB')]  # (tab, panel)
+_TABS = '.st-key-ef_tabs [data-testid="stTabs"]'
+FOLDER_TABS_CSS = '<style>' + ' '.join([
+    f'{_TABS} [role="tablist"] {{gap: 6px; border-bottom: none; padding-left: 4px;}}',
+    f'{_TABS} [data-testid="stTab"] {{padding: 10px 22px; border-radius: 12px 12px 0 0; border: 1px solid #b5c0cc; '
+    f'border-bottom: none; font-weight: 600; opacity: 0.6; margin-bottom: -1px;}}',
+    f'{_TABS} [data-testid="stTab"][data-selected="true"] {{opacity: 1; position: relative; z-index: 1;}}',
+    f'{_TABS} [data-testid="stTab"] p {{font-size: 1.05rem;}}',
+    f'{_TABS} .react-aria-SelectionIndicator {{display: none;}}',
+    f'{_TABS} [data-testid="stTabPanel"] {{border: 1px solid #b5c0cc; border-radius: 0 12px 12px 12px; '
+    f'padding: 1.25rem;}}',
+    *[f'{_TABS} [data-testid="stTab"]:nth-child({i}) {{background: {tab};}} '
+      f'{_TABS}:has([data-testid="stTab"]:nth-child({i})[data-selected="true"]) [data-testid="stTabPanel"] '
+      f'{{background: {panel}; border-top: 4px solid {tab};}}'
+      for i, (tab, panel) in enumerate(_TAB_COLORS, start=1)],
+]) + '</style>'
+
 # Inputs that can be saved to / loaded from a file: widget key -> (type, min, max, unit)
 PARAMETERS = {
     'ef_conc_x': (int, 1, 9, 'x (C = x·10ⁿ mol/dm³)'),
@@ -135,7 +153,9 @@ def main(df):
     :param df: DataFrame with uploaded spectra (shared data) or None
     """
     st.header(t('Enhancement Factor (EF) calculator'))
-    substrate_tab, aef_tab = st.tabs([t('Substrate EF'), t('Analytical EF (AEF)')])
+    st.html(FOLDER_TABS_CSS)
+    with st.container(key='ef_tabs'):
+        aef_tab, substrate_tab = st.tabs([t('Analytical EF (AEF)'), t('Substrate EF')])
     with aef_tab:
         analytical()
     with substrate_tab:
@@ -177,7 +197,7 @@ def substrate_ef(df):
         st.warning(t('Only the molar mass is set for this analyte. Take density, surface coverage and penetration '
                      'depth from the literature - they differ between molecules.'))
 
-    with st.expander(t('Load a previous calculation'), icon=':material/history:'):
+    with st.expander(t('Load parameters from a previous calculation file'), icon=':material/history:'):
         st.caption(t('At the bottom of this page you can download all parameters and results with '
                      '"Download parameters and results (CSV)". Upload that file here to restore the calculation '
                      '- e.g. the settings of your microscope - instead of typing them again.'))
