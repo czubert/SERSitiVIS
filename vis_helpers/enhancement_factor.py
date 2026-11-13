@@ -177,8 +177,11 @@ def substrate_ef(df):
         st.warning(t('Only the molar mass is set for this analyte. Take density, surface coverage and penetration '
                      'depth from the literature - they differ between molecules.'))
 
-    with st.expander(t('Load parameters from a file'), icon=':material/upload_file:'):
-        st.file_uploader(t('Upload a parameters file (CSV) downloaded from this page earlier'), type=['csv'],
+    with st.expander(t('Load a previous calculation'), icon=':material/history:'):
+        st.caption(t('At the bottom of this page you can download all parameters and results with '
+                     '"Download parameters and results (CSV)". Upload that file here to restore the calculation '
+                     '- e.g. the settings of your microscope - instead of typing them again.'))
+        st.file_uploader(t('CSV file downloaded earlier from this page'), type=['csv'],
                          key='ef_parameters_file', on_change=load_parameters)
     if '_ef_load_message' in st.session_state:
         kind, message = st.session_state.pop('_ef_load_message')

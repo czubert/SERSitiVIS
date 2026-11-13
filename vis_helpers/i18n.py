@@ -471,9 +471,14 @@ PL = {
         'Średnia z {n} widm. SD intensywności piku: {sd} (RSD {rsd} %)',
     'Show calculation step by step': 'Pokaż obliczenia krok po kroku',
     'Download parameters and results (CSV)': 'Pobierz parametry i wyniki (CSV)',
-    'Load parameters from a file': 'Wczytaj parametry z pliku',
-    'Upload a parameters file (CSV) downloaded from this page earlier':
-        'Wgraj plik z parametrami (CSV) pobrany wcześniej z tej strony',
+    'Load a previous calculation': 'Wczytaj poprzednie obliczenia',
+    'At the bottom of this page you can download all parameters and results with '
+    '"Download parameters and results (CSV)". Upload that file here to restore the calculation '
+    '- e.g. the settings of your microscope - instead of typing them again.':
+        'Na dole tej strony możesz pobrać wszystkie parametry i wyniki przyciskiem „Pobierz parametry i wyniki (CSV)”. '
+        'Wgraj tu ten plik, aby odtworzyć obliczenia - np. ustawienia swojego mikroskopu - zamiast wpisywać je '
+        'od nowa.',
+    'CSV file downloaded earlier from this page': 'Plik CSV pobrany wcześniej z tej strony',
     'This is not a parameters file downloaded from this page.': 'To nie jest plik z parametrami pobrany z tej strony.',
     'Loaded {n} parameters.': 'Wczytano parametrów: {n}.',
     'Skipped (out of range): {keys}': 'Pominięto (poza zakresem): {keys}',
