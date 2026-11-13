@@ -21,7 +21,7 @@ def main():
     # st.logo is only 32 px high - too small for the SERSitiVIS logo (the tagline becomes a blur)
     st.html('<style>'
             '[data-testid="stSidebarHeader"] {height: auto; align-items: flex-start;}'
-            '[data-testid="stLogoLink"] {flex: 1 1 auto; max-width: 210px;}'
+            '[data-testid="stLogoLink"] {flex: 1 1 auto; max-width: none; margin-right: 0.5rem;}'
             '[data-testid="stSidebarLogo"] {height: auto; width: 100%; max-width: none; max-height: none;}'
             '</style>')
 
