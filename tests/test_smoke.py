@@ -6,6 +6,7 @@ import glob
 import os
 
 import numpy as np
+import pandas as pd
 import pytest
 from streamlit.testing.v1 import AppTest
 
@@ -103,7 +104,8 @@ def test_baseline_recovers_background_under_peaks():
 # # App
 #
 PAGES = {'start': 'app_pages/start.py', 'visualisation': 'app_pages/visualisation.py', 'rsd': 'app_pages/rsd.py',
-         'ef': 'app_pages/enhancement_factor.py', 'pca': 'app_pages/pca.py'}
+         'ef': 'app_pages/enhancement_factor.py', 'pca': 'app_pages/pca.py',
+         'calibration': 'app_pages/calibration.py'}
 
 
 def new_app(example=None, page=None, language=None):
@@ -273,3 +275,61 @@ def test_language_switch_keeps_choices(page):
     assert app.session_state['_ws_example'] == 'Renishaw'
     app.radio(key='_lang_widget').set_value('en').run()
     assert not app.exception and app.selectbox(key='chart_type').value == 'MS'
+
+
+#
+# # Calibration
+#
+@pytest.mark.parametrize('name,expected', [
+    ('!P S09.090_P_5x10-4M_6sek_20%_2', (5e-4, 'M')),
+    ('!pizo S10.019_Pizo_10-3M_6sek_20%_2', (1e-3, 'M')),
+    ('SERSitive_next_day_1ppm', (1.0, 'ppm')),
+    ('R6G 2,5x10^-6 M', (2.5e-6, 'M')),
+    ('pMBA 0.5 mM', (0.5, 'mM')),
+    ('blank_0M', (0.0, 'M')),
+    ('4MPBA_9B22_10s_1x', None),
+    ('S23.085_PMBA_10sek_3acc_0.2mW_633nm', None),
+])
+def test_concentration_from_name(name, expected):
+    from core.calibration import parse_concentration
+    result = parse_concentration(name)
+    if expected is None:
+        assert result is None
+    else:
+        assert result[1] == expected[1] and np.isclose(result[0], expected[0])
+
+
+def test_calibration_fit_and_lod():
+    from core.calibration import fit_calibration
+    c = np.repeat([0.0, 1, 2, 4, 8], 3)
+    noise = np.tile([-5.0, 0, 5], 5)  # SD of every level = 5
+    y = 100 * c + 50 + noise
+    result = fit_calibration(c, y)
+    assert np.isclose(result.slope, 100) and np.isclose(result.intercept, 50) and result.r2 > 0.999
+    assert np.isclose(result.lod, 3.3 * result.residual_sd / 100)
+    blank = fit_calibration(c, y, use_blank=True)
+    assert np.isclose(blank.lod, 3 * 5 / 100) and np.isclose(blank.loq, 10 * 5 / 100)
+    log_blank = fit_calibration(c, y, log_x=True, use_blank=True)
+    assert log_blank.lod > 0
+    decreasing = fit_calibration(c, 1000 - y)
+    assert np.isnan(decreasing.lod) and np.isnan(decreasing.loq)
+
+
+def test_peak_signal_height_and_area():
+    from core.calibration import peak_signal
+    x = np.linspace(1000, 1200, 401)
+    peak = 1000 * np.exp(-((x - 1100) / 5) ** 2)
+    df = pd.DataFrame({'a': peak + 200, 'b': 2 * peak + 300}, index=x)
+    height = peak_signal(df, 1050, 1150)
+    assert np.allclose(height, [1000, 2000], rtol=0.01)
+    area = peak_signal(df, 1050, 1150, method='area')
+    assert np.isclose(area['b'] / area['a'], 2, rtol=0.01)
+
+
+def test_calibration_page():
+    app = new_app('Wasatch', 'calibration')
+    assert not app.exception
+    app.slider(key='cal_range').set_value((990, 1110)).run()
+    assert not app.exception
+    labels = [m.label for m in app.metric]
+    assert labels[:3] == ['LOD', 'LOQ', 'R²']

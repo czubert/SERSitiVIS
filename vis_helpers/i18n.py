@@ -262,6 +262,49 @@ PL = {
     'Explained variance ratio': 'Udział wyjaśnionej wariancji',
     'Download scores (CSV)': 'Pobierz wyniki PCA (CSV)',
 
+    # calibration
+    'Calibration & LOD': 'Kalibracja i LOD',
+    'Calibration curve and limit of detection (LOD)': 'Krzywa kalibracyjna i granica wykrywalności (LOD)',
+    'Upload spectra measured at several concentrations (replicates welcome). Concentrations are read '
+    'from file names, e.g. "R6G_5x10-6M_1.txt" or "sample_1ppm.csv" - you can correct them.':
+        'Wgraj widma zmierzone przy kilku stężeniach (najlepiej z powtórzeniami). Stężenia odczytywane są z nazw '
+        'plików, np. „R6G_5x10-6M_1.txt” lub „probka_1ppm.csv” - możesz je poprawić.',
+    'Peak range': 'Zakres piku',
+    'Signal': 'Sygnał',
+    'Peak height': 'Wysokość piku',
+    'Peak area': 'Pole piku',
+    'Baseline is fitted within the peak range - shown as dotted lines on the chart':
+        'Linia bazowa dopasowywana jest w zakresie piku - na wykresie linie kropkowane',
+    'Concentration axis': 'Oś stężenia',
+    'Linear': 'Liniowa',
+    'Logarithmic': 'Logarytmiczna',
+    'Unit': 'Jednostka',
+    'Concentrations': 'Stężenia',
+    'Read from file names - correct them if needed. Use 0 for blank samples.':
+        'Odczytane z nazw plików - popraw w razie potrzeby. Dla ślepej próby wpisz 0.',
+    'Select the peak range on the chart (drag) or with the slider.':
+        'Zaznacz zakres piku na wykresie (przeciągnij) lub suwakiem.',
+    'Enter concentrations for at least two different levels.': 'Wpisz stężenia dla co najmniej dwóch różnych poziomów.',
+    'Standard deviation for LOD': 'Odchylenie standardowe do LOD',
+    'Residuals of the fit': 'Reszty dopasowania',
+    'Blank spectra (concentration 0)': 'Widma ślepej próby (stężenie 0)',
+    'Blank: LOD = 3·SD(blank)/slope. Fit: LOD = 3.3·SD(residuals)/slope.':
+        'Ślepa próba: LOD = 3·SD(ślepej próby)/nachylenie. Dopasowanie: LOD = 3,3·SD(reszt)/nachylenie.',
+    'At least two blank (concentration 0) spectra are needed': 'Potrzebne są co najmniej dwa widma ślepej próby (stężenie 0)',
+    'At least two different concentrations are needed': 'Potrzebne są co najmniej dwa różne stężenia',
+    'With a logarithmic axis LOD is calculated from blank spectra - choose them as the source of the '
+    'standard deviation.': 'Przy osi logarytmicznej LOD liczony jest z widm ślepej próby - wybierz je jako źródło '
+                           'odchylenia standardowego.',
+    'Calibration curve': 'Krzywa kalibracyjna',
+    'The signal does not increase with concentration, so LOD cannot be calculated. '
+    'Check the concentrations and the peak range.':
+        'Sygnał nie rośnie ze stężeniem, więc nie da się policzyć LOD. Sprawdź stężenia i zakres piku.',
+    'Poor linearity (R² < 0.9) - LOD and LOQ are not reliable.':
+        'Słaba liniowość (R² < 0,9) - LOD i LOQ są niewiarygodne.',
+    'Slope': 'Nachylenie',
+    'Mean ± SD': 'Średnia ± SD',
+    'Fit': 'Dopasowanie',
+
     # EF
     'Enhancement Factor (EF) calculator': 'Kalkulator współczynnika wzmocnienia (EF)',
     'Solution': 'Roztwór',
