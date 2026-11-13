@@ -105,7 +105,7 @@ def test_baseline_recovers_background_under_peaks():
 #
 PAGES = {'start': 'app_pages/start.py', 'visualisation': 'app_pages/visualisation.py', 'rsd': 'app_pages/rsd.py',
          'ef': 'app_pages/enhancement_factor.py', 'pca': 'app_pages/pca.py',
-         'calibration': 'app_pages/calibration.py'}
+         'calibration': 'app_pages/calibration.py', 'maps': 'app_pages/maps.py'}
 
 
 def new_app(example=None, page=None, language=None):
@@ -411,3 +411,52 @@ def test_shared_peaks_labelled_once():
     table = pd.DataFrame({'spectrum': ['a', 'b', 'a', 'b'], 'position': [1000.0, 1001.5, 1200.0, 1300.0],
                           'intensity': [5.0, 9.0, 3.0, 4.0]})
     assert list(label_once(table, tolerance=5)) == [False, True, True, True]
+
+
+#
+# # Maps
+#
+def synthetic_map_file(nx=4, ny=3):
+    """Renishaw-like map export: X, Y, Wave (descending), Intensity"""
+    shift = np.arange(1800, 400, -2.0)
+    lines = ['#X\t#Y\t#Wave\t#Intensity']
+    for j in range(ny):
+        for i in range(nx):
+            gain = 1 + 0.1 * i + 0.05 * j
+            intensity = 1000 + 5000 * gain * np.exp(-((shift - 1075) / 8) ** 2)
+            lines += [f'{10 * i}\t{10 * j}\t{s:.1f}\t{v:.2f}' for s, v in zip(shift, intensity)]
+    return ('\n'.join(lines) + '\n').encode()
+
+
+def test_map_file_read_with_coordinates():
+    from core import maps
+    df, loaded, errors = readers.read_files([('map.txt', synthetic_map_file())])
+    assert not errors and loaded[0].format == 'MAP' and df.shape[1] == 12
+    coords = maps.coordinates_from_names(df.columns)
+    assert sorted(coords['x'].unique()) == [0, 10, 20, 30] and sorted(coords['y'].unique()) == [0, 10, 20]
+
+
+def test_map_uniformity_and_grid():
+    from core import maps
+    from core.calibration import peak_signal
+    df, _, _ = readers.read_files([('map.txt', synthetic_map_file())])
+    values = peak_signal(df, 1050, 1100)
+    stats = maps.uniformity(values)
+    assert stats['n'] == 12 and 5 < stats['rsd'] < 30
+    image = maps.grid(values, maps.coordinates_from_names(df.columns))
+    assert image.shape == (3, 4) and image.loc[0, 30] > image.loc[0, 0]  # gain grows with x
+
+
+def test_grid_coordinates_snake():
+    from core.maps import grid_coordinates
+    coords = grid_coordinates(list('abcdef'), columns=3, step_x=2, step_y=5, snake=True)
+    assert coords.loc['c'].tolist() == [4, 0] and coords.loc['d'].tolist() == [4, 5]  # 2nd row reversed
+
+
+def test_map_page_with_grid():
+    app = new_app('WITec Alpha300 R+', 'maps')
+    assert not app.exception
+    assert app.metric[0].label == 'RSD'
+    app.number_input(key='map_columns').set_value(2).run()
+    app.checkbox(key='map_relative').check().run()
+    assert not app.exception

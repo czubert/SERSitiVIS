@@ -11,6 +11,7 @@ from dataclasses import dataclass
 import numpy as np
 import pandas as pd
 
+from core import maps
 from core.processing import align_spectra
 
 RAMAN_SHIFT = 'Raman Shift'
@@ -22,6 +23,7 @@ FORMATS = {
     'BWTEK': 'BWTEK',
     'WASATCH': 'Wasatch (ENLIGHTEN)',
     'TABLE': 'Text table (Renishaw, WITec, Jobin Yvon, Teledyne, other)',
+    'MAP': 'Map (X, Y, Raman Shift, Intensity)',
 }
 
 # BWTEK: pixels below this are cut off by the instrument's edge filter (~490 cm-1 and lower)
@@ -107,8 +109,10 @@ def read_file(name, raw, file_format='AUTO'):
         df = read_bwtek(name, text)
     elif file_format == 'WASATCH':
         df = read_wasatch(name, text)
-    elif file_format == 'TABLE':
+    elif file_format in ('TABLE', 'MAP'):
         df = read_table(name, text)
+        if maps.coordinates_from_names(df.columns) is not None:
+            file_format = 'MAP'
     else:
         raise ValueError(f'Unknown format: {file_format}')
 
@@ -214,6 +218,8 @@ def read_table(name, text):
     column uses the nearest Raman Shift column on its left.
     """
     table, header = _numeric_table(text, return_header=True)
+    if maps.is_map_table(table):
+        return maps.map_to_spectra(table)
     if table.shape[1] < 2:
         raise ParseError('Expected at least two columns: Raman Shift and intensity')
 

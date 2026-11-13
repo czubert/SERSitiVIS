@@ -36,6 +36,7 @@ def main():
         st.Page('app_pages/rsd.py', title=t('RSD'), icon=':material/stacked_line_chart:', url_path='rsd'),
         st.Page('app_pages/calibration.py', title=t('Calibration & LOD'), icon=':material/trending_up:',
                 url_path='calibration'),
+        st.Page('app_pages/maps.py', title=t('Uniformity map'), icon=':material/grid_view:', url_path='maps'),
         st.Page('app_pages/enhancement_factor.py', title=t('Enhancement Factor'), icon=':material/bolt:',
                 url_path='enhancement_factor'),
         st.Page('app_pages/pca.py', title=t('PCA'), icon=':material/scatter_plot:', url_path='pca'),

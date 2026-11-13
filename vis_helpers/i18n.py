@@ -130,6 +130,7 @@ PL = {
     'File format': 'Format pliku',
     'Change it only if a file is read incorrectly.': 'Zmień tylko, jeśli plik wczytuje się niepoprawnie.',
     'Auto-detect': 'Rozpoznaj automatycznie',
+    'Map (X, Y, Raman Shift, Intensity)': 'Mapa (X, Y, przesunięcie Ramana, intensywność)',
     'Text table (Renishaw, WITec, Jobin Yvon, Teledyne, other)':
         'Tabela tekstowa (Renishaw, WITec, Jobin Yvon, Teledyne, inne)',
     'Loaded {spectra} spectra from {files} files': 'Wczytane widma: {spectra}, pliki: {files}',
@@ -325,6 +326,35 @@ PL = {
     'Slope': 'Nachylenie',
     'Mean ± SD': 'Średnia ± SD',
     'Fit': 'Dopasowanie',
+
+    # maps
+    'Uniformity map': 'Mapa jednorodności',
+    'Substrate uniformity map': 'Mapa jednorodności podłoża',
+    'Upload a map file (columns: X, Y, Raman Shift, Intensity - e.g. Renishaw WiRE export) or several '
+    'spectra measured on a regular grid.': 'Wgraj plik mapy (kolumny: X, Y, przesunięcie Ramana, intensywność - '
+                                           'np. eksport z Renishaw WiRE) albo kilka widm zmierzonych na regularnej '
+                                           'siatce.',
+    'A map needs at least 4 spectra.': 'Mapa wymaga co najmniej 4 widm.',
+    'Measurement grid': 'Siatka pomiarowa',
+    'Spectra are placed on the grid row by row, in the order of the files.':
+        'Widma są układane na siatce wiersz po wierszu, w kolejności plików.',
+    'Points in a row': 'Punktów w wierszu',
+    'Step X [µm]': 'Krok X [µm]',
+    'Step Y [µm]': 'Krok Y [µm]',
+    'Snake order': 'Kolejność „wężykiem”',
+    'Every second row measured in the opposite direction.': 'Co drugi wiersz mierzony w przeciwnym kierunku.',
+    '{n} spectra do not fill the last row - it stays partly empty.':
+        '{n} widm nie wypełnia ostatniego wiersza - zostanie częściowo pusty.',
+    'Baseline is fitted within the peak range': 'Linia bazowa dopasowywana jest w zakresie piku',
+    'Min – max': 'Min – max',
+    'Mean spectrum': 'Widmo średnie',
+    'Map': 'Mapa',
+    'Within ±20 % of mean': 'W granicach ±20 % średniej',
+    'Points': 'Punkty',
+    'Show as % of mean': 'Pokaż jako % średniej',
+    'Colour scale': 'Skala kolorów',
+    'Distribution': 'Rozkład',
+    'Download map (CSV)': 'Pobierz mapę (CSV)',
 
     # EF
     'Enhancement Factor (EF) calculator': 'Kalkulator współczynnika wzmocnienia (EF)',
