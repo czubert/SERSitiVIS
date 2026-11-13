@@ -65,6 +65,8 @@ UK = {
     'Grouped spectra': 'Згруповані спектри',
     '3D plot': '3D-графік',
     'Spectrum': 'Спектр',
+    'English is the original version, other languages are translated by AI.':
+        'Оригінальна версія — англійська, інші мови перекладено за допомогою ШІ.',
     'Previous spectrum': 'Попередній спектр',
     'Next spectrum': 'Наступний спектр',
     'Range': 'Діапазон',

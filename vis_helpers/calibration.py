@@ -66,7 +66,7 @@ def main(df):
         st.caption(t('Tip: drag on the chart to select the peak range.'))
         fig = px.line(df, color_discrete_map=colors)
         fig.update_layout(dragmode='select', selectdirection='h', height=330, showlegend=False)
-        fig.add_vrect(x0=peak_range[0], x1=peak_range[1], line_width=0, fillcolor='gold', opacity=0.25)
+        vis_utils.highlight_range(fig, *peak_range)
         vis_utils.show_chart(fig, vis_utils.default_chart_settings(), key=CHART_KEY, selection_mode='box',
                              on_select=lambda: vis_utils.range_from_selection(CHART_KEY, RANGE_KEY, low, high))
 

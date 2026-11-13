@@ -65,6 +65,8 @@ DE = {
     'Grouped spectra': 'Gruppierte Spektren',
     '3D plot': '3D-Diagramm',
     'Spectrum': 'Spektrum',
+    'English is the original version, other languages are translated by AI.':
+        'Die Originalversion ist Englisch, die anderen Sprachen wurden von KI übersetzt.',
     'Previous spectrum': 'Vorheriges Spektrum',
     'Next spectrum': 'Nächstes Spektrum',
     'Range': 'Bereich',

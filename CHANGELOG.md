@@ -10,10 +10,17 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### 🎨 Interface
 - **Chart type** in Visualisation is now picked from a collapsible panel with options, like *Range*. The panel
   header shows the current choice, e.g. *Chart type: Mean spectrum*.
+- A note under the language flags: English is the original version, the other languages are translated by AI.
 - **Single spectrum**: browse the spectra with ‹ › arrows instead of a drop-down list. The name and the position
   (e.g. *2 / 3*) are shown between the arrows, and after the last spectrum it starts again from the first.
 - Drop-down lists have their own background, border and shadow, so they no longer blend into the panel behind them
   (light and dark theme).
+
+### 🐛 Fixes
+- **Reference peak normalisation**: the reference peak range is now highlighted on the chart and can be selected
+  by dragging on it, like the peak ranges on the other pages.
+- **Dark theme**: highlighted peak ranges (RSD, calibration, map, EF, reference peak) use a lighter gold with an
+  outline. Before, they turned a hard-to-see olive.
 
 ### 📚 Project
 - `README.md` describes the app, supported files, running it locally and running the tests.

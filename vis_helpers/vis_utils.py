@@ -206,3 +206,22 @@ def spectrum_stepper(names, key):
                 f'{html.escape(name)}</div>'
                 f'<div style="font-size: 0.8rem; opacity: 0.65;">{names.index(name) + 1} / {len(names)}</div></div>')
     return name
+
+
+# highlight colours of selected ranges; in the dark theme pure gold at low opacity turns muddy olive,
+# so a lighter shade with an outline is used
+HIGHLIGHT_COLORS = {'gold': {'light': (255, 215, 0), 'dark': (232, 198, 106)},
+                    'green': {'light': (0, 128, 0), 'dark': (120, 200, 120)}}
+
+
+def highlight_range(fig, x0, x1, color='gold', opacity=0.25, **kwargs):
+    """
+    Marks a Raman Shift range (peak range) on a chart, visible in both themes
+    :param color: key of HIGHLIGHT_COLORS
+    :param opacity: fill opacity in the light theme
+    :param kwargs: passed to add_vrect (e.g. annotation_text)
+    """
+    dark = is_dark()
+    r, g, b = HIGHLIGHT_COLORS[color]['dark' if dark else 'light']
+    fig.add_vrect(x0=x0, x1=x1, fillcolor=f'rgba({r}, {g}, {b}, {max(opacity, 0.22) if dark else opacity})',
+                  line=dict(color=f'rgb({r}, {g}, {b})', width=1 if dark else 0), layer='below', **kwargs)

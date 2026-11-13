@@ -697,3 +697,15 @@ def test_single_spectrum_arrows():
     app.button(key='single_spectrum_prev').click().run()
     assert app.session_state['single_spectrum'] == names[-1]  # wraps around
     assert not app.exception and app.get('plotly_chart')
+
+
+@pytest.mark.parametrize('chart', ['GS', 'SINGLE', 'MS'])
+def test_reference_peak_highlighted(chart):
+    import json
+    app = new_app(workspace.DEFAULT_EXAMPLE, 'visualisation')
+    app.radio(key='chart_type').set_value(chart).run()
+    app.selectbox(key='normalization').set_value('peak').run()
+    low, high = app.session_state['reference_peak']
+    shapes = json.loads(app.get('plotly_chart')[0].proto.spec)['layout'].get('shapes', [])
+    assert not app.exception
+    assert any(s.get('type') == 'rect' and (s['x0'], s['x1']) == (low, high) for s in shapes)

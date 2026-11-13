@@ -80,7 +80,7 @@ def main(df):
         go.Scatter(x=df.index, y=mean, mode='lines', line=dict(color=palette[0]), name=t('Mean spectrum')),
     ])
     fig.update_layout(dragmode='select', selectdirection='h', height=360)
-    fig.add_vrect(x0=peak_range[0], x1=peak_range[1], line_width=0, fillcolor='gold', opacity=0.25)
+    vis_utils.highlight_range(fig, *peak_range)
     with chart_col:
         st.caption(t('Tip: drag on the chart to select the peak range.'))
         vis_utils.show_chart(fig, vis_utils.default_chart_settings(), lines=False, key=CHART_KEY,

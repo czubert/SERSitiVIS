@@ -62,8 +62,8 @@ def main(df):
     for name, peak_range in ranges.items():
         if tuple(peak_range) == (low, high):
             continue
-        fig.add_vrect(x0=peak_range[0], x1=peak_range[1], line_width=0, fillcolor=PEAK_COLORS[name], opacity=0.15,
-                      annotation_text=t(name), annotation_position='top left')
+        vis_utils.highlight_range(fig, *peak_range, color=PEAK_COLORS[name], opacity=0.15,
+                                  annotation_text=t(name), annotation_position='top left')
         # baselines subtracted within the peak range, so the effect of the polynomial degree is visible
         peak = processing.trim(plot_df, *peak_range)
         if len(peak) > 1:

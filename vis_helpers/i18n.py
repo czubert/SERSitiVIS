@@ -72,6 +72,7 @@ def language_selector():
     st.html(_flags_css())
     st.sidebar.radio('Language', list(LANGUAGES), format_func=LANGUAGES.get, key='_lang_widget',
                      on_change=on_change, horizontal=True, label_visibility='collapsed')
+    st.sidebar.caption(t('English is the original version, other languages are translated by AI.'))
 
 
 def choice(widget, label, options, key, format_func, container=None, **kwargs):
@@ -200,6 +201,8 @@ PL = {
     'Grouped spectra': 'Widma zgrupowane',
     '3D plot': 'Wykres 3D',
     'Spectrum': 'Widmo',
+    'English is the original version, other languages are translated by AI.':
+        'Wersja oryginalna to angielska, pozostałe języki przetłumaczyła AI.',
     'Previous spectrum': 'Poprzednie widmo',
     'Next spectrum': 'Następne widmo',
     'Range': 'Zakres',

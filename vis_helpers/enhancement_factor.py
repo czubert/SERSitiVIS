@@ -414,7 +414,7 @@ def intensities_from_spectra(df):
             fig = px.line(plot_df, color_discrete_sequence=settings['palette'])
             fig.update_layout(dragmode='select', selectdirection='h', height=400)
             if tuple(peak_range) != (low, high):
-                fig.add_vrect(x0=peak_range[0], x1=peak_range[1], line_width=0, fillcolor='gold', opacity=0.2)
+                vis_utils.highlight_range(fig, *peak_range, opacity=0.2)
             vis_utils.show_chart(fig, settings, key=chart_key, selection_mode='box',
                                  on_select=lambda c=chart_key, r=range_key, lo=low, hi=high:
                                  vis_utils.range_from_selection(c, r, lo, hi))

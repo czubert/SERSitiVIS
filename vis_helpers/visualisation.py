@@ -51,9 +51,12 @@ def visualisation(df):
             normalization = choice('selectbox', t('Normalization'), ['none'] + processing.NORMALIZATION_METHODS,
                                    key='normalization', format_func=lambda n: t(NORMALIZATIONS[n]))
             if normalization == 'peak':
-                reference = vis_utils.range_slider(t('Reference peak range'), *vis_utils.spectrum_limits(df),
+                reference_limits = vis_utils.spectrum_limits(df)
+                reference = vis_utils.range_slider(t('Reference peak range'), *reference_limits,
                                                    key='reference_peak',
                                                    default=calibration.strongest_peak_range(df))
+                if chart_type != 'P3D':
+                    st.caption(t('Tip: drag on the chart to select the peak range.'))
 
         if chart_type != 'P3D':
             with st.expander(t('Peaks'), icon=':material/location_on:', expanded=st.session_state.get('peaks', False)):
@@ -126,8 +129,17 @@ def visualisation(df):
                                      marker=dict(symbol='triangle-down', size=8, color=colors.get(spectrum)),
                                      showlegend=False, hovertemplate='%{x:.1f} cm⁻¹<extra></extra>'))
 
+    chart_options = {}
+    if normalization == 'peak' and chart_type != 'P3D':
+        # reference peak highlighted like the peak ranges on other pages; it can be selected on the chart
+        vis_utils.highlight_range(fig, *reference)
+        fig.update_layout(dragmode='select', selectdirection='h')
+        chart_options = dict(key='vis_chart', selection_mode='box',
+                             on_select=lambda: vis_utils.range_from_selection('vis_chart', 'reference_peak',
+                                                                              *reference_limits))
+
     with chart_col:
-        vis_utils.show_chart(fig, settings, lines=chart_type != 'P3D')
+        vis_utils.show_chart(fig, settings, lines=chart_type != 'P3D', **chart_options)
         vis_utils.download_csv(plot_df.reset_index(), 'spectra.csv', t('Download data (CSV)'), 'vis_csv',
                                index=False)
         if show_peaks:
