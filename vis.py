@@ -22,7 +22,7 @@ def main():
     st.html('<style>'
             # logo across the whole sidebar with equal margins, collapse button moved to the top right corner
             '[data-testid="stSidebarHeader"] {position: relative; display: block; height: auto; '
-            'padding: 1.75rem 0 0.5rem 0; margin: 0 -0.875rem;}'
+            'padding: 1.75rem 0 0.5rem 0; margin: 0 -1.375rem;}'
             '[data-testid="stSidebarCollapseButton"] {position: absolute; top: 0.25rem; right: 0.25rem;}'
             '[data-testid="stLogoLink"] {display: block; width: 100%; max-width: none; margin: 0;}'
             '[data-testid="stSidebarLogo"] {display: block; width: 100%; height: auto; max-width: none; '
