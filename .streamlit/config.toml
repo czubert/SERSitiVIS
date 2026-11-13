@@ -1,18 +1,31 @@
-# SERSitive colours: blue #6C9BC0, gold #DBBD8A (used in charts).
-# For text, buttons and sliders a darker shade of the blue is used - #6C9BC0 on white is too pale to read.
+# Two themes - the app follows the system setting, users can switch in the menu (⋮ -> Settings).
+# SERSitive colours: blue #6C9BC0, gold #DBBD8A. In the light theme a darker blue is used for text and controls
+# (#6C9BC0 on white is too pale); in the dark theme the original blue reads well.
 
 [theme]
-base = "light"
-primaryColor = "#2F6A9B"
-backgroundColor = "#FFFFFF"
-secondaryBackgroundColor = "#EEF2F6"
-textColor = "#1A1D24"
-linkColor = "#2F6A9B"
 font = "sans serif"
 
-[theme.sidebar]
-backgroundColor = "#F4F6F9"
-secondaryBackgroundColor = "#E4E9EF"
+[theme.light]
+primaryColor = "#2F6A9B"
+backgroundColor = "#F6F7F9"
+secondaryBackgroundColor = "#E8ECF1"
+textColor = "#1F2329"
+linkColor = "#2F6A9B"
+
+[theme.light.sidebar]
+backgroundColor = "#EDF0F4"
+secondaryBackgroundColor = "#DFE5EC"
+
+[theme.dark]
+primaryColor = "#6C9BC0"
+backgroundColor = "#151A21"
+secondaryBackgroundColor = "#222A35"
+textColor = "#DCE2EA"
+linkColor = "#8DB6D6"
+
+[theme.dark.sidebar]
+backgroundColor = "#1B212A"
+secondaryBackgroundColor = "#28313D"
 
 [client]
 showErrorDetails = false

@@ -59,7 +59,7 @@ def main(df):
         degree = st.slider(t('Polynomial degree for baseline correction'), 0, 5, 1, key='cal_degree',
                            help=t('Baseline is fitted within the peak range - shown as dotted lines on the chart'))
 
-    palette = vis_utils.SERSITIVE_PALETTE
+    palette = vis_utils.sersitive_palette()
     colors = {col: palette[i % len(palette)] for i, col in enumerate(df.columns)}
 
     with chart_col:

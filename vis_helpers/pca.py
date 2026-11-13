@@ -136,9 +136,9 @@ def main(df):
             variance = multivariate.scree(data)
             scree_fig = go.Figure([
                 go.Bar(x=variance.index, y=100 * variance, name=t('Component'),
-                       marker_color=vis_utils.SERSITIVE_PALETTE[1]),
+                       marker_color=vis_utils.sersitive_palette()[1]),
                 go.Scatter(x=variance.index, y=100 * variance.cumsum(), name=t('Cumulative'), mode='lines+markers',
-                           line=dict(color=vis_utils.SERSITIVE_PALETTE[0]))])
+                           line=dict(color=vis_utils.sersitive_palette()[0]))])
             scree_settings = vis_utils.default_chart_settings()
             scree_settings['titles'].update({'x': '', 'y': t('Explained variance [%]')})
             scree_fig.update_layout(height=380, hovermode='x unified')

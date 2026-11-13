@@ -72,7 +72,7 @@ def main(df):
 
     # mean spectrum with min-max band - lighter than drawing hundreds of spectra
     mean, lowest, highest = df.mean(axis=1), df.min(axis=1), df.max(axis=1)
-    palette = vis_utils.SERSITIVE_PALETTE
+    palette = vis_utils.sersitive_palette()
     fig = go.Figure([
         go.Scatter(x=df.index, y=highest, mode='lines', line=dict(width=0), showlegend=False, hoverinfo='skip'),
         go.Scatter(x=df.index, y=lowest, mode='lines', line=dict(width=0), fill='tonexty',

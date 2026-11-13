@@ -6,13 +6,22 @@ import plotly.io as pio
 import streamlit as st
 
 from core import processing
-from visualisation.draw import fig_layout
+from visualisation.draw import fig_layout, is_dark
 from vis_helpers.i18n import t, lang
 
 # SERSitive colours first (navy, blue, gold), then well distinguishable ones
 SERSITIVE_PALETTE = ['#1C336D', '#6C9BC0', '#DBBD8A', '#B5651D', '#5B8C5A', '#8E6C8A', '#C0504D', '#4BACC6',
                      '#7F7F7F', '#2E2E2E']
-PALETTES = {'SERSitive': SERSITIVE_PALETTE,
+# on a dark background navy disappears - lighter shades of the same colours
+SERSITIVE_PALETTE_DARK = ['#8DB6D6', '#DBBD8A', '#6C9BC0', '#E0925A', '#86BF85', '#BFA2C9', '#E57F7C', '#4BC0D9',
+                          '#B5B5B5', '#ECECEC']
+
+
+def sersitive_palette():
+    return SERSITIVE_PALETTE_DARK if is_dark() else SERSITIVE_PALETTE
+
+
+PALETTES = {'SERSitive': None,  # resolved for the current theme
             'Plotly': px.colors.qualitative.Plotly,
             'D3': px.colors.qualitative.D3,
             'Safe (colour-blind friendly)': px.colors.qualitative.Safe,
@@ -43,7 +52,7 @@ def chart_settings(key, titles=None):
         palette = st.text_input(t('Hexadecimal colors'), '#DB0457 #520185 #780A34 #49BD02 #B25AE8',
                                 help=t('Type space separated hexadecimal codes'), key=f'{key}_custom').split()
     else:
-        palette = PALETTES[palette_name]
+        palette = PALETTES[palette_name] or sersitive_palette()
     if st.checkbox(t('Reversed colours'), key=f'{key}_reversed'):
         palette = palette[::-1]
 
@@ -55,7 +64,8 @@ def chart_settings(key, titles=None):
                     'title': st.text_input(t('Chart title'), titles['title'], key=f'{key}_title_{language}')}
 
     templates = list(pio.templates)
-    template = st.selectbox(t('Chart style'), templates, index=templates.index('plotly_white'), key=f'{key}_template')
+    default_template = templates.index('plotly_dark' if is_dark() else 'plotly_white')
+    template = st.selectbox(t('Chart style'), templates, index=default_template, key=f'{key}_template')
 
     image_format = st.radio(t('Image format for the camera icon'), ['png', 'svg'], horizontal=True,
                             key=f'{key}_image_format',
@@ -66,7 +76,8 @@ def chart_settings(key, titles=None):
 
 
 def default_chart_settings():
-    return {'palette': SERSITIVE_PALETTE, 'template': 'plotly_white', 'titles': default_titles(),
+    return {'palette': sersitive_palette(), 'template': 'plotly_dark' if is_dark() else 'plotly_white',
+            'titles': default_titles(),
             'line_width': 2.0, 'image_format': 'png'}
 
 

@@ -15,22 +15,28 @@ from vis_helpers.i18n import t, choice
 SPECTRA_TYPES = ['Raman', 'SERS']
 
 # Tabs styled like folder / binder tabs in SERSitive colours: gold (AEF), blue (substrate EF)
-_TAB_COLORS = [('#E9D3A8', '#FBF6EC'), ('#B9D0E4', '#F2F7FB')]  # (tab, panel)
+_TAB_COLORS = {'light': ([('#E9D3A8', '#FBF6EC'), ('#B9D0E4', '#EEF4FA')], '#b5c0cc', '#1F2329'),  # (tab, panel),
+               'dark': ([('#7A6639', '#211D16'), ('#2F5170', '#17202B')], '#3A4452', '#F1F4F8')}  # border, text
 _TABS = '.st-key-ef_tabs [data-testid="stTabs"]'
-FOLDER_TABS_CSS = '<style>' + ' '.join([
-    f'{_TABS} [role="tablist"] {{gap: 6px; border-bottom: none; padding-left: 4px;}}',
-    f'{_TABS} [data-testid="stTab"] {{padding: 10px 22px; border-radius: 12px 12px 0 0; border: 1px solid #b5c0cc; '
-    f'border-bottom: none; font-weight: 600; opacity: 0.6; margin-bottom: -1px;}}',
-    f'{_TABS} [data-testid="stTab"][data-selected="true"] {{opacity: 1; position: relative; z-index: 1;}}',
-    f'{_TABS} [data-testid="stTab"] p {{font-size: 1.05rem;}}',
-    f'{_TABS} .react-aria-SelectionIndicator {{display: none;}}',
-    f'{_TABS} [data-testid="stTabPanel"] {{border: 1px solid #b5c0cc; border-radius: 0 12px 12px 12px; '
-    f'padding: 1.25rem;}}',
-    *[f'{_TABS} [data-testid="stTab"]:nth-child({i}) {{background: {tab};}} '
-      f'{_TABS}:has([data-testid="stTab"]:nth-child({i})[data-selected="true"]) [data-testid="stTabPanel"] '
-      f'{{background: {panel}; border-top: 4px solid {tab};}}'
-      for i, (tab, panel) in enumerate(_TAB_COLORS, start=1)],
-]) + '</style>'
+
+
+def folder_tabs_css():
+    colors, border, text = _TAB_COLORS['dark' if vis_utils.is_dark() else 'light']
+    return '<style>' + ' '.join([
+        f'{_TABS} [role="tablist"] {{gap: 6px; border-bottom: none; padding-left: 4px;}}',
+        f'{_TABS} [data-testid="stTab"] {{padding: 10px 22px; border-radius: 12px 12px 0 0; border: 1px solid {border}; '
+        f'border-bottom: none; font-weight: 600; opacity: 0.6; margin-bottom: -1px;}}',
+        f'{_TABS} [data-testid="stTab"][data-selected="true"] {{opacity: 1; position: relative; z-index: 1;}}',
+        f'{_TABS} [data-testid="stTab"] p {{font-size: 1.05rem; color: {text};}}',
+        f'{_TABS} .react-aria-SelectionIndicator {{display: none;}}',
+        f'{_TABS} [data-testid="stTabPanel"] {{border: 1px solid {border}; border-radius: 0 12px 12px 12px; '
+        f'padding: 1.25rem;}}',
+        *[f'{_TABS} [data-testid="stTab"]:nth-child({i}) {{background: {tab};}} '
+          f'{_TABS}:has([data-testid="stTab"]:nth-child({i})[data-selected="true"]) [data-testid="stTabPanel"] '
+          f'{{background: {panel}; border-top: 4px solid {tab};}}'
+          for i, (tab, panel) in enumerate(colors, start=1)],
+    ]) + '</style>'
+
 
 # Inputs that can be saved to / loaded from a file: widget key -> (type, min, max, unit)
 PARAMETERS = {
@@ -153,7 +159,7 @@ def main(df):
     :param df: DataFrame with uploaded spectra (shared data) or None
     """
     st.header(t('Enhancement Factor (EF) calculator'))
-    st.html(FOLDER_TABS_CSS)
+    st.html(folder_tabs_css())
     with st.container(key='ef_tabs'):
         aef_tab, substrate_tab = st.tabs([t('Analytical EF (AEF)'), t('Substrate EF')])
     with aef_tab:
@@ -313,13 +319,13 @@ def substrate_ef(df):
         tornado = go.Figure()
         for key in order:
             tornado.add_trace(go.Scatter(x=list(sensitivity[key]), y=[names[key]] * 2, mode='lines+markers',
-                                         line=dict(width=14, color=vis_utils.SERSITIVE_PALETTE[1]),
-                                         marker=dict(size=4, color=vis_utils.SERSITIVE_PALETTE[0]),
+                                         line=dict(width=14, color=vis_utils.sersitive_palette()[1]),
+                                         marker=dict(size=4, color=vis_utils.sersitive_palette()[0]),
                                          showlegend=False, hovertemplate='%{x:.2e}<extra></extra>'))
-        tornado.add_vline(x=ef, line_dash='dash', line_color=vis_utils.SERSITIVE_PALETTE[2])
+        tornado.add_vline(x=ef, line_dash='dash', line_color=vis_utils.sersitive_palette()[2])
         tornado.update_xaxes(type='log', title='EF')
         tornado.update_layout(height=80 + 45 * len(order), margin=dict(t=20, l=10, r=10, b=40),
-                              template='plotly_white')
+                              paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
         with st.expander(t('Which input changes EF the most'), icon=':material/bar_chart:'):
             st.plotly_chart(tornado, width='stretch', config={'displaylogo': False})
             st.caption(t('Each bar: EF when only this input goes from the low to the high end of its range.'))
