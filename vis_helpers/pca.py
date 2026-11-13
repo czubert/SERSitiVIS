@@ -67,7 +67,9 @@ def main(df):
             clustering = st.checkbox(t('Find clusters'), key='pca_cluster',
                                      help=t('Groups spectra by similarity of their PCA scores, without using '
                                             'your group names.'))
-            if clustering:
+            if clustering and len(scores) < 3:
+                st.warning(t('Clustering needs at least 3 spectra.'))
+            elif clustering:
                 method = choice('radio', t('Method'), ['kmeans', 'ward'], key='pca_cluster_method',
                                 format_func=lambda m: 'k-means' if m == 'kmeans' else t('Hierarchical (Ward)'))
                 auto_k = st.checkbox(t('Number of clusters - automatic'), value=True, key='pca_auto_k',
@@ -102,9 +104,8 @@ def main(df):
     fig.update_traces(marker_size=12 if components_num < 3 else 6)
 
     with chart_col:
-        vis_utils.show_chart(fig, settings, lines=False)
-
         if clusters:
+            # results first - with clusters equal to the groups the chart itself barely changes
             table, ari = multivariate.agreement(group, clusters['labels'])
             c = st.columns(3)
             c[0].metric(t('Clusters'), clusters['k'], border=True)
@@ -118,6 +119,9 @@ def main(df):
             table.columns = [f'{t("Cluster")} {c}' for c in table.columns]
             table.index.name = t('Group')
             st.dataframe(table)
+            st.caption(t('Chart: colour = cluster found by the algorithm, marker shape = your group.'))
+
+        vis_utils.show_chart(fig, settings, lines=False)
 
         with st.expander(t('Loadings - which bands differ between samples'), icon=':material/show_chart:'):
             st.caption(t('Large positive or negative values mark the Raman bands that the principal component '

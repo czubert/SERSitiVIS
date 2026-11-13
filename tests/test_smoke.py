@@ -120,7 +120,7 @@ def new_app(example=None, page=None, language=None):
     return app
 
 
-@pytest.mark.parametrize('language', ['en', 'pl'])
+@pytest.mark.parametrize('language', ['en', 'pl', 'de', 'uk'])
 @pytest.mark.parametrize('page', PAGES)
 def test_page_renders(page, language):
     assert not new_app(page=page, language=language).exception
@@ -256,9 +256,10 @@ def translated_texts():
     return texts
 
 
-def test_every_text_has_polish_translation():
-    from vis_helpers.i18n import PL
-    missing = sorted(text for text in translated_texts() if text not in PL)
+@pytest.mark.parametrize('language', ['pl', 'de', 'uk'])
+def test_every_text_has_translation(language):
+    from vis_helpers.i18n import translations
+    missing = sorted(text for text in translated_texts() if text not in translations()[language])
     assert not missing, missing
 
 
@@ -673,3 +674,13 @@ def test_pdf_report(page, example, key, language):
     assert not app.exception
     pdf = app.session_state[f'_{key}_report'][1]
     assert pdf[:5] == b'%PDF-' and len(pdf) > 10000
+
+
+def test_pca_clustering_with_two_spectra_explains_why():
+    app = new_app('Renishaw', 'pca')
+    names = app.multiselect(key='pca_group_0').options
+    app.multiselect(key='pca_group_0').set_value(names[:1]).run()
+    app.multiselect(key='pca_group_1').set_value(names[1:]).run()
+    app.checkbox(key='pca_cluster').check().run()
+    assert not app.exception
+    assert any('3' in w.value for w in app.warning)

@@ -6,7 +6,7 @@ import base64
 
 import streamlit as st
 
-LANGUAGES = {'en': 'English', 'pl': 'Polski'}
+LANGUAGES = {'en': 'English', 'pl': 'Polski', 'de': 'Deutsch', 'uk': 'Українська'}
 LANG_KEY = 'lang'
 
 
@@ -15,9 +15,13 @@ def lang():
 
 
 def t(text):
-    if lang() == 'pl':
-        return PL.get(text, text)
-    return text
+    return translations().get(lang(), {}).get(text, text)
+
+
+def translations():
+    from vis_helpers.lang_de import DE
+    from vis_helpers.lang_uk import UK
+    return {'pl': PL, 'de': DE, 'uk': UK}
 
 
 # Flags as images - emoji flags are shown as letters ("GB", "PL") in browsers on Windows
@@ -30,6 +34,10 @@ FLAGS = {
           'M0,15 h60" stroke="#C8102E" stroke-width="6"/></g></svg>',
     'pl': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 10"><rect width="16" height="5" fill="#fff"/>'
           '<rect y="5" width="16" height="5" fill="#DC143C"/></svg>',
+    'de': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 5 3"><rect width="5" height="1" fill="#000"/>'
+          '<rect y="1" width="5" height="1" fill="#DD0000"/><rect y="2" width="5" height="1" fill="#FFCE00"/></svg>',
+    'uk': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3 2"><rect width="3" height="1" fill="#0057B7"/>'
+          '<rect y="1" width="3" height="1" fill="#FFD700"/></svg>',
 }
 
 
@@ -96,6 +104,8 @@ def choice(widget, label, options, key, format_func, container=None, **kwargs):
 
 
 PL = {
+    'Clustering needs at least 3 spectra.': 'Klastrowanie wymaga co najmniej 3 widm.',
+    'Chart: colour = cluster found by the algorithm, marker shape = your group.': 'Wykres: kolor = klaster znaleziony przez algorytm, kształt punktu = Twoja grupa.',
     # reports
     'Create PDF report': 'Utwórz raport PDF',
     'Creating report...': 'Tworzenie raportu...',
