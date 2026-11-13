@@ -2,6 +2,8 @@
 Translations. English is the default; texts are written in English in the code and wrapped in t().
 Polish translations live in PL. A missing translation falls back to English (a test checks that none is missing).
 """
+import base64
+
 import streamlit as st
 
 LANGUAGES = {'en': 'English', 'pl': 'Polski'}
@@ -18,14 +20,48 @@ def t(text):
     return text
 
 
+# Flags as images - emoji flags are shown as letters ("GB", "PL") in browsers on Windows
+FLAGS = {
+    'en': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 30"><clipPath id="s"><path d="M0,0 v30 h60 v-30 z"/>'
+          '</clipPath><clipPath id="t"><path d="M30,15 h30 v15 z v15 h-30 z h-30 v-15 z v-15 h30 z"/></clipPath>'
+          '<g clip-path="url(#s)"><path d="M0,0 v30 h60 v-30 z" fill="#012169"/><path d="M0,0 L60,30 M60,0 L0,30" '
+          'stroke="#fff" stroke-width="6"/><path d="M0,0 L60,30 M60,0 L0,30" clip-path="url(#t)" stroke="#C8102E" '
+          'stroke-width="4"/><path d="M30,0 v30 M0,15 h60" stroke="#fff" stroke-width="10"/><path d="M30,0 v30 '
+          'M0,15 h60" stroke="#C8102E" stroke-width="6"/></g></svg>',
+    'pl': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 10"><rect width="16" height="5" fill="#fff"/>'
+          '<rect y="5" width="16" height="5" fill="#DC143C"/></svg>',
+}
+
+
+def _flags_css():
+    def data_uri(svg):
+        return 'data:image/svg+xml;base64,' + base64.b64encode(svg.encode()).decode()
+
+    option = '.st-key-_lang_widget [data-testid="stRadioGroup"] > div'
+    rules = [
+        # hide radio circles and texts (texts stay for screen readers), show flags instead
+        f'{option} [data-testid="stRadioOption"] > div > div:first-child {{display: none;}}',
+        f'{option} [data-testid="stMarkdownContainer"] p {{font-size: 0; line-height: 0; margin: 0;}}',
+        f'{option} [data-testid="stMarkdownContainer"] p::before {{content: ""; display: inline-block; width: 36px; '
+        f'height: 24px; background-size: 100% 100%; border-radius: 3px; box-shadow: 0 0 0 1px #9aa3ad;}}',
+        f'{option} [data-testid="stRadioOption"]:not([data-selected="true"]) {{opacity: 0.4;}}',
+        f'{option} [data-testid="stRadioOption"]:hover {{opacity: 1;}}',
+    ]
+    for i, code in enumerate(LANGUAGES, start=1):
+        rules.append(f'{option}:nth-child({i}) [data-testid="stMarkdownContainer"] p::before '
+                     f'{{background-image: url("{data_uri(FLAGS[code])}");}}')
+    return '<style>' + ' '.join(rules) + '</style>'
+
+
 def language_selector():
-    """Language switch in the sidebar. Kept in a plain session_state key, so it survives page changes."""
+    """Language switch (flags) in the sidebar. Kept in a plain session_state key, so it survives page changes."""
     st.session_state.setdefault(LANG_KEY, 'en')
     st.session_state.setdefault('_lang_widget', lang())
 
     def on_change():
         st.session_state[LANG_KEY] = st.session_state['_lang_widget']
 
+    st.html(_flags_css())
     st.sidebar.radio('Language', list(LANGUAGES), format_func=LANGUAGES.get, key='_lang_widget',
                      on_change=on_change, horizontal=True, label_visibility='collapsed')
 

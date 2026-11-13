@@ -1,14 +1,18 @@
-# # sersitive blue: #6C9BC0
-# # ~sersitive gold: #DBBD8A
-# #  gold: #eedda9
-# # alternative color for background: #F5F1FB
+# SERSitive colours: blue #6C9BC0, gold #DBBD8A (used in charts).
+# For text, buttons and sliders a darker shade of the blue is used - #6C9BC0 on white is too pale to read.
 
 [theme]
-primaryColor='#6C9BC0'  # radiobuttons etc
-backgroundColor="#FFF"  # Main color
-secondaryBackgroundColor="#d3d4db"  # sidebar color
-textColor="#262730"
-font="sans serif"
+base = "light"
+primaryColor = "#2F6A9B"
+backgroundColor = "#FFFFFF"
+secondaryBackgroundColor = "#EEF2F6"
+textColor = "#1A1D24"
+linkColor = "#2F6A9B"
+font = "sans serif"
+
+[theme.sidebar]
+backgroundColor = "#F4F6F9"
+secondaryBackgroundColor = "#E4E9EF"
 
 [client]
-showErrorDetails=false
+showErrorDetails = false
