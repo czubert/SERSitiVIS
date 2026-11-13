@@ -373,3 +373,41 @@ def test_ef_parameters_file_rejects_other_files():
     from vis_helpers.enhancement_factor import parse_parameters
     loaded, _ = parse_parameters('a,b\n1,2\n'.encode('utf-8'))
     assert loaded == {}
+
+
+#
+# # Peaks
+#
+def test_peaks_found_at_known_positions():
+    from core.peaks import find_peaks
+    x = np.arange(400, 1800, 0.5)
+    known = [(520, 3000, 8), (1075, 20000, 12), (1588, 15000, 10)]
+    y = 1000 + sum(h * np.exp(-4 * np.log(2) * ((x - c) / w) ** 2) for c, h, w in known)
+    y += np.random.default_rng(0).normal(0, 50, x.size)
+    peaks = find_peaks(pd.Series(y, index=x))
+    assert len(peaks) == 3
+    assert np.allclose(peaks['position'], [c for c, _, _ in known], atol=1)
+    assert np.allclose(peaks['fwhm'], [w for _, _, w in known], atol=0.5)
+    assert len(find_peaks(pd.Series(y, index=x), max_peaks=1)) == 1
+
+
+@pytest.mark.parametrize('chart', ['SINGLE', 'MS', 'GS'])
+@pytest.mark.parametrize('instrument', workspace.EXAMPLES)
+def test_visualisation_peaks(instrument, chart):
+    app = new_app(instrument, 'visualisation')
+    app.selectbox(key='chart_type').set_value(chart).run()
+    app.checkbox(key='peaks').check().run()
+    if chart == 'GS':
+        app.slider(key='shift').set_value(0.3).run()
+    else:
+        app.checkbox(key='processed').check().run()
+        app.checkbox(key='show_steps').check().run()
+    assert not app.exception
+    assert len(app.dataframe) >= 1
+
+
+def test_shared_peaks_labelled_once():
+    from core.peaks import label_once
+    table = pd.DataFrame({'spectrum': ['a', 'b', 'a', 'b'], 'position': [1000.0, 1001.5, 1200.0, 1300.0],
+                          'intensity': [5.0, 9.0, 3.0, 4.0]})
+    assert list(label_once(table, tolerance=5)) == [False, True, True, True]

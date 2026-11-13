@@ -1,8 +1,9 @@
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
 import streamlit as st
 
-from core import processing
+from core import peaks, processing
 from vis_helpers import manual, data_customisation, vis_utils
 from vis_helpers.i18n import t, choice
 
@@ -41,6 +42,20 @@ def visualisation(df):
                     t('Show baseline and intermediate steps'), key='show_steps')
             normalized = st.checkbox(t('Normalize (0-1)'), key='normalized')
 
+        if chart_type != 'P3D':
+            with st.expander(t('Peaks'), icon=':material/location_on:', expanded=st.session_state.get('peaks', False)):
+                show_peaks = st.checkbox(t('Find and label peaks'), key='peaks')
+                if show_peaks:
+                    peak_options = dict(
+                        prominence=st.slider(t('Sensitivity - minimal peak prominence [%]'), 1, 50, 5, key='peak_prom',
+                                             help=t('How much a peak must rise above its surroundings, in % of the '
+                                                    'spectrum intensity range. Lower = more peaks.')) / 100,
+                        min_distance=st.slider(t('Minimal distance between peaks [cm⁻¹]'), 1, 100, 10,
+                                               key='peak_distance'),
+                        max_peaks=st.slider(t('Maximal number of labels per spectrum'), 1, 50, 10, key='peak_max'))
+        else:
+            show_peaks = False
+
         with st.expander(t('Chart appearance'), icon=':material/palette:'):
             settings = vis_utils.chart_settings('vis')
 
@@ -75,7 +90,32 @@ def visualisation(df):
     else:
         fig = px.line(plot_df, color_discrete_sequence=settings['palette'])
 
+    if show_peaks:
+        # peaks of the displayed spectra (in the steps view - of the final, processed spectrum)
+        peak_source = plot_df.iloc[:, [-1]] if chart_type in {'SINGLE', 'MS'} and processed and show_steps else plot_df
+        peaks_table = peaks.find_peaks_all(peak_source, **peak_options)
+        colors = {trace.name: trace.line.color for trace in fig.data}
+        labelled = peaks.label_once(peaks_table, tolerance=max(3, peak_options['min_distance'] / 2))
+        for spectrum, group in peaks_table.groupby('spectrum', sort=False):
+            fig.add_trace(go.Scatter(x=group['position'], y=group['intensity'], mode='markers+text',
+                                     text=[f'{p:.0f}' if labelled[i] else '' for i, p in group['position'].items()],
+                                     textposition='top center',
+                                     textfont=dict(size=11, color=colors.get(spectrum)),
+                                     marker=dict(symbol='triangle-down', size=8, color=colors.get(spectrum)),
+                                     showlegend=False, hovertemplate='%{x:.1f} cm⁻¹<extra></extra>'))
+
     with chart_col:
         vis_utils.show_chart(fig, settings, lines=chart_type != 'P3D')
         vis_utils.download_csv(plot_df.reset_index(), 'spectra.csv', t('Download data (CSV)'), 'vis_csv',
                                index=False)
+        if show_peaks:
+            st.subheader(t('Peaks'))
+            table = peaks_table.rename(columns={'spectrum': t('Spectrum'), 'position': t('Raman Shift [cm⁻¹]'),
+                                                'intensity': t('Intensity'), 'prominence': t('Prominence'),
+                                                'fwhm': t('FWHM [cm⁻¹]')})
+            if chart_type == 'GS' and shift:
+                st.caption(t('Intensities include the separation shift of the chart.'))
+            st.dataframe(table.style.format({t('Raman Shift [cm⁻¹]'): '{:.1f}', t('Intensity'): '{:.4g}',
+                                             t('Prominence'): '{:.4g}', t('FWHM [cm⁻¹]'): '{:.1f}'}),
+                         hide_index=True, width='stretch')
+            vis_utils.download_csv(peaks_table, 'peaks.csv', t('Download peaks (CSV)'), 'peaks_csv', index=False)
