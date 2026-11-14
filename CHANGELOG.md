@@ -28,6 +28,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   least 3 × 3 points. Two maps with the same RSD of 15 % differ: scattered weak points are noise, a weaker edge or
   patch points to the production process.
 
+- **Anonymous visit statistics** in Firestore, one document per day: visits, page views, language, formats of
+  uploaded files, example data and PDF reports. Numbers only - no cookies, no IP addresses, no file contents.
+
 ### 🧪 Processing
 - **Baseline under the peak switch above the spectrum** in RSD and EF: *SNIP* (default, the same as
   Visualisation), *Straight line under the peak* or *None (absolute height)*, with the SNIP half window next to it.

@@ -14,3 +14,5 @@ jcamp==1.3.2
 # PDF report
 fpdf2==2.9.0
 matplotlib==3.11.2
+# anonymous visit statistics (Firestore, secret 'firebase_credentials')
+google-cloud-firestore==2.33.0

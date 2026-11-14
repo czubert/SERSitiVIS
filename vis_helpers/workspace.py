@@ -10,6 +10,7 @@ import pandas as pd
 import streamlit as st
 
 from core import readers
+from vis_helpers import visits
 from vis_helpers.i18n import t, choice
 
 EXAMPLE_DIR = os.path.join('data', 'data_examples')
@@ -118,6 +119,8 @@ def data_sidebar():
 
     for name, error in errors.items():
         st.sidebar.error(f'**{name}**: {t(error)}')
+    example = st.session_state[EXAMPLE]
+    visits.track_files(loaded, example if example != NO_EXAMPLE else None)
 
     if df is not None and df.empty:
         st.sidebar.error(t('Spectra do not share a common Raman Shift range - upload them separately.'))

@@ -9,6 +9,7 @@ import streamlit as st
 
 from core import processing
 from visualisation.draw import fig_layout, is_dark
+from vis_helpers import visits
 from vis_helpers.i18n import t, lang
 
 # SERSitive colours first (navy, blue, gold), then well distinguishable ones
@@ -192,6 +193,7 @@ def report_button(key, build, signature):
     if cols[0].button(t('Create PDF report'), key=f'{key}_report_create', icon=':material/picture_as_pdf:'):
         with st.spinner(t('Creating report...')):
             stored = st.session_state[state_key] = (signature, build())
+        visits.track_report(key)
     if stored:
         cols[1].download_button(t('Download report (PDF)'), stored[1], file_name=f'SERSitiVIS_{key}_{date.today()}.pdf',
                                 mime='application/pdf', key=f'{key}_report_download', icon=':material/download:',

@@ -906,3 +906,69 @@ def test_calibration_and_map_baseline_switch(mode):
     app.radio(key='map_baseline').set_value(mode).run()
     assert not app.exception and app.metric[0].label == 'RSD'
     assert any("Moran's I" in m.value for m in list(app.info) + list(app.warning))  # 12 points
+
+
+def test_visit_counts():
+    from vis_helpers.visits import field, file_counts, page_counts
+    seen = {}
+    assert page_counts(seen, 'start', 'pl') == {'visits': 1, 'pages': {'start': 1}, 'languages': {'pl': 1}}
+    assert page_counts(seen, 'start', 'pl') == {}  # a rerun of the same page is not a new view
+    assert page_counts(seen, 'rsd', 'en') == {'pages': {'rsd': 1}, 'languages': {'en': 1}}
+    loaded = readers.read_files([('a.txt', saturated_bwtek_file())])[1]
+    assert file_counts(seen, loaded) == {'formats': {'BWTEK': 1}}
+    assert file_counts(seen, loaded) == {}  # the same file counted once
+    assert file_counts(seen, [], 'WITec Alpha300 R+') == {'examples': {'WITec_Alpha300_R_': 1}}
+    assert field('') == '_'
+
+
+def test_no_statistics_without_secret():
+    """Local runs and tests: no Firestore credentials, nothing is sent and the app works"""
+    from vis_helpers import visits
+    app = new_app('Renishaw', 'rsd')
+    assert not app.exception
+    assert app.session_state[visits.SEEN]['visit'] and app.session_state[visits.SEEN]['page'] == 'rsd'
+
+
+def test_visit_write_to_firestore(monkeypatch):
+    """The document of the day gets Firestore increments (fake client - no network, no credentials)"""
+    import sys
+    import types
+    from vis_helpers import visits
+
+    class Increment:
+        def __init__(self, n):
+            self.n = n
+
+    firestore = types.ModuleType('google.cloud.firestore')
+    firestore.Increment = Increment
+    cloud = types.ModuleType('google.cloud')
+    cloud.firestore = firestore
+    monkeypatch.setitem(sys.modules, 'google', types.ModuleType('google'))
+    monkeypatch.setitem(sys.modules, 'google.cloud', cloud)
+    monkeypatch.setitem(sys.modules, 'google.cloud.firestore', firestore)
+
+    written = []
+
+    class Document:
+        def __init__(self, name):
+            self.name = name
+
+        def set(self, data, merge):
+            written.append((self.name, data, merge))
+
+    client = types.SimpleNamespace(collection=lambda name: types.SimpleNamespace(
+        document=lambda day: Document(f'{name}/{day}')))
+    monkeypatch.setattr(visits, '_client', lambda: client)
+
+    class Synchronous:  # run the background write at once
+        def __init__(self, target, daemon):
+            self.target = target
+
+        def start(self):
+            self.target()
+
+    monkeypatch.setattr(visits.threading, 'Thread', Synchronous)
+    visits._send({'visits': 1, 'pages': {'rsd': 1}})
+    (name, data, merge), = written
+    assert name.startswith('visits/20') and merge
+    assert data['visits'].n == 1 and data['pages']['rsd'].n == 1

@@ -52,6 +52,12 @@ All library versions are pinned in `requirements.txt` – update them deliberate
 | `data/` | Example spectra |
 | `tests/` | pytest tests (Streamlit AppTest + core functions) |
 
+## Visit statistics
+
+The app counts anonymous numbers per day in Firestore: visits, page views, language, formats of uploaded files,
+example data and PDF reports. No cookies, no IP addresses, no file contents. It is on only when the Streamlit
+secret `firebase_credentials` (service account JSON) is set - see `vis_helpers/visits.py`.
+
 ## Contact
 
 developers@sersitive.eu

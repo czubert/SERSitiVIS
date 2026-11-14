@@ -6,8 +6,8 @@ import os
 import sentry_sdk
 import streamlit as st
 
-from vis_helpers import authors, workspace
-from vis_helpers.i18n import t
+from vis_helpers import authors, visits, workspace
+from vis_helpers.i18n import lang, t
 from visualisation.draw import is_dark
 
 if os.path.isfile(".streamlit/secrets.toml") and 'sentry_url' in st.secrets:
@@ -47,6 +47,7 @@ def main():
         st.Page('app_pages/pca.py', title=t('PCA'), icon=':material/scatter_plot:', url_path='pca'),
     ]
     page = st.navigation(pages)
+    visits.track_page(page.url_path or 'start', lang())
 
     # Spectra uploaded once, shared by all pages
     st.session_state['df'] = workspace.data_sidebar()
