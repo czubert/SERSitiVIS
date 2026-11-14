@@ -30,6 +30,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - **Anonymous visit statistics** in Firestore, one document per day: visits, page views, language, formats of
   uploaded files, example data and PDF reports. Numbers only - no cookies, no IP addresses, no file contents.
+  - **Statistics page for the SERSitive team** at `/statistics` (not in the menu, password from the secret
+    `statistics_password`): visits, page views, uploaded files and reports with the change against the previous
+    period, visits per day (per week for a year), rankings of pages, languages, file formats, example data and
+    reports, CSV download.
 
 ### 🧪 Processing
 - **Baseline under the peak switch above the spectrum** in RSD and EF: *SNIP* (default, the same as

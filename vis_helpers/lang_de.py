@@ -412,4 +412,54 @@ DE = {
         'Morans I = {i} (p = {p}): die Unterschiede zwischen den Punkten wirken zufällig – kein Gradient, keine Flecken.',
     'Same RSD, different substrate: scattered weak points (random) are noise, a weaker edge or patch (clustered) points to the production process. p = how often a random shuffle of the same values over the map looks at least as clustered.':
         'Gleiche RSD, anderes Substrat: verstreute schwache Punkte (zufällig) sind Rauschen, ein schwächerer Rand oder Fleck (gehäuft) deutet auf den Herstellungsprozess. p = wie oft eine zufällige Umverteilung derselben Werte auf der Karte mindestens so gehäuft aussieht.',
+    'Visit statistics':
+        'Besuchsstatistik',
+    'Statistics are off: set the Streamlit secret "statistics_password".':
+        'Statistik ist aus: Streamlit-Secret "statistics_password" setzen.',
+    'Password':
+        'Passwort',
+    'Show statistics':
+        'Statistik anzeigen',
+    'Wrong password':
+        'Falsches Passwort',
+    'Not connected to the statistics database - set the Streamlit secret "firebase_credentials".':
+        'Keine Verbindung zur Statistikdatenbank – Streamlit-Secret "firebase_credentials" setzen.',
+    'Period':
+        'Zeitraum',
+    'Last 7 days':
+        'Letzte 7 Tage',
+    'Last 30 days':
+        'Letzte 30 Tage',
+    'Last 90 days':
+        'Letzte 90 Tage',
+    'Last 12 months':
+        'Letzte 12 Monate',
+    'Visits':
+        'Besuche',
+    'Page views':
+        'Seitenaufrufe',
+    'Files uploaded':
+        'Hochgeladene Dateien',
+    'PDF reports':
+        'PDF-Berichte',
+    'Change against the previous period of the same length.':
+        'Änderung gegenüber dem vorherigen Zeitraum gleicher Länge.',
+    'Visits per week':
+        'Besuche pro Woche',
+    'Visits per day':
+        'Besuche pro Tag',
+    'Pages':
+        'Seiten',
+    'Languages':
+        'Sprachen',
+    'Formats of uploaded files':
+        'Formate hochgeladener Dateien',
+    'Example data':
+        'Beispieldaten',
+    'Nothing in this period.':
+        'Nichts in diesem Zeitraum.',
+    'Numbers only, refreshed every 5 minutes: no cookies, IP addresses or file contents. A visit is a new session - one person opening the app twice in one day counts twice.':
+        'Nur Zahlen, alle 5 Minuten aktualisiert: keine Cookies, IP-Adressen oder Dateiinhalte. Ein Besuch ist eine neue Sitzung – wer die App zweimal am Tag öffnet, zählt doppelt.',
+    'Lock':
+        'Sperren',
 }

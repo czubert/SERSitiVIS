@@ -113,3 +113,56 @@ def track_files(loaded, example=None):
 
 def track_report(page):
     _send({'reports': {field(page): 1}})
+
+
+# # Reading the statistics back (page 'statistics')
+GROUPS = ['pages', 'languages', 'formats', 'examples', 'reports']
+
+
+@st.cache_data(ttl=300, show_spinner=False)
+def load_days():
+    """
+    All daily documents, refreshed at most every 5 minutes
+    :return: Dict {'2026-11-14': {'visits': 41, 'pages': {...}, ...}} or None when not connected
+    """
+    client = _client()
+    if client is None:
+        return None
+    try:
+        return {document.id: document.to_dict() for document in client.collection(COLLECTION).stream()}
+    except Exception:
+        log.exception('Statistics not read')
+        return None
+
+
+def daily_table(days, start, end):
+    """
+    One row per day from start to end (days without visits = 0), columns 'visits', 'pages.rsd', 'formats.BWTEK'...
+    :param days: Dict from load_days(); start, end: datetime.date
+    """
+    import pandas as pd
+
+    index = pd.date_range(start, end, freq='D')
+    rows = {}
+    for day, data in days.items():
+        try:
+            timestamp = pd.Timestamp(day)
+        except ValueError:  # not a daily document
+            continue
+        if start <= timestamp.date() <= end:
+            row = {'visits': data.get('visits', 0)}
+            for group in GROUPS:
+                row.update({f'{group}.{key}': value for key, value in (data.get(group) or {}).items()})
+            rows[timestamp] = row
+    table = pd.DataFrame.from_dict(rows, orient='index').reindex(index).fillna(0).astype(int)
+    if 'visits' not in table:
+        table['visits'] = 0
+    table.index.name = 'date'
+    return table
+
+
+def group_totals(table, group):
+    """Sums of one group over the period, largest first, e.g. pages: {'rsd': 12, 'calibration': 7}"""
+    totals = table.filter(regex=rf'^{group}\.').sum()
+    totals.index = [name.split('.', 1)[1] for name in totals.index]
+    return totals[totals > 0].sort_values(ascending=False)

@@ -45,9 +45,13 @@ def main():
         st.Page('app_pages/enhancement_factor.py', title=t('Enhancement Factor'), icon=':material/bolt:',
                 url_path='enhancement_factor'),
         st.Page('app_pages/pca.py', title=t('PCA'), icon=':material/scatter_plot:', url_path='pca'),
+        # for the SERSitive team, behind a password - not in the menu, only /statistics
+        st.Page('app_pages/statistics.py', title=t('Visit statistics'), icon=':material/query_stats:',
+                url_path='statistics', visibility='hidden'),
     ]
     page = st.navigation(pages)
-    visits.track_page(page.url_path or 'start', lang())
+    if page.url_path != 'statistics':  # our own visits to the statistics are not counted
+        visits.track_page(page.url_path or 'start', lang())
 
     # Spectra uploaded once, shared by all pages
     st.session_state['df'] = workspace.data_sidebar()

@@ -621,4 +621,54 @@ PL = {
         'I Morana = {i} (p = {p}): różnice między punktami wyglądają na losowe – bez gradientu i plam.',
     'Same RSD, different substrate: scattered weak points (random) are noise, a weaker edge or patch (clustered) points to the production process. p = how often a random shuffle of the same values over the map looks at least as clustered.':
         'To samo RSD, inne podłoże: rozrzucone słabsze punkty (losowo) to szum, słabszy brzeg albo plama (skupienia) wskazują na proces produkcji. p = jak często losowe przetasowanie tych samych wartości na mapie wygląda na co najmniej tak samo skupione.',
+    'Visit statistics':
+        'Statystyki odwiedzin',
+    'Statistics are off: set the Streamlit secret "statistics_password".':
+        'Statystyki są wyłączone: ustaw sekret Streamlit "statistics_password".',
+    'Password':
+        'Hasło',
+    'Show statistics':
+        'Pokaż statystyki',
+    'Wrong password':
+        'Złe hasło',
+    'Not connected to the statistics database - set the Streamlit secret "firebase_credentials".':
+        'Brak połączenia z bazą statystyk – ustaw sekret Streamlit "firebase_credentials".',
+    'Period':
+        'Okres',
+    'Last 7 days':
+        'Ostatnie 7 dni',
+    'Last 30 days':
+        'Ostatnie 30 dni',
+    'Last 90 days':
+        'Ostatnie 90 dni',
+    'Last 12 months':
+        'Ostatnie 12 miesięcy',
+    'Visits':
+        'Wizyty',
+    'Page views':
+        'Wyświetlenia stron',
+    'Files uploaded':
+        'Wgrane pliki',
+    'PDF reports':
+        'Raporty PDF',
+    'Change against the previous period of the same length.':
+        'Zmiana względem poprzedniego okresu tej samej długości.',
+    'Visits per week':
+        'Wizyty w tygodniu',
+    'Visits per day':
+        'Wizyty dziennie',
+    'Pages':
+        'Strony',
+    'Languages':
+        'Języki',
+    'Formats of uploaded files':
+        'Formaty wgranych plików',
+    'Example data':
+        'Przykładowe dane',
+    'Nothing in this period.':
+        'Nic w tym okresie.',
+    'Numbers only, refreshed every 5 minutes: no cookies, IP addresses or file contents. A visit is a new session - one person opening the app twice in one day counts twice.':
+        'Same liczby, odświeżane co 5 minut: bez ciasteczek, adresów IP i zawartości plików. Wizyta to nowa sesja – jedna osoba, która otworzy aplikację dwa razy w ciągu dnia, liczy się dwa razy.',
+    'Lock':
+        'Zablokuj',
 }

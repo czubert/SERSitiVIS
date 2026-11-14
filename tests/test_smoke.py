@@ -972,3 +972,39 @@ def test_visit_write_to_firestore(monkeypatch):
     (name, data, merge), = written
     assert name.startswith('visits/20') and merge
     assert data['visits'].n == 1 and data['pages']['rsd'].n == 1
+
+
+def test_daily_visit_table():
+    from datetime import date
+    from vis_helpers.visits import daily_table, group_totals
+    days = {'2026-11-12': {'visits': 3, 'pages': {'rsd': 2, 'start': 3}},
+            '2026-11-14': {'visits': 5, 'pages': {'rsd': 4}, 'formats': {'BWTEK': 2}},
+            '2026-10-01': {'visits': 9}, 'not-a-day': {'visits': 1}}
+    table = daily_table(days, date(2026, 11, 12), date(2026, 11, 14))
+    assert list(table['visits']) == [3, 0, 5]  # the day without visits is there, with 0
+    assert dict(group_totals(table, 'pages')) == {'rsd': 6, 'start': 3}
+    assert group_totals(table, 'reports').empty
+    assert daily_table({}, date(2026, 11, 1), date(2026, 11, 7))['visits'].sum() == 0
+
+
+def statistics_app(password=None):
+    app = AppTest.from_file(os.path.join(ROOT, 'vis.py'), default_timeout=60)
+    if password:
+        app.secrets['statistics_password'] = password
+    app.run()
+    app.switch_page('app_pages/statistics.py').run()
+    return app
+
+
+def test_statistics_page_needs_password(monkeypatch):
+    from vis_helpers import statistics, visits
+    assert not statistics_app().exception  # no password set: statistics off, app works
+    app = statistics_app('tajne')
+    app.text_input(key='statistics_password').input('zle')
+    app.button[0].click().run()
+    assert any(e.value == 'Wrong password' for e in app.error)
+    app.text_input(key='statistics_password').input('tajne')
+    app.button[0].click().run()
+    assert not app.exception and app.session_state[statistics.UNLOCKED]
+    assert app.warning  # no Firestore here - says what is missing
+    assert visits.SEEN not in app.session_state or app.session_state[visits.SEEN].get('page') != 'statistics'

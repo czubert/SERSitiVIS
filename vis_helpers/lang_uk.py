@@ -412,4 +412,54 @@ UK = {
         'I Морана = {i} (p = {p}): відмінності між точками виглядають випадковими – без градієнта і плям.',
     'Same RSD, different substrate: scattered weak points (random) are noise, a weaker edge or patch (clustered) points to the production process. p = how often a random shuffle of the same values over the map looks at least as clustered.':
         'Однакове RSD, різні підкладки: розкидані слабші точки (випадково) – це шум, слабший край або пляма (скупчення) вказують на процес виробництва. p = як часто випадкове перемішування тих самих значень на карті виглядає щонайменше так само скупченим.',
+    'Visit statistics':
+        'Статистика відвідувань',
+    'Statistics are off: set the Streamlit secret "statistics_password".':
+        'Статистику вимкнено: задайте секрет Streamlit "statistics_password".',
+    'Password':
+        'Пароль',
+    'Show statistics':
+        'Показати статистику',
+    'Wrong password':
+        'Неправильний пароль',
+    'Not connected to the statistics database - set the Streamlit secret "firebase_credentials".':
+        'Немає з\'єднання з базою статистики – задайте секрет Streamlit "firebase_credentials".',
+    'Period':
+        'Період',
+    'Last 7 days':
+        'Останні 7 днів',
+    'Last 30 days':
+        'Останні 30 днів',
+    'Last 90 days':
+        'Останні 90 днів',
+    'Last 12 months':
+        'Останні 12 місяців',
+    'Visits':
+        'Відвідування',
+    'Page views':
+        'Перегляди сторінок',
+    'Files uploaded':
+        'Завантажені файли',
+    'PDF reports':
+        'PDF-звіти',
+    'Change against the previous period of the same length.':
+        'Зміна відносно попереднього періоду такої ж довжини.',
+    'Visits per week':
+        'Відвідування за тиждень',
+    'Visits per day':
+        'Відвідування за день',
+    'Pages':
+        'Сторінки',
+    'Languages':
+        'Мови',
+    'Formats of uploaded files':
+        'Формати завантажених файлів',
+    'Example data':
+        'Приклади даних',
+    'Nothing in this period.':
+        'Нічого за цей період.',
+    'Numbers only, refreshed every 5 minutes: no cookies, IP addresses or file contents. A visit is a new session - one person opening the app twice in one day counts twice.':
+        'Лише числа, оновлюються кожні 5 хвилин: без файлів cookie, IP-адрес і вмісту файлів. Відвідування – це нова сесія: одна людина, яка відкрила застосунок двічі за день, рахується двічі.',
+    'Lock':
+        'Заблокувати',
 }
