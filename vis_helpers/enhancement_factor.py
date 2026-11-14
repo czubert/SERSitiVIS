@@ -8,8 +8,8 @@ import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
 
-from core import analysis, processing
-from vis_helpers import vis_utils
+from core import analysis
+from vis_helpers import data_customisation, vis_utils
 from vis_helpers.i18n import t, choice
 
 SPECTRA_TYPES = ['Raman', 'SERS']
@@ -249,24 +249,7 @@ def substrate_ef(df):
         depth = st.number_input(t('Depth into which the laser penetrates the chemical compound in crystalline form '
                                   '[mm]'), 0.0, 10.0, 2.0, 0.1, key='ef_depth') / 1000
 
-    with cols[1].container(border=True):
-        st.markdown(f'##### :material/show_chart: {t("Intensities")}')
-        source = choice('radio', t('Intensities'), ['input', 'spectra'], key='ef_source', horizontal=True,
-                        label_visibility='collapsed',
-                        format_func=lambda s: t('Type in the intensities') if s == 'input'
-                        else t('Read them from uploaded spectra'))
-        measured_rsd = {}
-        if source == 'spectra':
-            intensities = intensities_from_spectra(df)
-            if intensities is None:
-                return
-            i_raman, i_sers, measured_rsd = intensities
-        else:
-            c = st.columns(2)
-            i_raman = c[0].number_input(t('Raman Intensity'), 1, 1000000, 1000, 100, key='ef_i_raman')
-            i_sers = c[1].number_input(t('SERS Intensity'), 1, 10000000, 60000, 1000, key='ef_i_sers')
-
-    # # Calculation
+    # # Calculation (all but the intensities, so the SERS chart can show EF while the peak is chosen)
     n = analysis.num_of_molecules(concentration, volume)
     s_laser = analysis.laser_spot_diameter(wavelength, aperture)
     s0 = analysis.laser_spot_area(s_laser)
@@ -274,6 +257,25 @@ def substrate_ef(df):
     n_sers = analysis.n_sers(n, s0, coverage, s_platform)
     v_compound = s0 * depth
     n_raman = analysis.n_raman(s0, depth, density, molecular_weight)
+
+    with cols[1].container(border=True):
+        st.markdown(f'##### :material/show_chart: {t("Intensities")}')
+        source = choice('radio', t('Intensities'), ['input', 'spectra'], key='ef_source', horizontal=True,
+                        label_visibility='collapsed',
+                        format_func=lambda s: t('Type in the intensities') if s == 'input'
+                        else t('Read them from uploaded spectra'))
+        measured_rsd, peak_baseline = {}, None
+        if source == 'spectra':
+            intensities = intensities_from_spectra(
+                df, lambda i_raman, i_sers: analysis.enhancement_factor(i_sers, n_sers, i_raman, n_raman))
+            if intensities is None:
+                return
+            i_raman, i_sers, measured_rsd, peak_baseline = intensities
+        else:
+            c = st.columns(2)
+            i_raman = c[0].number_input(t('Raman Intensity'), 1, 1000000, 1000, 100, key='ef_i_raman')
+            i_sers = c[1].number_input(t('SERS Intensity'), 1, 10000000, 60000, 1000, key='ef_i_sers')
+
     ef = analysis.enhancement_factor(i_sers, n_sers, i_raman, n_raman)
 
     # # Uncertainty (Monte Carlo)
@@ -360,14 +362,17 @@ def substrate_ef(df):
     parameters = pd.DataFrame(rows, columns=['key', 'parameter', 'value', 'unit'])
     vis_utils.download_csv(parameters, 'enhancement_factor.csv', t('Download parameters and results (CSV)'),
                            'ef_csv', index=False)
-    vis_utils.report_button('enhancement_factor', lambda: build_report(inputs, steps, ef, uncertainty, analyte),
-                            (tuple(inputs.values()), analyte, None if not uncertainty else uncertainty['low']))
+    vis_utils.report_button('enhancement_factor',
+                            lambda: build_report(inputs, steps, ef, uncertainty, analyte, peak_baseline),
+                            (tuple(inputs.values()), analyte, None if not uncertainty else uncertainty['low'],
+                             peak_baseline))
 
 
-def intensities_from_spectra(df):
+def intensities_from_spectra(df, ef_of):
     """
     Peak intensities read from the uploaded spectra
-    :return: (I Raman, I SERS, {name: measured RSD of the peak intensity}) or None
+    :param ef_of: function (I Raman, I SERS) -> EF, the result is written on the SERS chart
+    :return: (I Raman, I SERS, {name: measured RSD of the peak intensity}, baseline description) or None
     """
     if df is None:
         st.warning(t('Upload Raman and SERS spectra in the sidebar'))
@@ -375,66 +380,73 @@ def intensities_from_spectra(df):
 
     st.caption(t('Choose which uploaded spectra are Raman and which are SERS. Several spectra of each type '
                  '(e.g. from a map) are averaged. Choose the same band in both, e.g. ~1075 or ~1588 cm⁻¹ for p-MBA.'))
-    baseline_correction = st.checkbox(t('Subtract baseline before reading peak intensities'), value=True,
-                                      key='ef_baseline')
-    degree = st.slider(t('Polynomial degree for baseline correction'), 1, 20, 5, key='ef_baseline_degree',
-                       disabled=not baseline_correction)
-
     spectra = {}
     for col, name in zip(st.columns(2), SPECTRA_TYPES):
         with col:
             label = t('Raman spectra') if name == 'Raman' else t('SERS spectra')
             chosen = st.multiselect(label, list(df.columns), key=f'ef_{name}_spectra')
             if chosen:
-                spectra[name] = processing.subtract_baseline(df[chosen], degree) if baseline_correction \
-                    else df[chosen]
+                spectra[name] = df[chosen]
             else:
                 st.warning(t('Choose {name} spectra').format(name=name))
-
     if len(spectra) < 2:
         return None
 
+    mode, half_window = data_customisation.peak_baseline_switch('ef')
+    baseline_text = data_customisation.describe_peak_baseline(mode, half_window)
     st.caption(t('Tip: drag on the chart to select the peak range.'))
-    intensities, rsd = {}, {}
-    for col, name in zip(st.columns(2), SPECTRA_TYPES):
-        spectra_df = spectra[name]
-        low, high = vis_utils.spectrum_limits(spectra_df)
-        range_key, chart_key = f'ef_{name}_range', f'ef_{name}_chart'
-
+    cols = st.columns(2)
+    limits, ranges, peaks, baselines = {}, {}, {}, {}
+    for col, name in zip(cols, SPECTRA_TYPES):
+        limits[name] = vis_utils.spectrum_limits(spectra[name])
         with col:
             # separate range for each spectrum - the same band is usually shifted by a few cm-1
             label = t('Raman peak range') if name == 'Raman' else t('SERS peak range')
-            peak_range = vis_utils.range_slider(label, low, high, key=range_key)
+            ranges[name] = vis_utils.range_slider(label, *limits[name], key=f'ef_{name}_range')
+        window, baselines[name] = analysis.peak_window(spectra[name], *ranges[name], mode, half_window)
+        peaks[name] = analysis.peak_intensity(window - baselines[name], *ranges[name])
+    ef = ef_of(peaks['Raman']['intensity'], peaks['SERS']['intensity']) if all(peaks.values()) else None
 
-            plot_df = spectra_df.copy()
-            if spectra_df.shape[1] > 1:
-                plot_df[t('Average')] = spectra_df.mean(axis=1)
-            settings = vis_utils.default_chart_settings()
-            settings['titles']['title'] = name
-            fig = px.line(plot_df, color_discrete_sequence=settings['palette'])
-            fig.update_layout(dragmode='select', selectdirection='h', height=400)
-            if tuple(peak_range) != (low, high):
-                vis_utils.highlight_range(fig, *peak_range, opacity=0.2)
+    for col, name in zip(cols, SPECTRA_TYPES):
+        spectra_df, peak, (low, high) = spectra[name], peaks[name], limits[name]
+        range_key, chart_key = f'ef_{name}_range', f'ef_{name}_chart'
+        plot_df = spectra_df.copy()
+        if spectra_df.shape[1] > 1:  # the intensity is read from the average
+            plot_df[t('Average')] = spectra_df.mean(axis=1)
+        settings = vis_utils.default_chart_settings()
+        settings['titles']['title'] = name
+        fig = px.line(plot_df, color_discrete_sequence=settings['palette'])
+        fig.update_layout(dragmode='select', selectdirection='h', height=400)
+        if tuple(ranges[name]) != (low, high):
+            vis_utils.highlight_range(fig, *ranges[name], opacity=0.2)
+        if peak is not None:
+            if mode != 'none':  # what is subtracted, under the spectrum the intensity is read from
+                base = baselines[name].mean(axis=1)
+                fig.add_trace(go.Scatter(x=base.index, y=base, mode='lines', showlegend=False, hoverinfo='skip',
+                                         line=dict(dash='dot', width=2, color=fig.data[-1].line.color)))
+            lines = [f'I = {peak["intensity"]:,.0f} ({peak["position"]:.0f} cm⁻¹)'.replace(',', ' ')]
+            if peak['n'] > 1:
+                lines.append(f'RSD {100 * peak["rsd"]:.1f} % ({vis_utils.rsd_interval(peak["rsd"], peak["n"])})')
+            if name == 'SERS' and ef is not None:
+                lines.insert(0, f'<b>EF = {short(ef)}</b>')
+            vis_utils.chart_note(fig, '<br>'.join(lines + [baseline_text]))
+        with col:
             vis_utils.show_chart(fig, settings, key=chart_key, selection_mode='box',
                                  on_select=lambda c=chart_key, r=range_key, lo=low, hi=high:
                                  vis_utils.range_from_selection(c, r, lo, hi))
-
-            peak = analysis.peak_intensity(spectra_df, *peak_range)
             if peak is None:
                 st.warning(t('Selected peak range is empty'))
-                return None
-            intensities[name] = peak['intensity']
-            if peak['n'] > 1:
-                rsd[name] = peak['rsd']
-            st.markdown(f'$I_{{{name}}} =$ {peak["intensity"]:.0f} {t("at")} {peak["position"]:.0f} cm⁻¹')
-            if peak['n'] > 1:
+            elif peak['n'] > 1:
                 st.caption(t('Average of {n} spectra. Peak intensity SD: {sd} (RSD {rsd} %)').format(
                     n=peak['n'], sd=f'{peak["sd"]:.0f}', rsd=f'{100 * peak["rsd"]:.1f}'))
+    if ef is None:
+        return None
 
-    return intensities['Raman'], intensities['SERS'], rsd
+    rsd = {name: peak['rsd'] for name, peak in peaks.items() if peak['n'] > 1}
+    return peaks['Raman']['intensity'], peaks['SERS']['intensity'], rsd, baseline_text
 
 
-def build_report(inputs, steps, ef, uncertainty, analyte):
+def build_report(inputs, steps, ef, uncertainty, analyte, peak_baseline=None):
     from core import report
 
     labels = {'ef_conc_x': 'C = x·10ⁿ mol/dm³, x', 'ef_conc_n': 'n', 'ef_volume': t('Volume of solution [µl]'),
@@ -450,8 +462,9 @@ def build_report(inputs, steps, ef, uncertainty, analyte):
         results[t('EF range (90 %)')] = f'{uncertainty["low"]:.2e} – {uncertainty["high"]:.2e}'
     rep.key_values(results)
     rep.heading(t('Parameters'))
+    peak = {t('Baseline under the peak'): peak_baseline} if peak_baseline else {}
     rep.key_values({t('Analyte preset'): t(ANALYTE_LABELS[analyte]),
-                    **{labels[key]: value for key, value in inputs.items()}}, label_width=95)
+                    **{labels[key]: value for key, value in inputs.items()}, **peak}, label_width=95)
     rep.heading(t('Show calculation step by step'))
     rep.table(pd.DataFrame([(name, value, unit) for name, _, value, unit in steps],
                            columns=[t('Parameter'), t('Value'), '']), index=False)

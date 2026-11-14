@@ -98,7 +98,6 @@ UK = {
     'Smoothness of the baseline (λ)': 'Гладкість базової лінії (λ)',
     'Higher = stiffer, flatter baseline.': 'Більше = жорсткіша, пласкіша базова лінія.',
     'Half window [cm⁻¹]': 'Половина вікна [см⁻¹]',
-    'Should be larger than the widest peak.': 'Має бути більшою за найширший пік.',
     'Smoothing': 'Згладжування',
     'Smoothing method': 'Метод згладжування',
     'Moving average': 'Ковзне середнє',
@@ -164,8 +163,6 @@ UK = {
     'Changes only the chart - RSD is always calculated from the original intensities': 'Змінює лише графік — RSD завжди розраховується з початкових інтенсивностей',
     'Peak range is too narrow': 'Діапазон піка занадто вузький',
     'Results': 'Результати',
-    'Polynomial degree for baseline correction': 'Степінь полінома для корекції базової лінії',
-    'Baseline is fitted within each peak range - shown as dotted lines on the chart': 'Базова лінія підбирається в межах кожного піка — на графіку пунктирні лінії',
     'Decimal places': 'Знаків після коми',
     'RAW data': 'Сирі дані',
     'Mean': 'Середнє',
@@ -217,7 +214,6 @@ UK = {
     'Signal': 'Сигнал',
     'Peak height': 'Висота піка',
     'Peak area': 'Площа піка',
-    'Baseline is fitted within the peak range - shown as dotted lines on the chart': 'Базова лінія підбирається в межах піка — на графіку пунктирні лінії',
     'Concentration axis': 'Вісь концентрації',
     'Linear': 'Лінійна',
     'Logarithmic': 'Логарифмічна',
@@ -256,7 +252,6 @@ UK = {
     'Snake order': 'Порядок «змійкою»',
     'Every second row measured in the opposite direction.': 'Кожен другий рядок виміряно у зворотному напрямку.',
     '{n} spectra do not fill the last row - it stays partly empty.': '{n} спектрів не заповнюють останній рядок — він залишиться частково порожнім.',
-    'Baseline is fitted within the peak range': 'Базова лінія підбирається в межах піка',
     'Min – max': 'Мін – макс',
     'Map': 'Карта',
     'Within ±20 % of mean': 'У межах ±20 % від середнього',
@@ -320,10 +315,8 @@ UK = {
     'Choose {name} spectra': 'Виберіть спектри {name}',
     'Raman peak range': 'Діапазон раманівського піка',
     'SERS peak range': 'Діапазон піка SERS',
-    'Subtract baseline before reading peak intensities': 'Відняти базову лінію перед зчитуванням інтенсивностей піків',
     'Selected peak range is empty': 'Вибраний діапазон піка порожній',
     'Choose which uploaded spectra are Raman and which are SERS. Several spectra of each type (e.g. from a map) are averaged. Choose the same band in both, e.g. ~1075 or ~1588 cm⁻¹ for p-MBA.': 'Виберіть, які із завантажених спектрів є раманівськими, а які — SERS. Кілька спектрів одного типу (напр. з карти) усереднюються. Виберіть ту саму смугу в обох, напр. ~1075 або ~1588 см⁻¹ для p-MBA.',
-    'at': 'при',
     'Average of {n} spectra. Peak intensity SD: {sd} (RSD {rsd} %)': 'Середнє з {n} спектрів. SD інтенсивності піка: {sd} (RSD {rsd} %)',
     'Show calculation step by step': 'Показати розрахунок крок за кроком',
     'Download parameters and results (CSV)': 'Завантажити параметри та результати (CSV)',
@@ -343,4 +336,80 @@ UK = {
     'Molecules irradiated in the Raman measurement': 'Молекули, опромінені під час раманівського вимірювання',
     'Method: P. Piecyk, A. Kowalska, T. Szymborski, IChF PAN 2020.': 'Метод: P. Piecyk, A. Kowalska, T. Szymborski, IChF PAN 2020.',
     'Upload Raman and SERS spectra in the sidebar': 'Завантажте раманівські та SERS-спектри на бічній панелі',
+    "Subtract substrate background":
+        "Відняти фон підкладки",
+    "Removes the bands of the bare substrate. Measure the substrate without the analyte (blank) with the same settings and use it as the background.":
+        "Видаляє смуги самої підкладки. Виміряйте підкладку без аналіту (холосту пробу) з тими самими налаштуваннями та використайте її як фон.",
+    "Background":
+        "Фон",
+    "One of the loaded spectra":
+        "Один із завантажених спектрів",
+    "Separate file":
+        "Окремий файл",
+    "Background spectra (averaged)":
+        "Спектри фону (усереднюються)",
+    "Choose the spectrum of the bare substrate.":
+        "Виберіть спектр самої підкладки.",
+    "All spectra are chosen as background - nothing left to correct.":
+        "Усі спектри вибрано як фон – нічого коригувати.",
+    "Background file":
+        "Файл фону",
+    "Upload the spectrum of the bare substrate (blank).":
+        "Завантажте спектр самої підкладки (холостої проби).",
+    "Background scale":
+        "Масштаб фону",
+    "Automatic (fitted for every spectrum)":
+        "Автоматичний (підбирається для кожного спектра)",
+    "Fixed factor":
+        "Фіксований коефіцієнт",
+    "Automatic: the background is fitted to every spectrum together with a smooth polynomial, analyte peaks are left out of the fit. Fixed: the same factor for all spectra, e.g. 1 when the background was measured with the same settings.":
+        "Автоматичний: фон підбирається до кожного спектра разом із гладким поліномом, піки аналіту не враховуються. Фіксований: однаковий коефіцієнт для всіх спектрів, напр. 1, якщо фон виміряно з тими самими налаштуваннями.",
+    "Factor":
+        "Коефіцієнт",
+    "Background scale factor: {f}":
+        "Коефіцієнт масштабу фону: {f}",
+    "The background does not cover the Raman Shift range of the spectra.":
+        "Фон не охоплює діапазон раманівського зсуву спектрів.",
+    "Substrate background":
+        "Фон підкладки",
+    "Background subtracted":
+        "Після віднімання фону",
+    "on":
+        "увімкнено",
+    "off":
+        "вимкнено",
+    "not set":
+        "фон не вибрано",
+    "Background spectra are not shown as samples.":
+        "Спектри фону не показуються як зразки.",
+    "SNIP baseline: half window [cm⁻¹]":
+        "Базова лінія SNIP: напіввікно [cm⁻¹]",
+    "About twice the width (FWHM) of the peaks, e.g. 40 cm⁻¹ for p-MBA. Too small cuts into the peaks, too large leaves fluorescence under them.":
+        "Приблизно подвійна ширина піків (FWHM), напр. 40 cm⁻¹ для p-MBA. Замале зрізає піки, завелике залишає під ними флуоресценцію.",
+    'Baseline under the peak':
+        'Базова лінія під піком',
+    'Straight line under the peak':
+        'Пряма під піком',
+    'None (absolute height)':
+        'Немає (абсолютна висота)',
+    'What counts as zero under the peak. SNIP: baseline of the whole spectrum. Straight line: fitted under the peak range only. None: absolute height, fluorescence and background included - e.g. a peak 10 000 high on a 30 000 background counts as 40 000.':
+        'Що вважається нулем під піком. SNIP: базова лінія всього спектра. Пряма: підібрана лише в межах піка. Немає: абсолютна висота разом із флуоресценцією та фоном – напр. пік висотою 10 000 на фоні 30 000 рахується як 40 000.',
+    'Detector saturated in: {names}. The top of the strongest peak is cut off, so its height is too low (e.g. EF lower by ~10 %). Measure again with lower laser power or a shorter time.':
+        'Детектор насичений у: {names}. Вершину найсильнішого піка зрізано, тому його висота занизька (напр. EF нижчий на ~10 %). Виміряйте знову з меншою потужністю лазера або коротшим часом.',
+    '95 % CI':
+        '95 % ДІ',
+    'RSD 95 % CI from [%]':
+        'RSD, 95 % ДІ від [%]',
+    'RSD 95 % CI to [%]':
+        'RSD, 95 % ДІ до [%]',
+    '95 % CI: the range in which the true RSD of the substrate lies. It narrows with more spectra - a measured RSD of 10 % means 6–29 % from 5 spectra and 8–15 % from 20.':
+        '95 % ДІ: діапазон, у якому лежить справжнє RSD підкладки. Він звужується з кількістю спектрів – виміряне RSD 10 % означає 6–29 % для 5 спектрів і 8–15 % для 20.',
+    "Moran's I = {i} (p = {p}): neighbouring points resemble each other - the differences form patches or a gradient, e.g. uneven deposition. Look at the map for weaker areas.":
+        'I Морана = {i} (p = {p}): сусідні точки схожі між собою – відмінності утворюють плями або градієнт, напр. нерівномірне нанесення. Пошукайте на карті слабші ділянки.',
+    "Moran's I = {i} (p = {p}): neighbouring points differ more than by chance - check the order of the points (snake order) and the stage.":
+        'I Морана = {i} (p = {p}): сусідні точки відрізняються сильніше, ніж випадково – перевірте порядок точок (змійкою) і столик.',
+    "Moran's I = {i} (p = {p}): the differences between points look random - no gradient or patches.":
+        'I Морана = {i} (p = {p}): відмінності між точками виглядають випадковими – без градієнта і плям.',
+    'Same RSD, different substrate: scattered weak points (random) are noise, a weaker edge or patch (clustered) points to the production process. p = how often a random shuffle of the same values over the map looks at least as clustered.':
+        'Однакове RSD, різні підкладки: розкидані слабші точки (випадково) – це шум, слабший край або пляма (скупчення) вказують на процес виробництва. p = як часто випадкове перемішування тих самих значень на карті виглядає щонайменше так само скупченим.',
 }

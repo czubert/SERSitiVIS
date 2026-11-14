@@ -230,14 +230,28 @@ def test_rsd_not_affected_by_chart_normalisation():
     assert app.table[0].value.astype(float).equals(before)
 
 
-def test_rsd_polynomial_degree_changes_result():
+def test_rsd_snip_half_window_changes_result():
     app = new_app('Jobin Yvon T64000', 'rsd')
     app.slider(key='rsd_Peak 1_range').set_value((1050, 1110)).run()
     results = []
-    for degree in (1, 10):
-        app.slider(key='rsd_degree').set_value(degree).run()
+    for half_window in (15, 200):
+        app.slider(key='rsd_half_window').set_value(half_window).run()
         results.append(app.table[0].value.astype(float).loc['RSD[%]', 'Baseline corrected'])
-    assert results[0] != results[1]
+    assert not app.exception and results[0] != results[1]
+
+
+def test_default_snip_half_window_measures_peak_heights():
+    """Default half window measures p-MBA-like bands (FWHM 16-20 cm-1) on strong fluorescence within 7 %"""
+    from core.processing import baselines, trim
+    from vis_helpers.data_customisation import SNIP_HALF_WINDOW
+    x = np.arange(400, 1800, 1.5)
+    peaks = {1077: (10000, 16), 1588: (15000, 20)}
+    analyte = sum(h / (1 + ((x - c) / (w / 2)) ** 2) for c, (h, w) in peaks.items())
+    fluorescence = 30000 * np.exp(-((x - 1200) / 700) ** 2) + 4000 + 1.5 * (x - 1100)
+    df = pd.DataFrame({'s': analyte + fluorescence}, index=x)
+    corrected = df - baselines(df, 'snip', SNIP_HALF_WINDOW)
+    for center, (height, _) in peaks.items():
+        assert abs(trim(corrected, center - 15, center + 15)['s'].max() / height - 1) < 0.07
 
 
 #
@@ -709,3 +723,186 @@ def test_reference_peak_highlighted(chart):
     shapes = json.loads(app.get('plotly_chart')[0].proto.spec)['layout'].get('shapes', [])
     assert not app.exception
     assert any(s.get('type') == 'rect' and (s['x0'], s['x1']) == (low, high) for s in shapes)
+
+
+@pytest.mark.parametrize('chart', ['GS', 'SINGLE', 'MS', 'P3D'])
+def test_background_from_loaded_spectrum(chart):
+    app = new_app(workspace.DEFAULT_EXAMPLE, 'visualisation')
+    names = list(app.session_state['df'].columns)
+    app.radio(key='chart_type').set_value(chart).run()
+    app.checkbox(key='bg_subtract').check().run()
+    assert app.info  # nothing chosen yet (example names have no 'blank')
+    app.multiselect(key='bg_spectra').set_value([names[-1]]).run()
+    assert not app.exception and app.get('plotly_chart')
+    assert any('scale factor' in c.value for c in app.caption)
+    if chart == 'SINGLE':  # background is not offered as a sample
+        app.button(key='single_spectrum_next').click().run()
+        app.button(key='single_spectrum_next').click().run()
+        assert app.session_state['single_spectrum'] == names[0]
+    if chart in {'SINGLE', 'MS'}:
+        app.checkbox(key='show_steps').check().run()
+        assert not app.exception
+    app.radio(key='bg_scale').set_value('manual').run()
+    app.number_input(key='bg_factor').set_value(0.5).run()
+    assert not app.exception and any('0.5' in c.value for c in app.caption)
+
+
+def test_background_from_separate_file():
+    app = new_app(workspace.DEFAULT_EXAMPLE, 'visualisation')
+    app.checkbox(key='bg_subtract').check().run()
+    app.radio(key='bg_source').set_value('file').run()
+    assert app.info
+    path = os.path.join(ROOT, 'data', 'data_examples', 'jobin_yvon', '7MPBA_9B22_10s_1x.txt')
+    with open(path, 'rb') as f:
+        app.session_state['_stored_bg_file'] = [(os.path.basename(path), f.read())]
+    app.run()
+    assert not app.exception and app.get('plotly_chart')
+    assert any('scale factor' in c.value for c in app.caption)
+    assert len(app.session_state['df'].columns) == 3
+
+
+def background_panel(app):
+    return next(e for e in app.expander if e.label.startswith('Substrate background'))
+
+
+def test_background_setting_shared_by_pages():
+    app = new_app(workspace.DEFAULT_EXAMPLE, 'visualisation')
+    names = list(app.session_state['df'].columns)
+    assert background_panel(app).label.endswith(': off')
+    app.checkbox(key='bg_subtract').check().run()
+    assert background_panel(app).label.endswith(': not set')
+    app.multiselect(key='bg_spectra').set_value([names[-1]]).run()
+    assert background_panel(app).label.endswith(': on')
+    for page in ['rsd', 'calibration', 'maps', 'visualisation']:
+        app.switch_page(PAGES[page]).run()
+        assert not app.exception
+        assert background_panel(app).label.endswith(': on')
+        assert app.multiselect(key='bg_spectra').value == [names[-1]]
+    app.switch_page(PAGES['rsd']).run()
+    assert names[-1] not in app.multiselect(key='rsd_spectra').options
+    assert any('scale factor' in c.value for c in app.caption)
+
+
+@pytest.mark.parametrize('page', ['rsd', 'calibration', 'maps'])
+def test_background_on_analysis_pages(page):
+    app = new_app('WITec Alpha300 R+', page)
+    names = list(app.session_state['df'].columns)
+    app.checkbox(key='bg_subtract').check().run()
+    app.multiselect(key='bg_spectra').set_value([names[0]]).run()
+    assert not app.exception
+    assert any('scale factor' in c.value for c in app.caption)
+    app.radio(key='bg_scale').set_value('manual').run()
+    app.number_input(key='bg_factor').set_value(0.5).run()
+    assert not app.exception and any('0.5' in c.value for c in app.caption)
+
+
+def chart_notes(app):
+    import json
+    return [a.get('text', '') for chart in app.get('plotly_chart')
+            for a in json.loads(chart.proto.spec)['layout'].get('annotations', [])]
+
+
+@pytest.mark.parametrize('mode', ['snip', 'line', 'none'])
+def test_rsd_baseline_switch(mode):
+    app = new_app('Jobin Yvon T64000', 'rsd')
+    app.radio(key='rsd_baseline').set_value(mode).run()
+    assert not app.exception
+    columns = list(app.table[0].value.columns)
+    assert columns == (['RAW data'] if mode == 'none' else ['RAW data', 'Baseline corrected'])
+    assert any(n.startswith('<b>RSD = ') for n in chart_notes(app))
+
+
+def test_ef_baseline_switch_changes_ef():
+    app = AppTest.from_file(os.path.join(ROOT, 'vis.py'), default_timeout=60)
+    app.session_state['_ef_source'] = 'spectra'
+    app.run()
+    app.selectbox(key='workspace_example').set_value('Jobin Yvon T64000').run()
+    app.switch_page(PAGES['ef']).run()
+    names = app.multiselect(key='ef_Raman_spectra').options
+    app.multiselect(key='ef_Raman_spectra').set_value(names[:1]).run()
+    app.multiselect(key='ef_SERS_spectra').set_value(names[1:]).run()
+    app.slider(key='ef_Raman_range').set_value((1060, 1100)).run()
+    app.slider(key='ef_SERS_range').set_value((1060, 1100)).run()
+    results = {}
+    for mode in ('snip', 'line', 'none'):
+        app.radio(key='ef_baseline').set_value(mode).run()
+        assert not app.exception
+        ef = next(m for m in app.metric if m.label == 'EF').value
+        assert any(n.startswith('<b>EF = ') for n in chart_notes(app))  # written on the SERS chart
+        results[mode] = ef
+    assert len(set(results.values())) > 1
+
+
+def test_peak_heights_baseline_modes():
+    from core.analysis import peak_heights
+    x = np.arange(1000, 1150, 1.0)
+    peak = 1000 / (1 + ((x - 1075) / 8) ** 2)
+    df = pd.DataFrame({'a': peak + 5000 + 20 * (x - 1000), 'b': 2 * peak + 5000 + 20 * (x - 1000)}, index=x)
+    line = peak_heights(df, (1030, 1120), mode='line')
+    assert np.allclose(line, [1000, 2000], rtol=0.05)  # a straight background is removed
+    none = peak_heights(df, (1030, 1120), mode='none')
+    assert none['a'] > 6000  # absolute height includes the background
+    ratio = peak_heights(df, (1030, 1120), (1030, 1120), mode='line')
+    assert np.allclose(ratio, 1)
+
+
+def saturated_bwtek_file():
+    """Example BWTEK file with one raw detector count at the 16-bit limit"""
+    path = os.path.join(ROOT, 'data', 'data_examples', 'bwtek', 'bwtek(2).txt')
+    lines = open(path, encoding='latin-1').read().splitlines()
+    header = next(i for i, line in enumerate(lines) if line.startswith('Pixel;'))
+    raw_column = lines[header].split(';').index('Raw data #1')
+    fields = lines[header + 600].split(';')
+    fields[raw_column] = '65535'
+    lines[header + 600] = ';'.join(fields)
+    return '\n'.join(lines).encode('latin-1')
+
+
+def test_saturation_detected():
+    from core.readers import flat_top
+    assert readers.read_file('sat.txt', saturated_bwtek_file()).saturated == ['sat']
+    for path in glob.glob(os.path.join(ROOT, 'data', 'data_examples', '*', '*.*')):
+        with open(path, 'rb') as f:
+            assert not readers.read_file(os.path.basename(path), f.read()).saturated, path
+    assert flat_top([1, 5, 9, 9, 9, 4]) and not flat_top([1, 5, 9, 8, 9, 4])
+
+
+def test_saturation_warning_in_sidebar():
+    app = AppTest.from_file(os.path.join(ROOT, 'vis.py'), default_timeout=60)
+    app.session_state[workspace.FILES] = [('sat.txt', saturated_bwtek_file())]
+    app.run()
+    assert not app.exception
+    assert any('Detector saturated in: sat' in w.value for w in app.sidebar.warning)
+
+
+@pytest.mark.parametrize('n,low,high', [(5, 6.0, 29.4), (20, 7.6, 14.7)])
+def test_rsd_confidence_interval(n, low, high):
+    from core.analysis import rsd_confidence_interval
+    interval = rsd_confidence_interval(0.10, n)
+    assert np.allclose(np.array(interval) * 100, [low, high], atol=0.1)
+
+
+def test_morans_i_tells_gradient_from_noise():
+    from core import maps
+    x, y = np.meshgrid(np.arange(10), np.arange(8))
+    coords = pd.DataFrame({'x': x.ravel() * 5.0, 'y': y.ravel() * 2.0}, index=[f'p{i}' for i in range(80)])
+    rng = np.random.default_rng(1)
+    gradient = maps.morans_i(pd.Series(100 + 3 * x.ravel() + rng.normal(0, 3, 80), index=coords.index), coords)
+    assert gradient['i'] > 0.5 and gradient['p'] < 0.01
+    random_p = [maps.morans_i(pd.Series(rng.normal(100, 10, 80), index=coords.index), coords, 199)['p']
+                for _ in range(10)]
+    assert np.median(random_p) > 0.2
+
+
+@pytest.mark.parametrize('mode', ['snip', 'line', 'none'])
+def test_calibration_and_map_baseline_switch(mode):
+    app = new_app('Wasatch', 'calibration')
+    app.radio(key='cal_baseline').set_value(mode).run()
+    assert not app.exception and [m.label for m in app.metric][:3] == ['LOD', 'LOQ', 'R²']
+    app = AppTest.from_file(os.path.join(ROOT, 'vis.py'), default_timeout=60)
+    app.session_state[workspace.FILES] = [('map.txt', synthetic_map_file())]
+    app.run()
+    app.switch_page(PAGES['maps']).run()
+    app.radio(key='map_baseline').set_value(mode).run()
+    assert not app.exception and app.metric[0].label == 'RSD'
+    assert any("Moran's I" in m.value for m in list(app.info) + list(app.warning))  # 12 points

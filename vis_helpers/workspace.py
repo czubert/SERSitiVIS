@@ -123,6 +123,13 @@ def data_sidebar():
         st.sidebar.error(t('Spectra do not share a common Raman Shift range - upload them separately.'))
         df = None
 
+    saturated = [name for f in loaded for name in f.saturated]
+    if saturated:
+        st.sidebar.warning(t('Detector saturated in: {names}. The top of the strongest peak is cut off, so its '
+                             'height is too low (e.g. EF lower by ~10 %). Measure again with lower laser power or a '
+                             'shorter time.').format(names=', '.join(map(str, saturated))),
+                           icon=':material/warning:')
+
     if loaded:
         with st.sidebar.expander(t('Loaded {spectra} spectra from {files} files').format(
                 spectra=0 if df is None else df.shape[1], files=len(loaded))):

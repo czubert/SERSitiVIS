@@ -7,7 +7,41 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### ✨ New
+- **Substrate background subtraction** in Visualisation, RSD, Calibration & LOD and the uniformity map. Removes the
+  bands of the bare substrate. The background is either one or more of the loaded spectra (averaged, and no longer
+  shown as samples) or a separate file.
+  - One *Substrate background* panel, the same on every page. The setting is shared by the pages, and the panel
+    header says whether it is on, e.g. *Substrate background: on*.
+  - The background is scaled for every spectrum automatically: it is fitted together with a smooth polynomial, and
+    analyte peaks are left out of the fit. A fixed factor can be set instead, e.g. 1 when the background was
+    measured with the same settings.
+  - The scale factor is shown under the setting. The steps view shows the scaled background and the result, and the
+    PDF report lists the background used.
+
+- **Detector saturation warning.** When the top of a peak is cut off by the detector, the sidebar says which
+  spectrum and why it matters: the peak is too low, so e.g. EF comes out ~10 % lower. BWTEK files are checked against
+  the raw detector counts (65 535), other files for a flat, clipped peak top.
+- **How certain is the RSD: 95 % confidence interval** in the RSD table and on the RSD, EF and map results. An RSD
+  of 10 % measured on 5 spectra can really be anything from 6 % to 29 %; on 20 spectra 8–15 %.
+- **Uniformity map: is the non-uniformity random or a gradient?** Moran's I with a permutation test, for maps of at
+  least 3 × 3 points. Two maps with the same RSD of 15 % differ: scattered weak points are noise, a weaker edge or
+  patch points to the production process.
+
+### 🧪 Processing
+- **Baseline under the peak switch above the spectrum** in RSD and EF: *SNIP* (default, the same as
+  Visualisation), *Straight line under the peak* or *None (absolute height)*, with the SNIP half window next to it.
+  The result is written on the chart and changes at once: *RSD = 12.3 %* on the RSD chart, *EF = 6.1e7* with the
+  peak intensity and its RSD on the SERS chart. The subtracted baseline is drawn under the peak as a dotted line.
+  Before, RSD always used a line under each peak and EF a 5th degree polynomial. The same switch replaces the
+  polynomial degree in Calibration & LOD and in the uniformity map.
+- **SNIP half window 40 cm⁻¹ by default** (was 60), on every page. On test spectra with known peak heights, 60 cm⁻¹
+  left fluorescence under the narrow p-MBA band at 1075 cm⁻¹ and overestimated it by ~15 %. 40 cm⁻¹ measures it
+  within ~5 %. The help text explains the rule: about twice the peak width (FWHM).
+
 ### 🎨 Interface
+- **SNIP is the default baseline correction method.** It is first in the list, followed by the polynomial (ModPoly)
+  and arPLS.
 - **Chart type** in Visualisation is now picked from a collapsible panel with options, like *Range*. The panel
   header shows the current choice, e.g. *Chart type: Mean spectrum*.
 - A note under the language flags: English is the original version, the other languages are translated by AI.
@@ -21,6 +55,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   by dragging on it, like the peak ranges on the other pages.
 - **Dark theme**: highlighted peak ranges (RSD, calibration, map, EF, reference peak) use a lighter gold with an
   outline. Before, they turned a hard-to-see olive.
+- **Supported files** (manual): the example file previews are readable in the dark theme and no longer use
+  `st.components.v1.html`, which Streamlit is removing (it filled the server log with warnings).
 
 ### 📚 Project
 - `README.md` describes the app, supported files, running it locally and running the tests.

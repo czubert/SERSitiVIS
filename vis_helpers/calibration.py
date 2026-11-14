@@ -4,8 +4,8 @@ import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
 
-from core import calibration, processing
-from vis_helpers import vis_utils, workspace
+from core import analysis, calibration
+from vis_helpers import background, data_customisation, vis_utils, workspace
 from vis_helpers.i18n import t, choice
 
 CHART_KEY = 'cal_chart'
@@ -40,29 +40,30 @@ def main(df):
                   'from file names, e.g. "R6G_5x10-6M_1.txt" or "sample_1ppm.csv" - you can correct them.'))
         return
 
-    low, high = vis_utils.spectrum_limits(df)
-    # new data -> start again from the strongest peak
-    data_id = (tuple(df.columns), low, high)
+    # new data -> start again from the strongest peak (the background setting does not count as new data)
+    data_id = (tuple(df.columns), *vis_utils.spectrum_limits(df))
     if st.session_state.get(DATA_KEY) != data_id:
         st.session_state[DATA_KEY] = data_id
         for key in (RANGE_KEY, CONC_KEY, UNIT_KEY, PREVIOUS_UNIT_KEY):
             st.session_state.pop(key, None)
+    all_df, df = df, background.samples(df)
 
     # # Step 1 - peak
     st.subheader(f'1. {t("Peak")}')
     chart_col, settings_col = st.columns((3, 1))
     with settings_col:
+        df, subtraction = background.subtract(df, background.panel(all_df))
+        low, high = vis_utils.spectrum_limits(df)
         peak_range = vis_utils.range_slider(t('Peak range'), low, high, key=RANGE_KEY,
                                             default=calibration.strongest_peak_range(df))
         method = choice('radio', t('Signal'), ['height', 'area'], key='cal_method', horizontal=True,
                         format_func=lambda m: t('Peak height') if m == 'height' else t('Peak area'))
-        degree = st.slider(t('Polynomial degree for baseline correction'), 0, 5, 1, key='cal_degree',
-                           help=t('Baseline is fitted within the peak range - shown as dotted lines on the chart'))
 
     palette = vis_utils.sersitive_palette()
     colors = {col: palette[i % len(palette)] for i, col in enumerate(df.columns)}
 
     with chart_col:
+        mode, half_window = data_customisation.peak_baseline_switch('cal')
         st.caption(t('Tip: drag on the chart to select the peak range.'))
         fig = px.line(df, color_discrete_map=colors)
         fig.update_layout(dragmode='select', selectdirection='h', height=330, showlegend=False)
@@ -70,17 +71,18 @@ def main(df):
         vis_utils.show_chart(fig, vis_utils.default_chart_settings(), key=CHART_KEY, selection_mode='box',
                              on_select=lambda: vis_utils.range_from_selection(CHART_KEY, RANGE_KEY, low, high))
 
-    window = processing.trim(df, *peak_range)
+    window, baselines = analysis.peak_window(df, *peak_range, mode, half_window)
     if len(window) < 3:
         st.warning(t('Peak range is too narrow'))
         return
-    signal = calibration.peak_signal(df, *peak_range, method=method, degree=degree)
+    signal = calibration.peak_signal(df, *peak_range, method=method, mode=mode, half_window=half_window)
+    baseline_text = data_customisation.describe_peak_baseline(mode, half_window)
 
     # zoom on the peak: what exactly is measured (baseline + height or area)
     zoom = go.Figure()
     for spectrum in window.columns:
         color = colors[spectrum]
-        base = processing.baseline(window[spectrum], degree, x=window.index)
+        base = baselines[spectrum].to_numpy()
         zoom.add_trace(go.Scatter(x=window.index, y=base, mode='lines', line=dict(dash='dot', width=1.5, color=color),
                                   showlegend=False, hoverinfo='skip'))
         if method == 'area':
@@ -218,21 +220,23 @@ def main(df):
                                'cal_csv', index=False)
         vis_utils.report_button(
             'calibration',
-            lambda: build_report(df, peak_range, method, degree, unit, log_x, sigma_source, result, summary,
-                                 concentration[known], signal[known]),
-            (peak_range, method, degree, unit, log_x, sigma_source, tuple(concentration.fillna(-1)),
-             float(df.to_numpy().sum())))
+            lambda: build_report(df, peak_range, method, baseline_text, unit, log_x, sigma_source, result,
+                                 summary, concentration[known], signal[known], subtraction),
+            (peak_range, method, baseline_text, unit, log_x, sigma_source, tuple(concentration.fillna(-1)),
+             float(df.to_numpy().sum()), background.describe(subtraction)))
 
 
-def build_report(df, peak_range, method, degree, unit, log_x, sigma_source, result, summary, concentration, signal):
+def build_report(df, peak_range, method, baseline_text, unit, log_x, sigma_source, result, summary, concentration, signal,
+                 subtraction=None):
     from core import report
 
     signal_name = t('Peak height') if method == 'height' else t('Peak area')
     rep = report.Report(t('Calibration curve and limit of detection (LOD)'))
     rep.heading(t('Data'))
     rep.key_values({t('Files'): ', '.join(workspace.file_names()) or '—', t('Spectra'): df.shape[1],
+                    t('Subtract substrate background'): background.describe(subtraction),
                     t('Peak range'): f'{peak_range[0]} – {peak_range[1]} cm⁻¹', t('Signal'): signal_name,
-                    t('Polynomial degree for baseline correction'): degree,
+                    t('Baseline under the peak'): baseline_text,
                     t('Concentration axis'): t('Logarithmic') if log_x else t('Linear'),
                     t('Standard deviation for LOD'): t('Residuals of the fit') if sigma_source == 'regression'
                     else t('Blank spectra (concentration 0)')})

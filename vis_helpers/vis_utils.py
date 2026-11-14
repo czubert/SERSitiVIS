@@ -100,6 +100,25 @@ def show_chart(fig, settings, lines=True, **kwargs):
     return st.plotly_chart(fig, width='stretch', config=config, **kwargs)
 
 
+def rsd_interval(rsd, n):
+    """'95 % CI 6.0–29 %' - how far the true RSD can be from the one measured on n spectra"""
+    import numpy as np
+    from core.analysis import rsd_confidence_interval
+
+    low, high = rsd_confidence_interval(rsd, n)
+    if not np.isfinite(low):
+        return ''
+    return f'{t("95 % CI")} {100 * low:.1f}–{"∞" if not np.isfinite(high) else f"{100 * high:.1f}"} %'
+
+
+def chart_note(fig, text):
+    """Result written in the top left corner of the chart, on a background so the spectra do not cover it"""
+    background, border = ('rgba(42, 51, 64, 0.9)', '#3A4452') if is_dark() else ('rgba(255, 255, 255, 0.9)', '#C9D3DE')
+    fig.add_annotation(text=text, xref='paper', yref='paper', x=0.01, y=0.99, xanchor='left', yanchor='top',
+                       showarrow=False, align='left', font=dict(size=14), bgcolor=background, bordercolor=border,
+                       borderwidth=1, borderpad=6)
+
+
 def range_slider(label, low, high, key, default=None, **kwargs):
     """
     Range slider which resets itself (to default or full range) when the stored range does not fit new data

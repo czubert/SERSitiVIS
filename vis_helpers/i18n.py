@@ -236,7 +236,6 @@ PL = {
     'Smoothness of the baseline (λ)': 'Gładkość linii bazowej (λ)',
     'Higher = stiffer, flatter baseline.': 'Więcej = sztywniejsza, bardziej płaska linia bazowa.',
     'Half window [cm⁻¹]': 'Połowa okna [cm⁻¹]',
-    'Should be larger than the widest peak.': 'Powinna być większa niż najszerszy pik.',
     'Smoothing': 'Wygładzanie',
     'Smoothing method': 'Metoda wygładzania',
     'Moving average': 'Średnia krocząca',
@@ -315,9 +314,6 @@ PL = {
         'Zmienia tylko wykres - RSD zawsze liczone jest z oryginalnych intensywności',
     'Peak range is too narrow': 'Zakres piku jest za wąski',
     'Results': 'Wyniki',
-    'Polynomial degree for baseline correction': 'Stopień wielomianu korekty linii bazowej',
-    'Baseline is fitted within each peak range - shown as dotted lines on the chart':
-        'Linia bazowa dopasowywana jest w zakresie każdego piku - na wykresie linie kropkowane',
     'Decimal places': 'Miejsca po przecinku',
     'RAW data': 'Surowe dane',
     'Mean': 'Średnia',
@@ -381,8 +377,6 @@ PL = {
     'Signal': 'Sygnał',
     'Peak height': 'Wysokość piku',
     'Peak area': 'Pole piku',
-    'Baseline is fitted within the peak range - shown as dotted lines on the chart':
-        'Linia bazowa dopasowywana jest w zakresie piku - na wykresie linie kropkowane',
     'Concentration axis': 'Oś stężenia',
     'Linear': 'Liniowa',
     'Logarithmic': 'Logarytmiczna',
@@ -439,7 +433,6 @@ PL = {
     'Every second row measured in the opposite direction.': 'Co drugi wiersz mierzony w przeciwnym kierunku.',
     '{n} spectra do not fill the last row - it stays partly empty.':
         '{n} widm nie wypełnia ostatniego wiersza - zostanie częściowo pusty.',
-    'Baseline is fitted within the peak range': 'Linia bazowa dopasowywana jest w zakresie piku',
     'Min – max': 'Min – max',
     'Mean spectrum': 'Widmo średnie',
     'Map': 'Mapa',
@@ -521,13 +514,11 @@ PL = {
     'Choose {name} spectra': 'Wybierz widma {name}',
     'Raman peak range': 'Zakres piku Ramana',
     'SERS peak range': 'Zakres piku SERS',
-    'Subtract baseline before reading peak intensities': 'Odejmij linię bazową przed odczytem intensywności',
     'Selected peak range is empty': 'Wybrany zakres piku jest pusty',
     'Choose which uploaded spectra are Raman and which are SERS. Several spectra of each type '
     '(e.g. from a map) are averaged. Choose the same band in both, e.g. ~1075 or ~1588 cm⁻¹ for p-MBA.':
         'Wybierz, które z wgranych widm to Raman, a które SERS. Kilka widm danego typu (np. z mapy) '
         'zostanie uśrednionych. Wybierz to samo pasmo w obu, np. ~1075 lub ~1588 cm⁻¹ dla p-MBA.',
-    'at': 'przy',
     'Average of {n} spectra. Peak intensity SD: {sd} (RSD {rsd} %)':
         'Średnia z {n} widm. SD intensywności piku: {sd} (RSD {rsd} %)',
     'Show calculation step by step': 'Pokaż obliczenia krok po kroku',
@@ -554,4 +545,80 @@ PL = {
     'Method: P. Piecyk, A. Kowalska, T. Szymborski, IChF PAN 2020.':
         'Metoda: P. Piecyk, A. Kowalska, T. Szymborski, IChF PAN 2020.',
     'Upload Raman and SERS spectra in the sidebar': 'Wgraj widma Ramana i SERS w panelu bocznym',
+    "Subtract substrate background":
+        "Odejmij tło podłoża",
+    "Removes the bands of the bare substrate. Measure the substrate without the analyte (blank) with the same settings and use it as the background.":
+        "Usuwa pasma samego podłoża. Zmierz podłoże bez analitu (ślepą próbę) z tymi samymi ustawieniami i użyj go jako tła.",
+    "Background":
+        "Tło",
+    "One of the loaded spectra":
+        "Jedno z wgranych widm",
+    "Separate file":
+        "Osobny plik",
+    "Background spectra (averaged)":
+        "Widma tła (uśredniane)",
+    "Choose the spectrum of the bare substrate.":
+        "Wybierz widmo samego podłoża.",
+    "All spectra are chosen as background - nothing left to correct.":
+        "Wszystkie widma wybrano jako tło – nie ma czego korygować.",
+    "Background file":
+        "Plik z tłem",
+    "Upload the spectrum of the bare substrate (blank).":
+        "Wgraj widmo samego podłoża (ślepej próby).",
+    "Background scale":
+        "Skala tła",
+    "Automatic (fitted for every spectrum)":
+        "Automatyczna (dopasowana do każdego widma)",
+    "Fixed factor":
+        "Stały współczynnik",
+    "Automatic: the background is fitted to every spectrum together with a smooth polynomial, analyte peaks are left out of the fit. Fixed: the same factor for all spectra, e.g. 1 when the background was measured with the same settings.":
+        "Automatyczna: tło jest dopasowywane do każdego widma razem z gładkim wielomianem, piki analitu są pomijane w dopasowaniu. Stała: ten sam współczynnik dla wszystkich widm, np. 1, gdy tło zmierzono z tymi samymi ustawieniami.",
+    "Factor":
+        "Współczynnik",
+    "Background scale factor: {f}":
+        "Współczynnik skali tła: {f}",
+    "The background does not cover the Raman Shift range of the spectra.":
+        "Tło nie obejmuje zakresu przesunięcia Ramana widm.",
+    "Substrate background":
+        "Tło podłoża",
+    "Background subtracted":
+        "Po odjęciu tła",
+    "on":
+        "włączone",
+    "off":
+        "wyłączone",
+    "not set":
+        "nie wybrano tła",
+    "Background spectra are not shown as samples.":
+        "Widma tła nie są pokazywane jako próbki.",
+    "SNIP baseline: half window [cm⁻¹]":
+        "Linia bazowa SNIP: półokno [cm⁻¹]",
+    "About twice the width (FWHM) of the peaks, e.g. 40 cm⁻¹ for p-MBA. Too small cuts into the peaks, too large leaves fluorescence under them.":
+        "Około dwukrotność szerokości pików (FWHM), np. 40 cm⁻¹ dla p-MBA. Za małe ścina piki, za duże zostawia pod nimi fluorescencję.",
+    'Baseline under the peak':
+        'Linia bazowa pod pikiem',
+    'Straight line under the peak':
+        'Prosta pod pikiem',
+    'None (absolute height)':
+        'Brak (wysokość bezwzględna)',
+    'What counts as zero under the peak. SNIP: baseline of the whole spectrum. Straight line: fitted under the peak range only. None: absolute height, fluorescence and background included - e.g. a peak 10 000 high on a 30 000 background counts as 40 000.':
+        'Co jest zerem pod pikiem. SNIP: linia bazowa całego widma. Prosta: dopasowana tylko w zakresie piku. Brak: wysokość bezwzględna, razem z fluorescencją i tłem – np. pik o wysokości 10 000 na tle 30 000 liczy się jako 40 000.',
+    'Detector saturated in: {names}. The top of the strongest peak is cut off, so its height is too low (e.g. EF lower by ~10 %). Measure again with lower laser power or a shorter time.':
+        'Detektor nasycony w: {names}. Wierzchołek najsilniejszego piku jest ścięty, więc jego wysokość jest za niska (np. EF niższy o ~10 %). Zmierz ponownie z mniejszą mocą lasera albo krótszym czasem.',
+    '95 % CI':
+        'przedział 95 %',
+    'RSD 95 % CI from [%]':
+        'RSD, przedział 95 % od [%]',
+    'RSD 95 % CI to [%]':
+        'RSD, przedział 95 % do [%]',
+    '95 % CI: the range in which the true RSD of the substrate lies. It narrows with more spectra - a measured RSD of 10 % means 6–29 % from 5 spectra and 8–15 % from 20.':
+        'Przedział 95 %: zakres, w którym leży prawdziwe RSD podłoża. Zwęża się z liczbą widm – zmierzone RSD 10 % oznacza 6–29 % przy 5 widmach i 8–15 % przy 20.',
+    "Moran's I = {i} (p = {p}): neighbouring points resemble each other - the differences form patches or a gradient, e.g. uneven deposition. Look at the map for weaker areas.":
+        'I Morana = {i} (p = {p}): sąsiednie punkty są do siebie podobne – różnice układają się w plamy albo gradient, np. nierówne nanoszenie. Poszukaj na mapie słabszych obszarów.',
+    "Moran's I = {i} (p = {p}): neighbouring points differ more than by chance - check the order of the points (snake order) and the stage.":
+        'I Morana = {i} (p = {p}): sąsiednie punkty różnią się bardziej niż przypadkowo – sprawdź kolejność punktów (wężykiem) i stolik.',
+    "Moran's I = {i} (p = {p}): the differences between points look random - no gradient or patches.":
+        'I Morana = {i} (p = {p}): różnice między punktami wyglądają na losowe – bez gradientu i plam.',
+    'Same RSD, different substrate: scattered weak points (random) are noise, a weaker edge or patch (clustered) points to the production process. p = how often a random shuffle of the same values over the map looks at least as clustered.':
+        'To samo RSD, inne podłoże: rozrzucone słabsze punkty (losowo) to szum, słabszy brzeg albo plama (skupienia) wskazują na proces produkcji. p = jak często losowe przetasowanie tych samych wartości na mapie wygląda na co najmniej tak samo skupione.',
 }

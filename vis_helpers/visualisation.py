@@ -4,7 +4,7 @@ import plotly.graph_objects as go
 import streamlit as st
 
 from core import calibration, peaks, processing
-from vis_helpers import manual, data_customisation, vis_utils, workspace
+from vis_helpers import background, manual, data_customisation, vis_utils, workspace
 from vis_helpers.i18n import t, choice
 
 NORMALIZATIONS = {'none': 'None', 'minmax': 'Min-max (0-1)', 'max': 'Maximum = 1', 'area': 'Area = 1',
@@ -23,6 +23,7 @@ def visualisation(df):
 
     st.header(t('Visualisation'))
     chart_col, settings_col = st.columns((3, 1))
+    all_df, df = df, background.samples(df)
 
     with settings_col:
         # header shows the current choice, so the expander can stay closed
@@ -41,11 +42,14 @@ def visualisation(df):
             if chart_type == 'GS':
                 shift = st.slider(t('Separate spectra from each other'), 0.0, 1.0, 0.0, 0.05, key='shift')
 
+        background_settings = background.panel(all_df)
+
         with st.expander(t('Processing'), icon=':material/tune:', expanded=True):
             steps_settings = data_customisation.processing_settings(df.columns,
                                                                     allow_each=chart_type in {'GS', 'P3D'})
             spike_note = st.empty()
-            processed = steps_settings['baseline'] is not None or steps_settings['smoothing'] is not None
+            processed = (steps_settings['baseline'] is not None or steps_settings['smoothing'] is not None
+                         or background_settings is not None)
             show_steps = processed and chart_type in {'SINGLE', 'MS'} and st.checkbox(
                 t('Show baseline and intermediate steps'), key='show_steps')
             normalization = choice('selectbox', t('Normalization'), ['none'] + processing.NORMALIZATION_METHODS,
@@ -75,10 +79,13 @@ def visualisation(df):
         with st.expander(t('Chart appearance'), icon=':material/palette:'):
             settings = vis_utils.chart_settings('vis')
 
-    # processing: spikes -> baseline -> smoothing -> normalization
+    # processing: spikes -> substrate background -> baseline -> smoothing -> normalization
     if steps_settings['despike']:
         df, removed = processing.remove_spikes(df, steps_settings['despike'])
         spike_note.caption(t('Spike points replaced: {n}').format(n=sum(removed.values())))
+    original = df
+    df, subtraction = background.subtract(df, background_settings, steps_settings['despike'])
+    original = original.loc[df.index]  # the background may cover a shorter range
     baselines = processing.baselines(df, *steps_settings['baseline']) if steps_settings['baseline']         else pd.DataFrame(0.0, index=df.index, columns=df.columns)
     corrected = df - baselines
     smoothed = processing.smooth(corrected, *steps_settings['smoothing']) if steps_settings['smoothing']         else corrected
@@ -102,7 +109,10 @@ def visualisation(df):
 
     elif processed and show_steps:
         name = df.columns[0]
-        parts = {name: df[name]}
+        parts = {name: original[name]}
+        if subtraction is not None:
+            parts[t('Substrate background')] = subtraction.scaled(name)
+            parts[t('Background subtracted')] = df[name]
         if steps_settings['baseline']:
             parts[t('Baseline')] = baselines[name]
             parts[t('Baseline corrected')] = corrected[name]
@@ -158,11 +168,12 @@ def visualisation(df):
             vis_utils.report_button(
                 'visualisation',
                 lambda: build_report(plot_df, chart_type, steps_settings, normalization,
-                                     peaks_table if show_peaks else None),
-                (chart_type, steps_settings, normalization, show_peaks, plot_df.shape, float(plot_df.to_numpy().sum())))
+                                     peaks_table if show_peaks else None, subtraction),
+                (chart_type, steps_settings, normalization, show_peaks, plot_df.shape, float(plot_df.to_numpy().sum()),
+                 background.describe(subtraction)))
 
 
-def build_report(plot_df, chart_type, steps_settings, normalization, peaks_table):
+def build_report(plot_df, chart_type, steps_settings, normalization, peaks_table, subtraction=None):
     from core import report
 
     rep = report.Report(t('Visualisation'))
@@ -174,6 +185,7 @@ def build_report(plot_df, chart_type, steps_settings, normalization, peaks_table
     baseline, smoothing = steps_settings['baseline'], steps_settings['smoothing']
     rep.key_values({
         t('Remove spikes (cosmic rays)'): steps_settings['despike'] or '—',
+        t('Subtract substrate background'): background.describe(subtraction),
         t('Baseline correction'): f'{t(data_customisation.BASELINE_LABELS[baseline[0]])}, {baseline[1]}'
         if baseline else '—',
         t('Smoothing'): f'{t(data_customisation.SMOOTHING_LABELS[smoothing[0]])}, {smoothing[1]}' if smoothing else '—',

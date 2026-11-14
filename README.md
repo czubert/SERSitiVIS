@@ -5,8 +5,9 @@ Fast and easy processing and visualisation of Raman and SERS spectra – a free 
 
 ## What it does
 
-- **Visualisation** – grouped, single, mean and 3D spectra; spike removal, baseline correction (ModPoly, arPLS, SNIP),
-  smoothing, six normalisation methods, automatic peak labelling.
+- **Substrate background subtraction** – blank substrate spectrum scaled and subtracted, on every page that
+  measures spectra.
+- **Visualisation** – grouped, single, mean and 3D spectra; spike removal, baseline correction (ModPoly, arPLS, SNIP), smoothing, six normalisation methods, automatic peak labelling.
 - **RSD** – reproducibility of a SERS substrate from many spectra of one sample.
 - **Calibration & LOD** – calibration curve from a concentration series, limit of detection (ICH or IUPAC).
 - **Uniformity map** – intensity / RSD map of a substrate from mapping data.

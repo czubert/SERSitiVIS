@@ -6,7 +6,7 @@ Every reader returns a DataFrame: index = Raman Shift [cm-1] (float, ascending),
 """
 import os
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import numpy as np
 import pandas as pd
@@ -31,6 +31,11 @@ FORMATS = {
 
 # BWTEK: pixels below this are cut off by the instrument's edge filter (~490 cm-1 and lower)
 BWTEK_FIRST_PIXEL = 311
+# Saturated detector: the top of the strongest peak is cut off, so its height (and EF, calibration...) is too low.
+# BWTEK files keep the raw counts of a 16-bit detector (max 65 535), e.g. 64 380 + 1 114 dark = 65 494.
+# Other formats: a clipped peak - the maximum repeated on several neighbouring points.
+SATURATION_COUNTS = 0.99 * 65535
+FLAT_TOP_POINTS = 3
 
 ENCODINGS = ('utf-8-sig', 'cp1250', 'latin-1')
 
@@ -44,6 +49,20 @@ class LoadedFile:
     name: str
     format: str
     data: pd.DataFrame
+    saturated: list = field(default_factory=list)  # spectra whose detector was saturated
+
+
+def flat_top(y, points=FLAT_TOP_POINTS):
+    """The maximum repeated on >= points neighbouring points - a clipped (saturated) peak"""
+    y = np.asarray(y, dtype=float)
+    y = y[np.isfinite(y)]
+    if len(y) < points or y.max() <= 0:
+        return False
+    run = longest = 0
+    for at_max in y == y.max():
+        run = run + 1 if at_max else 0
+        longest = max(longest, run)
+    return longest >= points
 
 
 def decode(raw):
@@ -125,8 +144,10 @@ def read_file(name, raw, file_format='AUTO'):
     if file_format == 'AUTO':
         file_format = detect_format(text)
 
+    saturated = []
     if file_format == 'BWTEK':
-        df = read_bwtek(name, text)
+        df, raw_max = read_bwtek(name, text)
+        saturated = list(df.columns) if raw_max >= SATURATION_COUNTS else []
     elif file_format == 'WASATCH':
         df = read_wasatch(name, text)
     elif file_format in ('TABLE', 'MAP'):
@@ -135,16 +156,17 @@ def read_file(name, raw, file_format='AUTO'):
             file_format = 'MAP'
     else:
         raise ValueError(f'Unknown format: {file_format}')
-    return _finish(name, file_format, df)
+    return _finish(name, file_format, df, saturated)
 
 
-def _finish(name, file_format, df):
+def _finish(name, file_format, df, saturated=()):
     df = df[~df.index.duplicated()].sort_index().astype(float)
     df = df[np.isfinite(df.index)]
     df.index.name = RAMAN_SHIFT
     if df.empty:
         raise ParseError('No spectrum found in the file')
-    return LoadedFile(name=name, format=file_format, data=df)
+    saturated = [c for c in df.columns if c in saturated or flat_top(df[c])]
+    return LoadedFile(name=name, format=file_format, data=df, saturated=saturated)
 
 
 def read_files(files, file_format='AUTO'):
@@ -192,6 +214,7 @@ def _to_float(values, decimal_comma):
 
 
 def read_bwtek(name, text):
+    """:return: (DataFrame, highest raw detector count - to detect saturation)"""
     lines = text.splitlines()
     try:
         header_row = next(i for i, line in enumerate(lines) if 'Raman Shift' in line and 'Pixel' in line)
@@ -207,8 +230,10 @@ def read_bwtek(name, text):
     pixel = _to_float(table['Pixel'], decimal_comma=True)
     data = pd.DataFrame({RAMAN_SHIFT: _to_float(table['Raman Shift'], decimal_comma=True),
                          stem(name): _to_float(table[y_column], decimal_comma=True)})
-    data = data[pixel >= BWTEK_FIRST_PIXEL].dropna()
-    return data.set_index(RAMAN_SHIFT)
+    used = (pixel >= BWTEK_FIRST_PIXEL).to_numpy()
+    raw = _to_float(table['Raw data #1'], decimal_comma=True)[used] if 'Raw data #1' in header else data[stem(name)]
+    data = data[used].dropna()
+    return data.set_index(RAMAN_SHIFT), float(raw.max())
 
 
 def read_wasatch(name, text):

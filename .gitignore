@@ -6,3 +6,5 @@ __pycache__/
 .pytest_cache/
 # internal document, do not publish
 /data/Enhancement_Factor.pdf
+# local measurements (internal), not part of the app
+/tmp/

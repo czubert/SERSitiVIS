@@ -98,7 +98,6 @@ DE = {
     'Smoothness of the baseline (λ)': 'Glattheit der Basislinie (λ)',
     'Higher = stiffer, flatter baseline.': 'Höher = steifere, flachere Basislinie.',
     'Half window [cm⁻¹]': 'Halbes Fenster [cm⁻¹]',
-    'Should be larger than the widest peak.': 'Sollte größer als der breiteste Peak sein.',
     'Smoothing': 'Glättung',
     'Smoothing method': 'Glättungsmethode',
     'Moving average': 'Gleitender Mittelwert',
@@ -164,8 +163,6 @@ DE = {
     'Changes only the chart - RSD is always calculated from the original intensities': 'Ändert nur das Diagramm – die RSD wird immer aus den ursprünglichen Intensitäten berechnet',
     'Peak range is too narrow': 'Der Peakbereich ist zu schmal',
     'Results': 'Ergebnisse',
-    'Polynomial degree for baseline correction': 'Polynomgrad der Basislinienkorrektur',
-    'Baseline is fitted within each peak range - shown as dotted lines on the chart': 'Die Basislinie wird in jedem Peakbereich angepasst – im Diagramm als gepunktete Linien dargestellt',
     'Decimal places': 'Dezimalstellen',
     'RAW data': 'Rohdaten',
     'Mean': 'Mittelwert',
@@ -217,7 +214,6 @@ DE = {
     'Signal': 'Signal',
     'Peak height': 'Peakhöhe',
     'Peak area': 'Peakfläche',
-    'Baseline is fitted within the peak range - shown as dotted lines on the chart': 'Die Basislinie wird im Peakbereich angepasst – im Diagramm als gepunktete Linien dargestellt',
     'Concentration axis': 'Konzentrationsachse',
     'Linear': 'Linear',
     'Logarithmic': 'Logarithmisch',
@@ -256,7 +252,6 @@ DE = {
     'Snake order': 'Schlangenlinien-Reihenfolge',
     'Every second row measured in the opposite direction.': 'Jede zweite Zeile wird in Gegenrichtung gemessen.',
     '{n} spectra do not fill the last row - it stays partly empty.': '{n} Spektren füllen die letzte Zeile nicht – sie bleibt teilweise leer.',
-    'Baseline is fitted within the peak range': 'Die Basislinie wird im Peakbereich angepasst',
     'Min – max': 'Min – Max',
     'Map': 'Karte',
     'Within ±20 % of mean': 'Innerhalb ±20 % des Mittelwerts',
@@ -320,10 +315,8 @@ DE = {
     'Choose {name} spectra': '{name}-Spektren wählen',
     'Raman peak range': 'Raman-Peakbereich',
     'SERS peak range': 'SERS-Peakbereich',
-    'Subtract baseline before reading peak intensities': 'Basislinie vor dem Ablesen der Peakintensitäten abziehen',
     'Selected peak range is empty': 'Der gewählte Peakbereich ist leer',
     'Choose which uploaded spectra are Raman and which are SERS. Several spectra of each type (e.g. from a map) are averaged. Choose the same band in both, e.g. ~1075 or ~1588 cm⁻¹ for p-MBA.': 'Wählen Sie, welche hochgeladenen Spektren Raman und welche SERS sind. Mehrere Spektren eines Typs (z. B. aus einer Karte) werden gemittelt. Wählen Sie in beiden dieselbe Bande, z. B. ~1075 oder ~1588 cm⁻¹ für p-MBA.',
-    'at': 'bei',
     'Average of {n} spectra. Peak intensity SD: {sd} (RSD {rsd} %)': 'Mittelwert aus {n} Spektren. SD der Peakintensität: {sd} (RSD {rsd} %)',
     'Show calculation step by step': 'Berechnung Schritt für Schritt anzeigen',
     'Download parameters and results (CSV)': 'Parameter und Ergebnisse herunterladen (CSV)',
@@ -343,4 +336,80 @@ DE = {
     'Molecules irradiated in the Raman measurement': 'Bei der Raman-Messung bestrahlte Moleküle',
     'Method: P. Piecyk, A. Kowalska, T. Szymborski, IChF PAN 2020.': 'Methode: P. Piecyk, A. Kowalska, T. Szymborski, IChF PAN 2020.',
     'Upload Raman and SERS spectra in the sidebar': 'Laden Sie Raman- und SERS-Spektren in der Seitenleiste hoch',
+    "Subtract substrate background":
+        "Substrathintergrund abziehen",
+    "Removes the bands of the bare substrate. Measure the substrate without the analyte (blank) with the same settings and use it as the background.":
+        "Entfernt die Banden des reinen Substrats. Messen Sie das Substrat ohne Analyt (Blindprobe) mit denselben Einstellungen und verwenden Sie es als Hintergrund.",
+    "Background":
+        "Hintergrund",
+    "One of the loaded spectra":
+        "Eines der geladenen Spektren",
+    "Separate file":
+        "Separate Datei",
+    "Background spectra (averaged)":
+        "Hintergrundspektren (gemittelt)",
+    "Choose the spectrum of the bare substrate.":
+        "Wählen Sie das Spektrum des reinen Substrats.",
+    "All spectra are chosen as background - nothing left to correct.":
+        "Alle Spektren sind als Hintergrund gewählt – nichts mehr zu korrigieren.",
+    "Background file":
+        "Hintergrunddatei",
+    "Upload the spectrum of the bare substrate (blank).":
+        "Laden Sie das Spektrum des reinen Substrats (Blindprobe) hoch.",
+    "Background scale":
+        "Skalierung des Hintergrunds",
+    "Automatic (fitted for every spectrum)":
+        "Automatisch (für jedes Spektrum angepasst)",
+    "Fixed factor":
+        "Fester Faktor",
+    "Automatic: the background is fitted to every spectrum together with a smooth polynomial, analyte peaks are left out of the fit. Fixed: the same factor for all spectra, e.g. 1 when the background was measured with the same settings.":
+        "Automatisch: Der Hintergrund wird zusammen mit einem glatten Polynom an jedes Spektrum angepasst, Analytpeaks werden dabei ausgelassen. Fest: derselbe Faktor für alle Spektren, z. B. 1, wenn der Hintergrund mit denselben Einstellungen gemessen wurde.",
+    "Factor":
+        "Faktor",
+    "Background scale factor: {f}":
+        "Skalierungsfaktor des Hintergrunds: {f}",
+    "The background does not cover the Raman Shift range of the spectra.":
+        "Der Hintergrund deckt den Raman-Shift-Bereich der Spektren nicht ab.",
+    "Substrate background":
+        "Substrathintergrund",
+    "Background subtracted":
+        "Hintergrund abgezogen",
+    "on":
+        "an",
+    "off":
+        "aus",
+    "not set":
+        "kein Hintergrund gewählt",
+    "Background spectra are not shown as samples.":
+        "Hintergrundspektren werden nicht als Proben angezeigt.",
+    "SNIP baseline: half window [cm⁻¹]":
+        "SNIP-Basislinie: Halbfenster [cm⁻¹]",
+    "About twice the width (FWHM) of the peaks, e.g. 40 cm⁻¹ for p-MBA. Too small cuts into the peaks, too large leaves fluorescence under them.":
+        "Etwa die doppelte Breite (FWHM) der Peaks, z. B. 40 cm⁻¹ für p-MBA. Zu klein schneidet in die Peaks, zu groß lässt Fluoreszenz darunter.",
+    'Baseline under the peak':
+        'Basislinie unter dem Peak',
+    'Straight line under the peak':
+        'Gerade unter dem Peak',
+    'None (absolute height)':
+        'Keine (absolute Höhe)',
+    'What counts as zero under the peak. SNIP: baseline of the whole spectrum. Straight line: fitted under the peak range only. None: absolute height, fluorescence and background included - e.g. a peak 10 000 high on a 30 000 background counts as 40 000.':
+        'Was unter dem Peak als Null gilt. SNIP: Basislinie des ganzen Spektrums. Gerade: nur im Peakbereich angepasst. Keine: absolute Höhe einschließlich Fluoreszenz und Untergrund – z. B. zählt ein 10 000 hoher Peak auf einem Untergrund von 30 000 als 40 000.',
+    'Detector saturated in: {names}. The top of the strongest peak is cut off, so its height is too low (e.g. EF lower by ~10 %). Measure again with lower laser power or a shorter time.':
+        'Detektor gesättigt in: {names}. Die Spitze des stärksten Peaks ist abgeschnitten, seine Höhe ist daher zu niedrig (z. B. EF um ~10 % niedriger). Mit geringerer Laserleistung oder kürzerer Zeit erneut messen.',
+    '95 % CI':
+        '95 %-KI',
+    'RSD 95 % CI from [%]':
+        'RSD, 95 %-KI von [%]',
+    'RSD 95 % CI to [%]':
+        'RSD, 95 %-KI bis [%]',
+    '95 % CI: the range in which the true RSD of the substrate lies. It narrows with more spectra - a measured RSD of 10 % means 6–29 % from 5 spectra and 8–15 % from 20.':
+        '95 %-KI: der Bereich, in dem die wahre RSD des Substrats liegt. Er wird mit mehr Spektren enger – eine gemessene RSD von 10 % bedeutet 6–29 % bei 5 Spektren und 8–15 % bei 20.',
+    "Moran's I = {i} (p = {p}): neighbouring points resemble each other - the differences form patches or a gradient, e.g. uneven deposition. Look at the map for weaker areas.":
+        'Morans I = {i} (p = {p}): benachbarte Punkte ähneln sich – die Unterschiede bilden Flecken oder einen Gradienten, z. B. ungleichmäßige Abscheidung. Suchen Sie auf der Karte nach schwächeren Bereichen.',
+    "Moran's I = {i} (p = {p}): neighbouring points differ more than by chance - check the order of the points (snake order) and the stage.":
+        'Morans I = {i} (p = {p}): benachbarte Punkte unterscheiden sich stärker als zufällig – Reihenfolge der Punkte (Schlangenlinie) und Tisch prüfen.',
+    "Moran's I = {i} (p = {p}): the differences between points look random - no gradient or patches.":
+        'Morans I = {i} (p = {p}): die Unterschiede zwischen den Punkten wirken zufällig – kein Gradient, keine Flecken.',
+    'Same RSD, different substrate: scattered weak points (random) are noise, a weaker edge or patch (clustered) points to the production process. p = how often a random shuffle of the same values over the map looks at least as clustered.':
+        'Gleiche RSD, anderes Substrat: verstreute schwache Punkte (zufällig) sind Rauschen, ein schwächerer Rand oder Fleck (gehäuft) deutet auf den Herstellungsprozess. p = wie oft eine zufällige Umverteilung derselben Werte auf der Karte mindestens so gehäuft aussieht.',
 }

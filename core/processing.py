@@ -97,6 +97,11 @@ def normalize(df):
 # # Extended preprocessing (Visualisation page)
 #
 BASELINE_METHODS = ['modpoly', 'arpls', 'snip']
+# SNIP half window [cm-1]: about 2x the FWHM of the measured bands. Tested on synthetic p-MBA-like spectra with known
+# peak heights (bands 1075 / 1590 cm-1, FWHM 16 / 20): 30-50 cm-1 measures them within a few %, 60 overestimated the
+# 1075 band by 15 % (fluorescence left under it) and 10-20 cut into the peaks. Real p-MBA spectra (532, 633, 785 nm):
+# peak heights stop changing from 30-40 cm-1 on.
+SNIP_HALF_WINDOW = 40
 SMOOTHING_METHODS = ['moving_average', 'savgol']
 NORMALIZATION_METHODS = ['minmax', 'max', 'area', 'vector', 'snv', 'peak']
 
@@ -217,3 +222,84 @@ def normalize_by(df, method='minmax', peak=None):
 def trim(df, low, high):
     """Keeps Raman Shift range low-high"""
     return df[(df.index >= low) & (df.index <= high)]
+
+
+# Substrate background subtraction.
+# The background (blank substrate spectrum) is scaled, because intensity changes with focus, laser power and
+# substrate spot. Automatic scale: the spectrum is fitted as  scale * background + low-order polynomial
+# (fluorescence, drift). Analyte peaks would inflate the scale, so points sticking out above the fit by more than
+# BACKGROUND_OUTLIER x noise (robust SD of the residuals) are left out and the fit repeated until the set of points
+# does not change. Substrate bands fit well at the right scale and stay in. The polynomial is not subtracted -
+# that is the job of baseline correction.
+BACKGROUND_POLY_ORDER = 2
+BACKGROUND_OUTLIER = 3.0
+BACKGROUND_MAX_ITER = 100
+
+
+def background_on_grid(background, index):
+    """
+    :param background: Series (index = Raman Shift) or DataFrame (averaged over columns)
+    :param index: target Raman Shift values
+    :return: Series on index, NaN outside the background range
+    """
+    if isinstance(background, pd.DataFrame):
+        background = background.mean(axis=1)
+    background = background.dropna().sort_index()
+    background = background[~background.index.duplicated()]
+    x = np.asarray(index, dtype=float)
+    values = np.interp(x, background.index.to_numpy(dtype=float), background.to_numpy(dtype=float),
+                       left=np.nan, right=np.nan)
+    return pd.Series(values, index=index)
+
+
+def background_scale(y, background, x=None, poly_order=BACKGROUND_POLY_ORDER):
+    """
+    Automatic scale factor of the background in spectrum y (see the comment above)
+    :param y: intensities, background: background on the same points, x: Raman Shift
+    :return: float >= 0
+    """
+    y = np.asarray(y, dtype=float)
+    background = np.asarray(background, dtype=float)
+    x = np.arange(len(y), dtype=float) if x is None else np.asarray(x, dtype=float)
+    span = x.max() - x.min()
+    xs = (x - x.min()) / span * 2 - 1 if span else np.zeros_like(x)
+    design = np.column_stack([background] + [xs ** p for p in range(poly_order + 1)])
+
+    used = np.ones(len(y), dtype=bool)
+    for _ in range(BACKGROUND_MAX_ITER):
+        coef = np.linalg.lstsq(design[used], y[used], rcond=None)[0]
+        residuals = y - design @ coef
+        noise = 1.4826 * np.median(np.abs(residuals[used] - np.median(residuals[used])))
+        new_used = residuals <= BACKGROUND_OUTLIER * max(noise, 1e-12 * (np.ptp(y) or 1))
+        if new_used.sum() < design.shape[1] + 2 or np.array_equal(new_used, used):
+            break
+        used = new_used
+    return max(float(coef[0]), 0.0)
+
+
+def subtract_background(df, background, scale='auto'):
+    """
+    Subtracts the substrate background from every spectrum
+    :param df: DataFrame of spectra
+    :param background: Series or DataFrame (averaged) with the background spectrum, any Raman Shift grid
+    :param scale: 'auto' (fitted for every spectrum) or a number (the same factor for all)
+    :return: (DataFrame limited to the range covered by the background, Dict {column: scale},
+              Series - background on the grid of the result)
+    """
+    on_grid = background_on_grid(background, df.index)
+    covered = on_grid.notna().to_numpy()
+    df, on_grid = df[covered], on_grid[covered]
+    if len(df) < 3:
+        raise ValueError('Background does not cover the spectra')
+
+    result, factors = df.copy(), {}
+    x = df.index.to_numpy(dtype=float)
+    for col in df.columns:
+        spectrum = df[col]
+        valid = spectrum.notna().to_numpy()
+        if scale == 'auto':
+            factors[col] = background_scale(spectrum[valid], on_grid[valid], x[valid]) if valid.sum() > 5 else 0.0
+        else:
+            factors[col] = float(scale)
+        result[col] = spectrum - factors[col] * on_grid
+    return result, factors, on_grid

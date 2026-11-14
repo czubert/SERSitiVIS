@@ -10,7 +10,9 @@ import re
 import numpy as np
 import pandas as pd
 
-from core.processing import trim
+
+MORAN_PERMUTATIONS = 999
+MORAN_MIN_POINTS = 9  # 3 x 3 grid - with fewer points every pattern looks random
 
 NAME = 'x={x:g}; y={y:g}'
 NAME_PATTERN = re.compile(r'x=(-?[\d.e+-]+); y=(-?[\d.e+-]+)$')
@@ -96,3 +98,44 @@ def grid(values, coords):
     """
     data = coords.assign(value=values.reindex(coords.index))
     return data.pivot_table(index='y', columns='x', values='value', aggfunc='mean').sort_index()
+
+
+def morans_i(values, coords, permutations=MORAN_PERMUTATIONS, seed=0):
+    """
+    Moran's I - are the differences between map points random, or do neighbours resemble each other?
+    Two maps can have the same RSD of 15 %: on one the weaker points are scattered at random (I ~ 0), on the other
+    the whole left edge is weaker (I ~ 0.5 - a gradient, e.g. uneven deposition).
+    Neighbours: points next to each other on the grid (also diagonally), in units of the grid step in x and y.
+    p-value from a permutation test: the values are shuffled over the map many times - how often a shuffled map is
+    as clustered as the real one.
+    :param values: Series {point: value}, coords: DataFrame (index = point, columns x, y)
+    :return: Dict: i, p (two-sided), expected (I of a random map), n
+    """
+    data = coords.join(values.rename('value'), how='inner').dropna()
+    n = len(data)
+    if n < MORAN_MIN_POINTS:
+        return None
+    grid = data[['x', 'y']].to_numpy(dtype=float)
+    for axis in range(2):  # grid units, so the steps in x and y can differ
+        steps = np.diff(np.unique(grid[:, axis]))
+        steps = steps[steps > 0]
+        if len(steps):
+            grid[:, axis] = grid[:, axis] / steps.min()
+    distance = np.sqrt(((grid[:, None, :] - grid[None, :, :]) ** 2).sum(axis=2))
+    weights = ((distance > 0) & (distance < 1.5)).astype(float)
+    if not weights.any():
+        return None
+
+    def statistic(z):
+        z = z - z.mean()
+        return n / weights.sum() * (z @ weights @ z) / (z @ z)
+
+    z = data['value'].to_numpy(dtype=float)
+    if np.ptp(z) == 0:
+        return None
+    observed = statistic(z)
+    rng = np.random.default_rng(seed)
+    shuffled = np.array([statistic(rng.permutation(z)) for _ in range(permutations)])
+    expected = -1 / (n - 1)
+    extreme = np.sum(np.abs(shuffled - expected) >= abs(observed - expected))
+    return {'i': observed, 'p': (extreme + 1) / (permutations + 1), 'expected': expected, 'n': n}

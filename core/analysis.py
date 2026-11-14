@@ -4,7 +4,7 @@ Calculations: Relative Standard Deviation (RSD) and Enhancement Factor (EF).
 import numpy as np
 import pandas as pd
 
-from core.processing import subtract_baseline
+from core.processing import SNIP_HALF_WINDOW, baseline, baselines, trim
 
 AVOGADRO = 6.02214076e23  # [1/mol]
 
@@ -21,25 +21,65 @@ def rsd_stats(values):
     return mean, std, std / mean
 
 
-def rsd_table(peak1, peak2=None, degree=3):
+def peak_window(df, low, high, mode='snip', half_window=SNIP_HALF_WINDOW):
     """
-    RSD of the peak intensity (or of peak1/peak2 intensity ratio) between spectra,
-    for raw and baseline-corrected data.
-    :param peak1: DataFrame, Raman Shift range of the first peak, one column per spectrum
-    :param peak2: DataFrame or None, second peak for the peak-to-peak ratio
-    :param degree: int, polynomial degree for baseline correction
-    :return: DataFrame
+    Peak range of every spectrum and the baseline under it
+    :param mode: 'snip' - SNIP baseline of the whole spectrum, 'line' - straight line fitted in the peak range only,
+                 'none' - zero (absolute intensities)
+    :return: (DataFrame of the peak range, DataFrame of the baseline on the same points)
     """
-    def values(p1, p2):
-        return p1.max() if p2 is None else p1.max() / p2.max()
+    window = trim(df, low, high)
+    if mode == 'snip':
+        return window, trim(baselines(df, 'snip', half_window), low, high)
+    if mode == 'line':
+        return window, window.apply(lambda y: baseline(y, 1, x=window.index))
+    return window, window * 0.0
 
+
+def peak_heights(df, peak1, peak2=None, mode='snip', half_window=SNIP_HALF_WINDOW):
+    """
+    Peak height above the baseline in every spectrum (or the peak1 / peak2 ratio)
+    :param peak1, peak2: (low, high) Raman Shift ranges
+    :return: Series {spectrum: value}
+    """
+    def height(peak):
+        window, base = peak_window(df, *peak, mode, half_window)
+        return (window - base).max()
+
+    return height(peak1) if peak2 is None else height(peak1) / height(peak2)
+
+
+def rsd_confidence_interval(rsd, n, level=0.95):
+    """
+    Confidence interval of RSD measured from n spectra (Vangel 1996 - accurate also for RSD of tens of %).
+    Example: RSD 10 % from 5 spectra -> 6.0-29 %, from 20 spectra -> 7.6-14.6 %.
+    :param rsd: measured RSD as a fraction
+    :return: (low, high) as fractions; high = inf when n is too small to limit it
+    """
+    from scipy.stats import chi2
+
+    if n < 2 or not np.isfinite(rsd) or rsd < 0:
+        return np.nan, np.nan
+    dof = n - 1
+
+    def bound(u):
+        denominator = ((u + 2) / n - 1) * rsd ** 2 + u / dof
+        return rsd / np.sqrt(denominator) if denominator > 0 else np.inf
+
+    return bound(chi2.ppf(1 - (1 - level) / 2, dof)), bound(chi2.ppf((1 - level) / 2, dof))
+
+
+def rsd_table(values):
+    """
+    :param values: Dict {label: Series of peak heights (or ratios), one value per spectrum}
+    :return: DataFrame: mean, SD and RSD [%] for every label
+    """
     results = {}
-    for label, p1, p2 in [('RAW data', peak1, peak2),
-                          ('Baseline corrected',
-                           subtract_baseline(peak1, degree),
-                           None if peak2 is None else subtract_baseline(peak2, degree))]:
-        mean, std, rsd = rsd_stats(values(p1, p2))
-        results[label] = {'Mean': mean, 'Standard deviation': std, 'RSD[%]': rsd * 100}
+    for label, series in values.items():
+        mean, std, rsd = rsd_stats(series)
+        low, high = rsd_confidence_interval(rsd, series.count())
+        results[label] = {'Mean': mean, 'Standard deviation': std, 'RSD[%]': rsd * 100,
+                          'RSD 95 % CI from [%]': low * 100, 'RSD 95 % CI to [%]': high * 100}
 
     return pd.DataFrame(results)
 

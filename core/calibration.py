@@ -13,7 +13,8 @@ from dataclasses import dataclass
 import numpy as np
 import pandas as pd
 
-from core.processing import baseline, subtract_baseline, trim
+from core.analysis import peak_window
+from core.processing import SNIP_HALF_WINDOW, baseline
 
 MOLAR = {'M': 1, 'mM': 1e-3, 'uM': 1e-6, 'µM': 1e-6, 'nM': 1e-9, 'pM': 1e-12}
 MASS = {'ppm': 1, 'ppb': 1e-3, 'ppt': 1e-6}
@@ -113,19 +114,18 @@ def strongest_peak_range(df, half_width=20):
     return low, high
 
 
-def peak_signal(df, low, high, method='height', degree=1):
+def peak_signal(df, low, high, method='height', mode='snip', half_window=SNIP_HALF_WINDOW):
     """
     Peak signal of every spectrum
     :param df: DataFrame, one column per spectrum
-    :param method: 'height' (maximum) or 'area' (integral) after baseline correction
-    :param degree: polynomial degree of the baseline fitted within the peak range, None = no correction
+    :param method: 'height' (maximum) or 'area' (integral) above the baseline
+    :param mode: baseline under the peak - 'snip', 'line' or 'none' (see analysis.peak_window)
     :return: Series
     """
-    window = trim(df, low, high)
+    window, base = peak_window(df, low, high, mode, half_window)
     if len(window) < 3:
         raise ValueError('Peak range is too narrow')
-    if degree is not None:
-        window = subtract_baseline(window, degree)
+    window = window - base
     if method == 'area':
         x = window.index.to_numpy(dtype=float)
         return pd.Series({col: np.trapezoid(window[col].to_numpy(), x) for col in window.columns})

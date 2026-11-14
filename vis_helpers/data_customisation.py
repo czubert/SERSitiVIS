@@ -1,5 +1,7 @@
 import streamlit as st
 
+from core import processing
+
 from vis_helpers.i18n import t
 
 
@@ -40,10 +42,44 @@ def processing_params(columns, allow_each=True):
     return params
 
 
-BASELINE_LABELS = {'modpoly': 'Polynomial (ModPoly)', 'arpls': 'arPLS (strong fluorescence background)',
-                   'snip': 'SNIP (peak clipping)'}
+BASELINE_LABELS = {'snip': 'SNIP (peak clipping)', 'modpoly': 'Polynomial (ModPoly)',  # the first one is the default
+                   'arpls': 'arPLS (strong fluorescence background)'}
 SMOOTHING_LABELS = {'moving_average': 'Moving average', 'savgol': 'Savitzky-Golay (keeps peak heights)'}
 ARPLS_LAMBDAS = [10 ** n for n in range(2, 10)]
+SNIP_HALF_WINDOW = processing.SNIP_HALF_WINDOW
+PEAK_BASELINES = {'snip': 'SNIP', 'line': 'Straight line under the peak', 'none': 'None (absolute height)'}
+
+
+def snip_half_window(key, label=None, **kwargs):
+    """Slider for the SNIP half window [cm-1] - the same on every page"""
+    return st.slider(label or t('Half window [cm⁻¹]'), 10, 300, SNIP_HALF_WINDOW, key=key, **kwargs,
+                     help=t('About twice the width (FWHM) of the peaks, e.g. 40 cm⁻¹ for p-MBA. Too small cuts into '
+                            'the peaks, too large leaves fluorescence under them.'))
+
+
+def describe_peak_baseline(mode, half_window):
+    """'SNIP, 40 cm⁻¹' / 'Straight line under the peak' / 'None (absolute height)' - for charts and reports"""
+    return f'SNIP, {half_window} cm⁻¹' if mode == 'snip' else t(PEAK_BASELINES[mode])
+
+
+def peak_baseline_switch(key):
+    """
+    Baseline under the measured peaks, put above the chart: switching it changes the result on the chart at once
+    :return: (mode - key of PEAK_BASELINES, SNIP half window)
+    """
+    from vis_helpers.i18n import choice
+
+    left, right = st.columns((3, 2), vertical_alignment='bottom')
+    with left:
+        mode = choice('radio', t('Baseline under the peak'), list(PEAK_BASELINES), key=f'{key}_baseline',
+                      horizontal=True, format_func=lambda m: t(PEAK_BASELINES[m]),
+                      help=t('What counts as zero under the peak. SNIP: baseline of the whole spectrum. Straight '
+                             'line: fitted under the peak range only. None: absolute height, fluorescence and '
+                             'background included - e.g. a peak 10 000 high on a 30 000 background counts as 40 000.'))
+    with right:
+        half_window = snip_half_window(f'{key}_half_window', t('SNIP baseline: half window [cm⁻¹]'),
+                                       disabled=mode != 'snip')
+    return mode, half_window
 
 
 def processing_settings(columns, allow_each=True):
@@ -78,8 +114,7 @@ def processing_settings(columns, allow_each=True):
                                      key='arpls_lambda', format_func=lambda v: f'10^{len(str(v)) - 1}',
                                      help=t('Higher = stiffer, flatter baseline.'))
         else:
-            param = st.slider(t('Half window [cm⁻¹]'), 10, 300, 60, key='snip_window',
-                              help=t('Should be larger than the widest peak.'))
+            param = snip_half_window('snip_window')
         settings['baseline'] = (method, param)
 
     if st.checkbox(t('Smoothing'), key='smoothing'):

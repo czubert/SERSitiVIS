@@ -1,5 +1,3 @@
-import html
-
 import streamlit as st
 
 from core import readers
@@ -18,15 +16,14 @@ FORMAT_NOTES = {
 }
 
 
-def example_data_html(instrument):
+def example_data_text(instrument):
     """
-    Beginning of an example file, to show in the manual
+    Content of an example file, to show in the manual
     :param instrument: Str, key of workspace.EXAMPLES
     :return: Str
     """
     name, raw = workspace.example_files(instrument)[0]
-    text = html.escape(readers.decode(raw))
-    return f'<div style="font-family: monospace; white-space: pre">{text}</div>'
+    return readers.decode(raw)
 
 
 def show_manual():
@@ -44,4 +41,4 @@ def show_manual():
         with st.expander(instrument):
             for note in notes:
                 st.write(t(note))
-            st.components.v1.html(example_data_html(instrument), height=200, scrolling=True)
+            st.code(example_data_text(instrument), language=None, height=200)
