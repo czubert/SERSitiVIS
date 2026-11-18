@@ -8,11 +8,15 @@ Fast and easy processing and visualisation of Raman and SERS spectra – a free 
 - **Substrate background subtraction** – blank substrate spectrum scaled and subtracted, on every page that
   measures spectra.
 - **Visualisation** – grouped, single, mean and 3D spectra; spike removal, baseline correction (ModPoly, arPLS, SNIP), smoothing, six normalisation methods, automatic peak labelling.
-- **RSD** – reproducibility of a SERS substrate from many spectra of one sample.
+- **RSD** – reproducibility of a SERS substrate from many spectra of one sample, with a 95 % confidence interval
+  (an RSD of 10 % from 5 spectra can really be anything from 6 % to 29 %).
 - **Calibration & LOD** – calibration curve from a concentration series, limit of detection (ICH or IUPAC).
-- **Uniformity map** – intensity / RSD map of a substrate from mapping data.
+- **Uniformity map** – intensity / RSD map of a substrate from mapping data; Moran's I tells random scatter from a
+  gradient or a weaker patch.
 - **Enhancement Factor** – analytical (AEF) and substrate EF, with Monte Carlo uncertainty.
 - **PCA** – group comparison, clustering, loadings and scree plot.
+- **Detector saturation warning** – a peak cut off by the detector is flagged (it would make e.g. EF ~10 % too low).
+- Baseline under the peak (SNIP, straight line or none) switchable on every analysis page, result shown on the chart.
 - Export of charts (PNG, SVG), processed data (CSV) and PDF reports.
 - Languages: English, Polish, German, Ukrainian. Light and dark theme.
 
